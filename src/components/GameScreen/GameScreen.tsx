@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { GameEngine } from 'react-game-engine';
 import type { Entity } from 'react-game-engine';
 import { mockScenarioData } from '../../data/mockData';
@@ -23,7 +23,6 @@ interface TileEntity extends Entity {
 }
 
 const GameScreen: React.FC = () => {
-  const gameEngineRef = useRef<GameEngine>(null);
   const [playerPosition, setPlayerPosition] = React.useState<Position>({ x: 1, y: 1 });
 
   const checkCollision = (x: number, y: number): boolean => {
@@ -175,8 +174,8 @@ const GameScreen: React.FC = () => {
     );
   };
 
-  const createEntities = () => {
-    const entities: Record<string, TileEntity | PlayerEntity> = {};
+  const entities = useMemo(() => {
+    const result: Record<string, TileEntity | PlayerEntity> = {};
     const { layers } = mockScenarioData.map;
 
     // Sort layers by orderInLayer
@@ -187,7 +186,7 @@ const GameScreen: React.FC = () => {
       layer.tileMap.forEach((row, y) => {
         row.forEach((tileId, x) => {
           const key = `${layer.name}-${x}-${y}`;
-          entities[key] = {
+          result[key] = {
             position: { x, y },
             tileId,
             layer,
@@ -198,13 +197,13 @@ const GameScreen: React.FC = () => {
     });
 
     // Add player entity
-    entities.player = {
+    result.player = {
       position: playerPosition,
       renderer: renderPlayer,
     };
 
-    return entities;
-  };
+    return result;
+  }, [playerPosition]);
 
   const mapWidth = mockScenarioData.map.layers[0].tileMap[0].length * TILE_SIZE;
   const mapHeight = mockScenarioData.map.layers[0].tileMap.length * TILE_SIZE;
@@ -218,10 +217,9 @@ const GameScreen: React.FC = () => {
       </div>
       <div className="game-container" style={{ width: mapWidth, height: mapHeight }}>
         <GameEngine
-          ref={gameEngineRef}
           style={{ width: mapWidth, height: mapHeight }}
           systems={[]}
-          entities={createEntities()}
+          entities={entities}
         />
       </div>
     </div>
