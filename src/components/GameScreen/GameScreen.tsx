@@ -7,6 +7,55 @@ import './GameScreen.css';
 
 const TILE_SIZE = 64;
 
+// Helper function to get direction indicator style
+const getDirectionIndicatorStyle = (direction: Direction) => {
+  const baseStyle = {
+    position: 'absolute' as const,
+    width: 0,
+    height: 0,
+    borderStyle: 'solid' as const,
+  };
+
+  switch (direction) {
+    case 'up':
+      return {
+        ...baseStyle,
+        bottom: '50%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        borderWidth: '0 8px 12px 8px',
+        borderColor: 'transparent transparent #ffffff transparent',
+      };
+    case 'down':
+      return {
+        ...baseStyle,
+        top: '50%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        borderWidth: '12px 8px 0 8px',
+        borderColor: '#ffffff transparent transparent transparent',
+      };
+    case 'left':
+      return {
+        ...baseStyle,
+        top: '50%',
+        right: '50%',
+        transform: 'translateY(-50%)',
+        borderWidth: '8px 12px 8px 0',
+        borderColor: 'transparent #ffffff transparent transparent',
+      };
+    case 'right':
+      return {
+        ...baseStyle,
+        top: '50%',
+        left: '50%',
+        transform: 'translateY(-50%)',
+        borderWidth: '8px 0 8px 12px',
+        borderColor: 'transparent transparent transparent #ffffff',
+      };
+  }
+};
+
 interface Position {
   x: number;
   y: number;
@@ -76,64 +125,75 @@ const GameScreen: React.FC = () => {
   }, [playerDirection]);
 
   const handleKeyDown = React.useCallback((e: KeyboardEvent) => {
-    setPlayerPosition((currentPosition) => {
-      let newX = currentPosition.x;
-      let newY = currentPosition.y;
-      let moved = false;
-      let newDirection: Direction | null = null;
+    let newDirection: Direction | null = null;
 
-      switch (e.key) {
-        case 'ArrowUp':
-        case 'w':
-        case 'W':
-          newY -= 1;
-          moved = true;
-          newDirection = 'up';
-          break;
-        case 'ArrowDown':
-        case 's':
-        case 'S':
-          newY += 1;
-          moved = true;
-          newDirection = 'down';
-          break;
-        case 'ArrowLeft':
-        case 'a':
-        case 'A':
-          newX -= 1;
-          moved = true;
-          newDirection = 'left';
-          break;
-        case 'ArrowRight':
-        case 'd':
-        case 'D':
-          newX += 1;
-          moved = true;
-          newDirection = 'right';
-          break;
-        case ' ':
-        case 'e':
-        case 'E': {
-          // Interact key - only check the direction the player is facing
+    // Determine direction from key press
+    switch (e.key) {
+      case 'ArrowUp':
+      case 'w':
+      case 'W':
+        newDirection = 'up';
+        break;
+      case 'ArrowDown':
+      case 's':
+      case 'S':
+        newDirection = 'down';
+        break;
+      case 'ArrowLeft':
+      case 'a':
+      case 'A':
+        newDirection = 'left';
+        break;
+      case 'ArrowRight':
+      case 'd':
+      case 'D':
+        newDirection = 'right';
+        break;
+      case ' ':
+      case 'e':
+      case 'E':
+        // Interact key - only check the direction the player is facing
+        setPlayerPosition((currentPosition) => {
           const facingPosition = getFacingPosition(currentPosition);
           const interactableId = checkInteraction(facingPosition.x, facingPosition.y);
           if (interactableId !== null) {
             alert(`Interacting with object ID: ${interactableId}`);
           }
-          break;
-        }
-      }
+          return currentPosition;
+        });
+        return;
+    }
 
-      if (moved) {
-        if (newDirection) {
-          setPlayerDirection(newDirection);
+    // Update direction if a movement key was pressed
+    if (newDirection) {
+      setPlayerDirection(newDirection);
+      
+      // Try to move in the new direction
+      setPlayerPosition((currentPosition) => {
+        let newX = currentPosition.x;
+        let newY = currentPosition.y;
+
+        switch (newDirection) {
+          case 'up':
+            newY -= 1;
+            break;
+          case 'down':
+            newY += 1;
+            break;
+          case 'left':
+            newX -= 1;
+            break;
+          case 'right':
+            newX += 1;
+            break;
         }
+
         if (!checkCollision(newX, newY)) {
           return { x: newX, y: newY };
         }
-      }
-      return currentPosition;
-    });
+        return currentPosition;
+      });
+    }
   }, [getFacingPosition]);
 
   useEffect(() => {
@@ -173,55 +233,6 @@ const GameScreen: React.FC = () => {
 
   const renderPlayer = (entity: Entity) => {
     const { position, direction } = entity as PlayerEntity;
-    
-    // Create a direction indicator (a small triangle pointing in the direction)
-    const getDirectionIndicator = () => {
-      const baseStyle = {
-        position: 'absolute' as const,
-        width: 0,
-        height: 0,
-        borderStyle: 'solid' as const,
-      };
-
-      switch (direction) {
-        case 'up':
-          return {
-            ...baseStyle,
-            bottom: '50%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            borderWidth: '0 8px 12px 8px',
-            borderColor: 'transparent transparent #ffffff transparent',
-          };
-        case 'down':
-          return {
-            ...baseStyle,
-            top: '50%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            borderWidth: '12px 8px 0 8px',
-            borderColor: '#ffffff transparent transparent transparent',
-          };
-        case 'left':
-          return {
-            ...baseStyle,
-            top: '50%',
-            right: '50%',
-            transform: 'translateY(-50%)',
-            borderWidth: '8px 12px 8px 0',
-            borderColor: 'transparent #ffffff transparent transparent',
-          };
-        case 'right':
-          return {
-            ...baseStyle,
-            top: '50%',
-            left: '50%',
-            transform: 'translateY(-50%)',
-            borderWidth: '8px 0 8px 12px',
-            borderColor: 'transparent transparent transparent #ffffff',
-          };
-      }
-    };
 
     return (
       <div
@@ -236,7 +247,7 @@ const GameScreen: React.FC = () => {
           zIndex: 1000,
         }}
       >
-        <div style={getDirectionIndicator()} />
+        <div style={getDirectionIndicatorStyle(direction)} />
       </div>
     );
   };
