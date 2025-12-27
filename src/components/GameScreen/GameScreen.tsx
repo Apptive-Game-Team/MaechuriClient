@@ -30,6 +30,7 @@ const GameScreen: React.FC = () => {
   const mapWidth = mockScenarioData.map.layers[0].tileMap[0].length * TILE_SIZE;
   const mapHeight = mockScenarioData.map.layers[0].tileMap.length * TILE_SIZE;
 
+
   // Show loading state
   if (assetsState.isLoading) {
     return (
