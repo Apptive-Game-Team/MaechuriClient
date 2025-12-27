@@ -2,7 +2,6 @@ import type { Entity } from 'react-game-engine';
 import type { TileEntity, PlayerEntity } from '../types';
 import { getDirectionIndicatorStyle } from '../utils/gameUtils';
 import { getAssetImage } from '../../../utils/assetLoader';
-import { MOVEMENT_DURATION } from '../types';
 
 const TILE_SIZE_VALUE = 64;
 
@@ -52,7 +51,10 @@ export const renderTile = (entity: Entity) => {
 };
 
 export const renderPlayer = (entity: Entity) => {
-  const { position, direction, asset, isAnimating } = entity as PlayerEntity;
+  const { direction, asset, interpolatedPosition } = entity as PlayerEntity;
+
+  // Use interpolated position for smooth rendering
+  const renderPosition = interpolatedPosition || { x: 0, y: 0 };
 
   // Map direction to asset direction using the constant
   const assetDirection = DIRECTION_TO_ASSET_MAP[direction];
@@ -62,8 +64,8 @@ export const renderPlayer = (entity: Entity) => {
 
   const style: React.CSSProperties = {
     position: 'absolute',
-    left: 0,
-    top: 0,
+    left: renderPosition.x * TILE_SIZE_VALUE,
+    top: renderPosition.y * TILE_SIZE_VALUE,
     width: TILE_SIZE_VALUE,
     height: TILE_SIZE_VALUE,
     backgroundColor: imageUrl ? 'transparent' : '#FF6B6B',
@@ -72,14 +74,11 @@ export const renderPlayer = (entity: Entity) => {
     backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    // Use transform instead of left/top for better performance
-    transform: `translate(${position.x * TILE_SIZE_VALUE}px, ${position.y * TILE_SIZE_VALUE}px)`,
-    transition: isAnimating ? `transform ${MOVEMENT_DURATION}ms ease-out` : 'none',
   };
 
   return (
     <div
-      key={`player-${position.x}-${position.y}-${direction}`}
+      key={`player-${renderPosition.x.toFixed(2)}-${renderPosition.y.toFixed(2)}-${direction}`}
       style={style}
     >
       {!imageUrl && <div style={getDirectionIndicatorStyle(direction)} />}

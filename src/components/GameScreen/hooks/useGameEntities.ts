@@ -6,9 +6,9 @@ import { renderTile, renderPlayer } from '../components/renderers';
 
 export const useGameEntities = (
   playerPosition: Position,
+  interpolatedPosition: Position,
   playerDirection: Direction,
-  assetsState: AssetsState,
-  isAnimating?: boolean
+  assetsState: AssetsState
 ) => {
   return useMemo(() => {
     const result: Record<string, TileEntity | PlayerEntity> = {};
@@ -34,15 +34,15 @@ export const useGameEntities = (
       });
     });
 
-    // Add player entity
+    // Add player entity with interpolated position for smooth rendering
     result.player = {
       position: playerPosition,
       direction: playerDirection,
       asset: assetsState.player,
-      isAnimating,
+      interpolatedPosition,
       renderer: renderPlayer,
     };
 
     return result;
-  }, [playerPosition, playerDirection, assetsState, isAnimating]);
+  }, [playerPosition, interpolatedPosition, playerDirection, assetsState]);
 };
