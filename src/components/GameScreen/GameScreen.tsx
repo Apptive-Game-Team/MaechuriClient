@@ -29,8 +29,8 @@ const GameScreen: React.FC = () => {
   const mapWidth = mockScenarioData.map.layers[0].tileMap[0].length * TILE_SIZE;
   const mapHeight = mockScenarioData.map.layers[0].tileMap.length * TILE_SIZE;
 
-  // Create a unique key based on player position and direction to force re-render
-  const gameKey = `game-${playerPosition.x}-${playerPosition.y}-${playerDirection}`;
+  // Don't use key at all - let GameEngine update naturally
+  // This allows the interpolated position updates to flow through
 
   // Show loading state
   if (assetsState.isLoading) {
@@ -64,7 +64,6 @@ const GameScreen: React.FC = () => {
       </div>
       <div className="game-container" style={{ width: mapWidth, height: mapHeight }}>
         <GameEngine
-          key={gameKey}
           style={{ width: mapWidth, height: mapHeight }}
           systems={[]}
           entities={entities}
