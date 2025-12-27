@@ -69,6 +69,8 @@ export const usePositionInterpolation = (targetPosition: Position): Position => 
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
+    // We intentionally use previousTargetRef to track changes rather than interpolatedPosition
+    // to avoid infinite re-renders. The current interpolated position is captured in the closure.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetPosition.x, targetPosition.y]);
 

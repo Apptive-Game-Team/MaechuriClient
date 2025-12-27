@@ -78,7 +78,7 @@ export const renderPlayer = (entity: Entity) => {
 
   return (
     <div
-      key={`player-${renderPosition.x.toFixed(2)}-${renderPosition.y.toFixed(2)}-${direction}`}
+      key="player"
       style={style}
     >
       {!imageUrl && <div style={getDirectionIndicatorStyle(direction)} />}
