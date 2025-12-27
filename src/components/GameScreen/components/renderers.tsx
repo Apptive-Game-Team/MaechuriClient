@@ -5,6 +5,14 @@ import { getAssetImage } from '../../../utils/assetLoader';
 
 const TILE_SIZE_VALUE = 64;
 
+// Direction mapping for player assets (defined once outside the component)
+const DIRECTION_TO_ASSET_MAP = {
+  'up': 'back',
+  'down': 'front',
+  'left': 'left',
+  'right': 'right',
+} as const;
+
 export const renderTile = (entity: Entity) => {
   const { position, tileId, layer, asset } = entity as TileEntity;
   
@@ -45,13 +53,8 @@ export const renderTile = (entity: Entity) => {
 export const renderPlayer = (entity: Entity) => {
   const { position, direction, asset } = entity as PlayerEntity;
 
-  // Map direction to asset direction
-  const assetDirection = {
-    'up': 'back',
-    'down': 'front',
-    'left': 'left',
-    'right': 'right',
-  }[direction] as 'left' | 'right' | 'front' | 'back';
+  // Map direction to asset direction using the constant
+  const assetDirection = DIRECTION_TO_ASSET_MAP[direction];
 
   // Get image URL from asset if available
   const imageUrl = asset ? getAssetImage(asset, assetDirection) : undefined;

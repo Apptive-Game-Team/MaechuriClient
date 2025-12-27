@@ -32,15 +32,26 @@ export const useAssetLoader = (objects: MapObject[], playerObjectUrl?: string): 
         const objectAssets = new Map<number, DirectionalAsset>();
         await Promise.all(
           objects.map(async (obj) => {
-            const asset = await fetchObjectAsset(obj.objectUrl);
-            objectAssets.set(obj.id, asset);
+            try {
+              const asset = await fetchObjectAsset(obj.objectUrl);
+              objectAssets.set(obj.id, asset);
+            } catch {
+              // Set empty asset for failed loads to allow graceful fallback
+              console.warn(`Failed to load asset for object ${obj.id}, using fallback`);
+              objectAssets.set(obj.id, {});
+            }
           })
         );
 
         // Load player asset if URL is provided
         let playerAsset: DirectionalAsset | null = null;
         if (playerObjectUrl) {
-          playerAsset = await fetchObjectAsset(playerObjectUrl);
+          try {
+            playerAsset = await fetchObjectAsset(playerObjectUrl);
+          } catch {
+            console.warn('Failed to load player asset, using fallback');
+            playerAsset = {};
+          }
         }
 
         setAssetsState({

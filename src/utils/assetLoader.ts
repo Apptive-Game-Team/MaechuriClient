@@ -6,6 +6,20 @@ export interface LoadedAsset {
 }
 
 /**
+ * Type guard to validate DirectionalAsset
+ */
+const isDirectionalAsset = (data: unknown): data is DirectionalAsset => {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  const asset = data as Record<string, unknown>;
+  const validKeys = ['left', 'right', 'front', 'back'];
+  const hasValidStructure = Object.keys(asset).every(key => validKeys.includes(key));
+  const hasValidValues = Object.values(asset).every(val => typeof val === 'string');
+  return hasValidStructure && hasValidValues;
+};
+
+/**
  * Fetches an object asset from a URL
  * @param objectUrl The URL to fetch the object asset from
  * @returns A promise that resolves to a DirectionalAsset
@@ -17,11 +31,17 @@ export const fetchObjectAsset = async (objectUrl: string): Promise<DirectionalAs
       throw new Error(`Failed to fetch asset from ${objectUrl}: ${response.statusText}`);
     }
     const data = await response.json();
-    return data as DirectionalAsset;
+    
+    // Validate the data structure
+    if (!isDirectionalAsset(data)) {
+      throw new Error(`Invalid asset format from ${objectUrl}: expected DirectionalAsset`);
+    }
+    
+    return data;
   } catch (error) {
-    console.error(`Error fetching asset from ${objectUrl}:`, error);
-    // Return an empty asset on error
-    return {};
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`Error fetching asset from ${objectUrl}:`, errorMessage);
+    throw error;
   }
 };
 
