@@ -1,87 +1,46 @@
-import React, { useEffect, useCallback } from 'react';
-import type { Direction, Position } from '../types';
-import { checkCollision, checkInteraction, getFacingPosition } from '../utils/gameUtils';
+import { useEffect, useCallback } from 'react';
+import type { GameEngine } from 'react-game-engine';
 
-export const usePlayerControls = (
-  playerDirection: Direction,
-  setPlayerPosition: React.Dispatch<React.SetStateAction<Position>>,
-  setPlayerDirection: React.Dispatch<React.SetStateAction<Direction>>
-) => {
-  const getFacingPositionCallback = useCallback((position: Position): Position => {
-    return getFacingPosition(position, playerDirection);
-  }, [playerDirection]);
-
+export const usePlayerControls = (gameEngineRef: React.RefObject<GameEngine | null>) => {
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    let newDirection: Direction | null = null;
+    if (!gameEngineRef.current) return;
 
-    // Determine direction from key press
+    let eventType: string | null = null;
+
+    // Determine event from key press
     switch (e.key) {
       case 'ArrowUp':
       case 'w':
       case 'W':
-        newDirection = 'up';
+        eventType = 'move-up';
         break;
       case 'ArrowDown':
       case 's':
       case 'S':
-        newDirection = 'down';
+        eventType = 'move-down';
         break;
       case 'ArrowLeft':
       case 'a':
       case 'A':
-        newDirection = 'left';
+        eventType = 'move-left';
         break;
       case 'ArrowRight':
       case 'd':
       case 'D':
-        newDirection = 'right';
+        eventType = 'move-right';
         break;
       case ' ':
       case 'e':
       case 'E':
-        // Interact key - only check the direction the player is facing
-        setPlayerPosition((currentPosition) => {
-          const facingPosition = getFacingPositionCallback(currentPosition);
-          const interactableId = checkInteraction(facingPosition.x, facingPosition.y);
-          if (interactableId !== null) {
-            alert(`Interacting with object ID: ${interactableId}`);
-          }
-          return currentPosition;
-        });
-        return;
+        eventType = 'interact';
+        break;
     }
 
-    // Update direction if a movement key was pressed
-    if (newDirection) {
-      setPlayerDirection(newDirection);
-      
-      // Try to move in the new direction
-      setPlayerPosition((currentPosition) => {
-        let newX = currentPosition.x;
-        let newY = currentPosition.y;
-
-        switch (newDirection) {
-          case 'up':
-            newY -= 1;
-            break;
-          case 'down':
-            newY += 1;
-            break;
-          case 'left':
-            newX -= 1;
-            break;
-          case 'right':
-            newX += 1;
-            break;
-        }
-
-        if (!checkCollision(newX, newY)) {
-          return { x: newX, y: newY };
-        }
-        return currentPosition;
-      });
+    // Dispatch the event if one was determined
+    if (eventType) {
+      gameEngineRef.current.dispatch({ type: eventType });
     }
-  }, [getFacingPositionCallback, setPlayerPosition, setPlayerDirection]);
+  }, [gameEngineRef]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

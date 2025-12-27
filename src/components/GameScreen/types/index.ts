@@ -13,6 +13,11 @@ export interface PlayerEntity extends Entity {
   direction: Direction;
   asset: DirectionalAsset | null;
   interpolatedPosition?: Position; // Smoothly interpolated position for rendering
+  animation?: {
+    startTime: number;
+    startPos: Position;
+    targetPos: Position;
+  };
 }
 
 export interface TileEntity extends Entity {

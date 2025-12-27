@@ -1,17 +1,16 @@
 import { useMemo } from 'react';
 import { mockScenarioData } from '../../../data/mockData';
-import type { Position, Direction, TileEntity, PlayerEntity } from '../types';
+import type { Position, Direction, TileEntity } from '../types';
 import type { AssetsState } from './useAssetLoader';
-import { renderTile, renderPlayer } from '../components/renderers';
+import { Tile, Player } from '../components/renderers';
 
 export const useGameEntities = (
   playerPosition: Position,
-  interpolatedPosition: Position,
   playerDirection: Direction,
   assetsState: AssetsState
 ) => {
-  return useMemo(() => {
-    const result: Record<string, TileEntity | PlayerEntity> = {};
+  const tileEntities = useMemo(() => {
+    const result: Record<string, TileEntity> = {};
     const { layers } = mockScenarioData.map;
 
     // Sort layers by orderInLayer
@@ -28,21 +27,23 @@ export const useGameEntities = (
             tileId,
             layer,
             asset,
-            renderer: renderTile,
+            renderer: Tile,
           };
         });
       });
     });
-
-    // Add player entity with interpolated position for smooth rendering
-    result.player = {
-      position: playerPosition,
-      direction: playerDirection,
-      asset: assetsState.player,
-      interpolatedPosition,
-      renderer: renderPlayer,
-    };
-
     return result;
-  }, [playerPosition, interpolatedPosition, playerDirection, assetsState]);
+  }, [assetsState.objects]);
+
+  const playerEntity = {
+    position: playerPosition,
+    direction: playerDirection,
+    asset: assetsState.player,
+    renderer: Player,
+  };
+
+  return {
+    ...tileEntities,
+    player: playerEntity,
+  };
 };

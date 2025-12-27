@@ -13,8 +13,8 @@ const DIRECTION_TO_ASSET_MAP = {
   'right': 'right',
 } as const;
 
-export const renderTile = (entity: Entity) => {
-  const { position, tileId, layer, asset } = entity as TileEntity;
+export const Tile = (props: Entity) => {
+  const { position, tileId, layer, asset } = props as TileEntity;
   
   // Get image URL from asset if available
   const imageUrl = asset ? getAssetImage(asset) : undefined;
@@ -44,17 +44,16 @@ export const renderTile = (entity: Entity) => {
 
   return (
     <div
-      key={`${layer.name}-${position.x}-${position.y}`}
       style={style}
     />
   );
 };
 
-export const renderPlayer = (entity: Entity) => {
-  const { direction, asset, interpolatedPosition } = entity as PlayerEntity;
+export const Player = (props: Entity) => {
+  const { position, direction, asset, interpolatedPosition } = props as PlayerEntity;
 
   // Use interpolated position for smooth rendering
-  const renderPosition = interpolatedPosition || { x: 0, y: 0 };
+  const renderPosition = interpolatedPosition || position;
 
   // Map direction to asset direction using the constant
   const assetDirection = DIRECTION_TO_ASSET_MAP[direction];
@@ -78,7 +77,6 @@ export const renderPlayer = (entity: Entity) => {
 
   return (
     <div
-      key={`player-${renderPosition.x.toFixed(2)}-${renderPosition.y.toFixed(2)}-${direction}`}
       style={style}
     >
       {!imageUrl && <div style={getDirectionIndicatorStyle(direction)} />}

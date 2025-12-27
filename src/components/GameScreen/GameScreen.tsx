@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { GameEngine } from 'react-game-engine';
 import { mockScenarioData } from '../../data/mockData';
-import type { Position, Direction } from './types';
 import { TILE_SIZE } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
 import { useGameEntities } from './hooks/useGameEntities';
 import { useAssetLoader } from './hooks/useAssetLoader';
-import { usePositionInterpolation } from './hooks/usePositionInterpolation';
+import playerControlSystem from './systems/playerControlSystem';
+import interactionSystem from './systems/interactionSystem';
+import interpolationSystem from './systems/interpolationSystem';
 import './GameScreen.css';
 
 const GameScreen: React.FC = () => {
-  const [playerPosition, setPlayerPosition] = useState<Position>({ x: 1, y: 1 });
-  const [playerDirection, setPlayerDirection] = useState<Direction>('down');
+  const gameEngineRef = useRef<GameEngine>(null);
 
   // Load assets
   const assetsState = useAssetLoader(
@@ -19,18 +19,16 @@ const GameScreen: React.FC = () => {
     mockScenarioData.map.playerObjectUrl
   );
 
-  // Use interpolation for smooth movement
-  const interpolatedPosition = usePositionInterpolation(playerPosition);
+  // Initialize entities once
+  const initialPlayerPosition = { x: 1, y: 1 };
+  const initialPlayerDirection = 'down';
+  const entities = useGameEntities(initialPlayerPosition, initialPlayerDirection, assetsState);
 
   // Use custom hooks
-  usePlayerControls(playerDirection, setPlayerPosition, setPlayerDirection);
-  const entities = useGameEntities(playerPosition, interpolatedPosition, playerDirection, assetsState);
+  usePlayerControls(gameEngineRef);
 
   const mapWidth = mockScenarioData.map.layers[0].tileMap[0].length * TILE_SIZE;
   const mapHeight = mockScenarioData.map.layers[0].tileMap.length * TILE_SIZE;
-
-  // Create a unique key based on player position and direction to force re-render
-  const gameKey = `game-${playerPosition.x}-${playerPosition.y}-${playerDirection}`;
 
   // Show loading state
   if (assetsState.isLoading) {
@@ -60,13 +58,12 @@ const GameScreen: React.FC = () => {
       <div className="game-info">
         <h2>{mockScenarioData.scenarioName}</h2>
         <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects.</p>
-        <p>Player Position: ({playerPosition.x}, {playerPosition.y}) | Direction: {playerDirection}</p>
       </div>
       <div className="game-container" style={{ width: mapWidth, height: mapHeight }}>
         <GameEngine
-          key={gameKey}
+          ref={gameEngineRef}
           style={{ width: mapWidth, height: mapHeight }}
-          systems={[]}
+          systems={[playerControlSystem, interactionSystem, interpolationSystem]}
           entities={entities}
         />
       </div>

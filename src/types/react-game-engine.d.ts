@@ -15,5 +15,7 @@ declare module 'react-game-engine' {
     children?: React.ReactNode;
   }
 
-  export class GameEngine extends Component<GameEngineProps> {}
+  export class GameEngine extends Component<GameEngineProps> {
+    dispatch(event: { type: string; [key: string]: any; }): void;
+  }
 }
