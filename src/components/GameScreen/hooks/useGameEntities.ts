@@ -7,7 +7,8 @@ import { renderTile, renderPlayer } from '../components/renderers';
 export const useGameEntities = (
   playerPosition: Position,
   playerDirection: Direction,
-  assetsState: AssetsState
+  assetsState: AssetsState,
+  isAnimating?: boolean
 ) => {
   return useMemo(() => {
     const result: Record<string, TileEntity | PlayerEntity> = {};
@@ -38,9 +39,10 @@ export const useGameEntities = (
       position: playerPosition,
       direction: playerDirection,
       asset: assetsState.player,
+      isAnimating,
       renderer: renderPlayer,
     };
 
     return result;
-  }, [playerPosition, playerDirection, assetsState]);
+  }, [playerPosition, playerDirection, assetsState, isAnimating]);
 };

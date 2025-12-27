@@ -2,6 +2,7 @@ import type { Entity } from 'react-game-engine';
 import type { TileEntity, PlayerEntity } from '../types';
 import { getDirectionIndicatorStyle } from '../utils/gameUtils';
 import { getAssetImage } from '../../../utils/assetLoader';
+import { MOVEMENT_DURATION } from '../types';
 
 const TILE_SIZE_VALUE = 64;
 
@@ -51,7 +52,7 @@ export const renderTile = (entity: Entity) => {
 };
 
 export const renderPlayer = (entity: Entity) => {
-  const { position, direction, asset } = entity as PlayerEntity;
+  const { position, direction, asset, isAnimating } = entity as PlayerEntity;
 
   // Map direction to asset direction using the constant
   const assetDirection = DIRECTION_TO_ASSET_MAP[direction];
@@ -71,6 +72,8 @@ export const renderPlayer = (entity: Entity) => {
     backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
+    // Add smooth transition for movement
+    transition: isAnimating ? `left ${MOVEMENT_DURATION}ms ease-out, top ${MOVEMENT_DURATION}ms ease-out` : 'none',
   };
 
   return (

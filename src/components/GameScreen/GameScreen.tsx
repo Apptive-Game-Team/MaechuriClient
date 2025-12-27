@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GameEngine } from 'react-game-engine';
 import { mockScenarioData } from '../../data/mockData';
 import type { Position, Direction } from './types';
-import { TILE_SIZE } from './types';
+import { TILE_SIZE, MOVEMENT_DURATION } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
 import { useGameEntities } from './hooks/useGameEntities';
 import { useAssetLoader } from './hooks/useAssetLoader';
@@ -11,6 +11,8 @@ import './GameScreen.css';
 const GameScreen: React.FC = () => {
   const [playerPosition, setPlayerPosition] = useState<Position>({ x: 1, y: 1 });
   const [playerDirection, setPlayerDirection] = useState<Direction>('down');
+  const [isAnimating, setIsAnimating] = useState(false);
+  const animationTimerRef = useRef<number | null>(null);
 
   // Load assets
   const assetsState = useAssetLoader(
@@ -18,9 +20,47 @@ const GameScreen: React.FC = () => {
     mockScenarioData.map.playerObjectUrl
   );
 
+  // Wrap setPlayerPosition to trigger animation
+  const setPlayerPositionWithAnimation = useCallback((
+    positionOrUpdater: Position | ((prev: Position) => Position)
+  ) => {
+    setPlayerPosition((prev) => {
+      const newPosition = typeof positionOrUpdater === 'function' 
+        ? positionOrUpdater(prev) 
+        : positionOrUpdater;
+      
+      // Only animate if position actually changed
+      if (newPosition.x !== prev.x || newPosition.y !== prev.y) {
+        // Clear any existing timer
+        if (animationTimerRef.current) {
+          clearTimeout(animationTimerRef.current);
+        }
+        
+        // Start animation
+        setIsAnimating(true);
+        
+        // End animation after duration
+        animationTimerRef.current = setTimeout(() => {
+          setIsAnimating(false);
+        }, MOVEMENT_DURATION) as unknown as number;
+      }
+      
+      return newPosition;
+    });
+  }, []);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (animationTimerRef.current) {
+        clearTimeout(animationTimerRef.current);
+      }
+    };
+  }, []);
+
   // Use custom hooks
-  usePlayerControls(playerDirection, setPlayerPosition, setPlayerDirection);
-  const entities = useGameEntities(playerPosition, playerDirection, assetsState);
+  usePlayerControls(playerDirection, setPlayerPositionWithAnimation, setPlayerDirection);
+  const entities = useGameEntities(playerPosition, playerDirection, assetsState, isAnimating);
 
   const mapWidth = mockScenarioData.map.layers[0].tileMap[0].length * TILE_SIZE;
   const mapHeight = mockScenarioData.map.layers[0].tileMap.length * TILE_SIZE;

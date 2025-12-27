@@ -12,6 +12,7 @@ export interface PlayerEntity extends Entity {
   position: Position;
   direction: Direction;
   asset: DirectionalAsset | null;
+  isAnimating?: boolean;
 }
 
 export interface TileEntity extends Entity {
@@ -22,3 +23,4 @@ export interface TileEntity extends Entity {
 }
 
 export const TILE_SIZE = 64;
+export const MOVEMENT_DURATION = 200; // milliseconds for smooth movement
