@@ -62,8 +62,8 @@ export const renderPlayer = (entity: Entity) => {
 
   const style: React.CSSProperties = {
     position: 'absolute',
-    left: position.x * TILE_SIZE_VALUE,
-    top: position.y * TILE_SIZE_VALUE,
+    left: 0,
+    top: 0,
     width: TILE_SIZE_VALUE,
     height: TILE_SIZE_VALUE,
     backgroundColor: imageUrl ? 'transparent' : '#FF6B6B',
@@ -72,8 +72,9 @@ export const renderPlayer = (entity: Entity) => {
     backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    // Add smooth transition for movement
-    transition: isAnimating ? `left ${MOVEMENT_DURATION}ms ease-out, top ${MOVEMENT_DURATION}ms ease-out` : 'none',
+    // Use transform instead of left/top for better performance
+    transform: `translate(${position.x * TILE_SIZE_VALUE}px, ${position.y * TILE_SIZE_VALUE}px)`,
+    transition: isAnimating ? `transform ${MOVEMENT_DURATION}ms ease-out` : 'none',
   };
 
   return (
