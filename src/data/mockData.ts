@@ -75,18 +75,44 @@ export const mockScenarioData: ScenarioData = {
     ],
     objects: [
       {
-        id: 2,
-        objectUrl: "https://s3.yunseong.dev/maechuri/objects/tile_floor.json"
+        id: 4,
+        orderInLayer: 2,
+        name: "요리사 1",
+        type: ["Non-Interactable", "Non-Passable"],
+        position: { x: 2, y: 3 }
       },
       {
+        id: 5,
+        orderInLayer: 2,
+        name: "요리사 2",
+        type: ["Non-Interactable", "Non-Passable"],
+        position: { x: 11, y: 3 }
+      },
+      {
+        id: 6,
+        orderInLayer: 2,
+        name: "요리사 3",
+        type: ["Non-Interactable", "Non-Passable"],
+        position: { x: 15, y: 8 }
+      }
+    ],
+    assets: [
+      {
         id: 1,
-        objectUrl: "https://s3.yunseong.dev/maechuri/objects/wood_floor.json"
+        imageUrl: "https://s3.yunseong.dev/maechuri/objects/wood_floor.json"
+      },
+      {
+        id: 2,
+        imageUrl: "https://s3.yunseong.dev/maechuri/objects/tile_floor.json"
       },
       {
         id: 100,
-        objectUrl: "https://s3.yunseong.dev/maechuri/objects/cook_1.json"
+        imageUrl: "https://s3.yunseong.dev/maechuri/objects/cook_1.json"
+      },
+      {
+        id: 999,
+        imageUrl: "https://s3.yunseong.dev/maechuri/objects/player.json"
       }
-    ],
-    playerObjectUrl: "https://s3.yunseong.dev/maechuri/objects/player.json"
+    ]
   }
 };

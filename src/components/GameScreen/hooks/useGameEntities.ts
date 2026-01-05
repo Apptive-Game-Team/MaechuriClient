@@ -22,7 +22,7 @@ export const useGameEntities = (
       layer.tileMap.forEach((row, y) => {
         row.forEach((tileId, x) => {
           const key = `${layer.name}-${x}-${y}`;
-          const asset = assetsState.objects.get(tileId);
+          const asset = assetsState.assets.get(tileId);
           result[key] = {
             position: { x, y },
             tileId,
@@ -34,12 +34,12 @@ export const useGameEntities = (
       });
     });
     return result;
-  }, [assetsState.objects]);
+  }, [assetsState.assets]);
 
   const playerEntity = {
     position: playerPosition,
     direction: playerDirection,
-    asset: assetsState.player,
+    asset: assetsState.assets.get(999), // Player asset ID is 999
     renderer: Player,
   };
 
