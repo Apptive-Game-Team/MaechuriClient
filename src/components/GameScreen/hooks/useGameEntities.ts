@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { mockScenarioData } from '../../../data/mockData';
-import type { Position, Direction, TileEntity } from '../types';
+import type { Position, Direction, TileEntity, FogOfWarEntity } from '../types';
 import type { AssetsState } from './useAssetLoader';
 import { Tile, Player } from '../components/renderers';
+import { FogOfWar } from '../components/FogOfWar';
 
 export const useGameEntities = (
   playerPosition: Position,
@@ -42,8 +43,15 @@ export const useGameEntities = (
     renderer: Player,
   };
 
+  const fogOfWarEntity: FogOfWarEntity = {
+    visibleTiles: new Map<string, number>(),
+    playerPosition: playerPosition,
+    renderer: FogOfWar as React.FC<FogOfWarEntity>,
+  };
+
   return {
     ...tileEntities,
     player: playerEntity,
+    fogOfWar: fogOfWarEntity,
   };
 };

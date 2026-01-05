@@ -8,6 +8,7 @@ import { useAssetLoader } from './hooks/useAssetLoader';
 import playerControlSystem from './systems/playerControlSystem';
 import interactionSystem from './systems/interactionSystem';
 import interpolationSystem from './systems/interpolationSystem';
+import fogOfWarSystem from './systems/fogOfWarSystem';
 import './GameScreen.css';
 
 const GameScreen: React.FC = () => {
@@ -19,8 +20,8 @@ const GameScreen: React.FC = () => {
     mockScenarioData.map.playerObjectUrl
   );
 
-  // Initialize entities once
-  const initialPlayerPosition = { x: 1, y: 1 };
+  // Initialize entities once - start player in center of top-left room
+  const initialPlayerPosition = { x: 5, y: 5 };
   const initialPlayerDirection = 'down';
   const entities = useGameEntities(initialPlayerPosition, initialPlayerDirection, assetsState);
 
@@ -64,7 +65,7 @@ const GameScreen: React.FC = () => {
         <GameEngine
           ref={gameEngineRef}
           style={{ width: mapWidth, height: mapHeight }}
-          systems={[playerControlSystem, interactionSystem, interpolationSystem]}
+          systems={[playerControlSystem, interactionSystem, interpolationSystem, fogOfWarSystem]}
           entities={entities}
         />
       </div>

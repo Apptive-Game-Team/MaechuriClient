@@ -1,4 +1,4 @@
-export type LayerType = "Interactable" | "Non-Interactable" | "Passable" | "Non-Passable";
+export type LayerType = "Interactable" | "Non-Interactable" | "Passable" | "Non-Passable" | "Blocks-Vision";
 
 export interface Layer {
   orderInLayer: number;
