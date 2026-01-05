@@ -14,15 +14,28 @@ export interface DirectionalAsset {
   back?: string;
 }
 
+export interface Position {
+  x: number;
+  y: number;
+}
+
 export interface MapObject {
   id: number;
-  objectUrl: string;
+  orderInLayer: number;
+  name: string;
+  type: LayerType[];
+  position: Position;
+}
+
+export interface Asset {
+  id: number;
+  imageUrl: string;
 }
 
 export interface GameMap {
   layers: Layer[];
   objects: MapObject[];
-  playerObjectUrl?: string;
+  assets: Asset[];
 }
 
 export interface ScenarioData {
