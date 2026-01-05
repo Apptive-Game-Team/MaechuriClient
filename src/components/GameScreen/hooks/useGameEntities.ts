@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { mockScenarioData } from '../../../data/mockData';
 import type { Position, Direction, TileEntity, FogOfWarEntity } from '../types';
+import { PLAYER_ASSET_ID } from '../types';
 import type { AssetsState } from './useAssetLoader';
 import { Tile, Player } from '../components/renderers';
 import { FogOfWar } from '../components/FogOfWar';
@@ -39,7 +40,7 @@ export const useGameEntities = (
   const playerEntity = {
     position: playerPosition,
     direction: playerDirection,
-    asset: assetsState.assets.get(999), // Player asset ID is 999
+    asset: assetsState.assets.get(PLAYER_ASSET_ID),
     renderer: Player,
   };
 
