@@ -26,30 +26,34 @@ export const isVisionBlocking = (x: number, y: number): boolean => {
  * Returns true if line of sight is clear, false if blocked
  */
 export const raycast = (from: Position, to: Position): boolean => {
-  // Use Bresenham's line algorithm to trace the line
-  const dx = Math.abs(to.x - from.x);
-  const dy = Math.abs(to.y - from.y);
-  const sx = from.x < to.x ? 1 : -1;
-  const sy = from.y < to.y ? 1 : -1;
+  // 1. 시작 위치를 정수로 변환하여 무한 루프 방지
+  const startX = Math.round(from.x);
+  const startY = Math.round(from.y);
+
+  const dx = Math.abs(to.x - startX);
+  const dy = Math.abs(to.y - startY);
+  const sx = startX < to.x ? 1 : -1;
+  const sy = startY < to.y ? 1 : -1;
   let err = dx - dy;
-  
-  let currentX = from.x;
-  let currentY = from.y;
-  
-  while (true) {
-    // Don't check the starting position
-    if (!(currentX === from.x && currentY === from.y)) {
-      // Check if current position blocks vision
-      if (isVisionBlocking(currentX, currentY)) {
-        return false; // Line of sight blocked
+
+  let currentX = startX;
+  let currentY = startY;
+
+  // 무한 루프 방지를 위한 안전장치 (dx + dy는 이동할 최대 타일 수)
+  const maxIterations = dx + dy + 2;
+  for (let i = 0; i < maxIterations; i++) {
+    // 2. 목표 타일이 아닌 중간 타일이 시야를 막는지 확인
+    if (isVisionBlocking(currentX, currentY)) {
+      if (currentX !== to.x || currentY !== to.y) {
+        return false; // 시야가 중간 타일에 의해 막힘
       }
     }
-    
-    // Reached the target
+
+    // 목표에 도달하면 시야가 트인 것
     if (currentX === to.x && currentY === to.y) {
-      break;
+      return true;
     }
-    
+
     const e2 = 2 * err;
     if (e2 > -dy) {
       err -= dy;
@@ -60,8 +64,8 @@ export const raycast = (from: Position, to: Position): boolean => {
       currentY += sy;
     }
   }
-  
-  return true; // Line of sight is clear
+
+  return false; // 경로를 찾지 못한 경우
 };
 
 /**

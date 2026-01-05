@@ -27,6 +27,12 @@ export interface TileEntity extends Entity {
   asset?: DirectionalAsset;
 }
 
+export interface FogOfWarEntity extends Entity {
+  visibleTiles?: Set<string>;
+  playerPosition?: Position;
+  renderer: React.FC<FogOfWarEntity>;
+}
+
 export const TILE_SIZE = 64;
 export const MOVEMENT_DURATION = 200; // milliseconds for smooth movement
 

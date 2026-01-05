@@ -1,64 +1,48 @@
 import React from 'react';
-import type { Entity } from 'react-game-engine';
-import type { PlayerEntity, TileEntity } from '../types';
-import { calculateVisibleTiles, calculateFogOpacity } from '../utils/raycastUtils';
+import { mockScenarioData } from '../../../data/mockData';
+import type { FogOfWarEntity } from '../types';
+import { calculateFogOpacity } from '../utils/raycastUtils';
 import { TILE_SIZE } from '../types';
 
-export const FogOfWar = (props: Entity) => {
-  const entities = props as Record<string, Entity>;
-  const player = entities.player as PlayerEntity;
-  
-  if (!player) return null;
-  
-  // Use interpolated position for smooth fog movement
-  const playerPos = player.interpolatedPosition || player.position;
-  
-  // Calculate visible tiles
-  const visibleTiles = calculateVisibleTiles(playerPos);
-  
-  // Create fog tiles for all map tiles
+export const FogOfWar = (props: FogOfWarEntity) => {
+  const { visibleTiles, playerPosition } = props;
+
+  // Get map dimensions from mockScenarioData
+  const mapHeight = mockScenarioData.map.layers[0].tileMap.length;
+  const mapWidth = mockScenarioData.map.layers[0].tileMap[0].length;
+
   const fogTiles: React.ReactElement[] = [];
-  
-  // Get map dimensions from mockScenarioData to ensure reliability
-  const firstTileKey = Object.keys(entities).find(key => key.startsWith('floor-'));
-  if (firstTileKey) {
-    const firstTile = entities[firstTileKey] as TileEntity;
-    const mapHeight = firstTile.layer.tileMap.length;
-    const mapWidth = firstTile.layer.tileMap[0].length;
-    
-    for (let y = 0; y < mapHeight; y++) {
-      for (let x = 0; x < mapWidth; x++) {
-        const tileKey = `${x},${y}`;
-        const isVisible = visibleTiles.has(tileKey);
-        
-        // Calculate fog opacity
-        let opacity = 1; // Default fully fogged
-        if (isVisible) {
-          opacity = calculateFogOpacity(playerPos, { x, y });
-        }
-        
-        // Only render fog if there's some opacity
-        if (opacity > 0) {
-          fogTiles.push(
-            <div
-              key={`fog-${x}-${y}`}
-              style={{
-                position: 'absolute',
-                left: x * TILE_SIZE,
-                top: y * TILE_SIZE,
-                width: TILE_SIZE,
-                height: TILE_SIZE,
-                backgroundColor: '#000000',
-                opacity: opacity,
-                pointerEvents: 'none',
-                zIndex: 2000, // Above player
-              }}
-            />
-          );
-        }
+
+  for (let y = 0; y < mapHeight; y++) {
+    for (let x = 0; x < mapWidth; x++) {
+      const tileKey = `${x},${y}`;
+      const isVisible = visibleTiles ? visibleTiles.has(tileKey) : false;
+
+      let opacity = 1; // Default to full fog
+      if (isVisible && playerPosition) {
+        opacity = calculateFogOpacity(playerPosition, { x, y });
+      }
+
+      if (opacity > 0) {
+        fogTiles.push(
+          <div
+            key={`fog-${x}-${y}`}
+            style={{
+              position: 'absolute',
+              left: x * TILE_SIZE,
+              top: y * TILE_SIZE,
+              width: TILE_SIZE,
+              height: TILE_SIZE,
+              backgroundColor: '#000000',
+              opacity: opacity,
+              pointerEvents: 'none',
+              zIndex: 2000, // Above player
+            }}
+          />
+        );
       }
     }
   }
-  
+
   return <>{fogTiles}</>;
 };
