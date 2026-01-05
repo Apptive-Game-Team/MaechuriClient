@@ -19,8 +19,8 @@ const GameScreen: React.FC = () => {
     mockScenarioData.map.playerObjectUrl
   );
 
-  // Initialize entities once
-  const initialPlayerPosition = { x: 1, y: 1 };
+  // Initialize entities once - start player in center of top-left room
+  const initialPlayerPosition = { x: 5, y: 5 };
   const initialPlayerDirection = 'down';
   const entities = useGameEntities(initialPlayerPosition, initialPlayerDirection, assetsState);
 
