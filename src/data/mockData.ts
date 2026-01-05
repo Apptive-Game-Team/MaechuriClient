@@ -50,43 +50,47 @@ export const mockScenarioData: ScenarioData = {
           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         ]
       },
-      {
-        orderInLayer: 3,
-        name: "interactable-objects",
-        type: ["Interactable", "Non-Passable"],
-        tileMap: [
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        ]
-      }
     ],
     objects: [
       {
-        id: 2,
-        objectUrl: "https://s3.yunseong.dev/maechuri/objects/tile_floor.json"
-      },
-      {
-        id: 1,
-        objectUrl: "https://s3.yunseong.dev/maechuri/objects/wood_floor.json"
+        id: 100,
+        orderInLayer: 3,
+        name: "요리사 1",
+        type: ["Interactable", "Non-Passable"],
+        position: { x: 2, y: 3 }
       },
       {
         id: 100,
-        objectUrl: "https://s3.yunseong.dev/maechuri/objects/cook_1.json"
+        orderInLayer: 3,
+        name: "요리사 2",
+        type: ["Interactable", "Non-Passable"],
+        position: { x: 11, y: 3 }
+      },
+      {
+        id: 100,
+        orderInLayer: 3,
+        name: "요리사 3",
+        type: ["Interactable", "Non-Passable"],
+        position: { x: 15, y: 8 }
       }
     ],
-    playerObjectUrl: "https://s3.yunseong.dev/maechuri/objects/player.json"
+    assets: [
+      {
+        id: 1,
+        imageUrl: "https://s3.yunseong.dev/maechuri/objects/wood_floor.json"
+      },
+      {
+        id: 2,
+        imageUrl: "https://s3.yunseong.dev/maechuri/objects/tile_floor.json"
+      },
+      {
+        id: 100,
+        imageUrl: "https://s3.yunseong.dev/maechuri/objects/cook_1.json"
+      },
+      {
+        id: 999,
+        imageUrl: "https://s3.yunseong.dev/maechuri/objects/player.json"
+      }
+    ]
   }
 };

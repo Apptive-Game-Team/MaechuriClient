@@ -27,6 +27,8 @@ export const Tile = (props: Entity) => {
     backgroundColor = '#D2B48C';
   } else if (layer.name === 'interactable-objects' && tileId !== 0) {
     backgroundColor = '#FFD700';
+  } else if (!imageUrl) {
+    backgroundColor = '#FF00FF'; // Bright pink for missing assets
   }
 
   const style: React.CSSProperties = {

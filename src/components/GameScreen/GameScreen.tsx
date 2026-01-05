@@ -16,8 +16,7 @@ const GameScreen: React.FC = () => {
 
   // Load assets
   const assetsState = useAssetLoader(
-    mockScenarioData.map.objects,
-    mockScenarioData.map.playerObjectUrl
+    mockScenarioData.map.assets
   );
 
   // Initialize entities once - start player in center of top-left room
