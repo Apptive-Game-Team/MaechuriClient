@@ -23,7 +23,7 @@ export const mockScenarioData: ScenarioData = {
       {
         orderInLayer: 2,
         name: "wall",
-        type: ["Non-Interactable", "Non-Passable"],
+        type: ["Non-Interactable", "Non-Passable", "Blocks-Vision"],
         tileMap: [
           [1, 1, 1, 1, 1, 1, 1],
           [1, 0, 0, 0, 0, 0, 1],
@@ -37,7 +37,7 @@ export const mockScenarioData: ScenarioData = {
       {
         orderInLayer: 3,
         name: "interactable-objects",
-        type: ["Interactable", "Non-Passable"],
+        type: ["Interactable", "Non-Passable", "Blocks-Vision"],
         tileMap: [
           [0, 0, 0, 0, 0, 0, 0],
           [0, 0, 0, 0, 0, 0, 0],

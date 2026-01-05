@@ -3,6 +3,7 @@ import { mockScenarioData } from '../../../data/mockData';
 import type { Position, Direction, TileEntity } from '../types';
 import type { AssetsState } from './useAssetLoader';
 import { Tile, Player } from '../components/renderers';
+import { FogOfWar } from '../components/FogOfWar';
 
 export const useGameEntities = (
   playerPosition: Position,
@@ -42,8 +43,13 @@ export const useGameEntities = (
     renderer: Player,
   };
 
+  const fogOfWarEntity = {
+    renderer: FogOfWar,
+  };
+
   return {
     ...tileEntities,
     player: playerEntity,
+    fogOfWar: fogOfWarEntity,
   };
 };
