@@ -13,7 +13,7 @@ export const useGameEntities = (
 ) => {
   const tileEntities = useMemo(() => {
     const result: Record<string, TileEntity> = {};
-    const { layers } = mockScenarioData.map;
+    const { layers, objects } = mockScenarioData.map;
 
     // Sort layers by orderInLayer
     const sortedLayers = [...layers].sort((a, b) => a.orderInLayer - b.orderInLayer);
@@ -22,6 +22,7 @@ export const useGameEntities = (
     sortedLayers.forEach((layer) => {
       layer.tileMap.forEach((row, y) => {
         row.forEach((tileId, x) => {
+          if (tileId === 0) return;
           const key = `${layer.name}-${x}-${y}`;
           const asset = assetsState.assets.get(tileId);
           result[key] = {
@@ -34,6 +35,24 @@ export const useGameEntities = (
         });
       });
     });
+
+    objects.forEach((object) => {
+      const key = `${object.name}-${object.position.x}-${object.position.y}`;
+      const asset = assetsState.assets.get(object.id);
+      result[key] = {
+        position: object.position,
+        tileId: object.id,
+        layer: {
+          orderInLayer: object.orderInLayer,
+          name: object.name,
+          type: object.type,
+          tileMap: [],
+        },
+        asset,
+        renderer: Tile,
+      };
+    });
+
     return result;
   }, [assetsState.assets]);
 

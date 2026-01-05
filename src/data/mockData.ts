@@ -50,49 +50,27 @@ export const mockScenarioData: ScenarioData = {
           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         ]
       },
-      {
-        orderInLayer: 3,
-        name: "interactable-objects",
-        type: ["Interactable", "Non-Passable"],
-        tileMap: [
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        ]
-      }
     ],
     objects: [
       {
-        id: 4,
-        orderInLayer: 2,
+        id: 100,
+        orderInLayer: 3,
         name: "요리사 1",
-        type: ["Non-Interactable", "Non-Passable"],
+        type: ["Interactable", "Non-Passable"],
         position: { x: 2, y: 3 }
       },
       {
-        id: 5,
-        orderInLayer: 2,
+        id: 100,
+        orderInLayer: 3,
         name: "요리사 2",
-        type: ["Non-Interactable", "Non-Passable"],
+        type: ["Interactable", "Non-Passable"],
         position: { x: 11, y: 3 }
       },
       {
-        id: 6,
-        orderInLayer: 2,
+        id: 100,
+        orderInLayer: 3,
         name: "요리사 3",
-        type: ["Non-Interactable", "Non-Passable"],
+        type: ["Interactable", "Non-Passable"],
         position: { x: 15, y: 8 }
       }
     ],

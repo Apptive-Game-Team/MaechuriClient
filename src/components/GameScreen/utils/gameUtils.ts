@@ -2,7 +2,7 @@ import { mockScenarioData } from '../../../data/mockData';
 import type { Direction, Position } from '../types';
 
 export const checkCollision = (x: number, y: number): boolean => {
-  const { layers } = mockScenarioData.map;
+  const { layers, objects } = mockScenarioData.map;
   
   for (const layer of layers) {
     if (layer.type.includes("Non-Passable")) {
@@ -14,11 +14,20 @@ export const checkCollision = (x: number, y: number): boolean => {
       }
     }
   }
+
+  for (const object of objects) {
+    if (object.position.x === x && object.position.y === y) {
+      if (object.type.includes("Non-Passable")) {
+        return true; // Collision with object detected
+      }
+    }
+  }
+
   return false;
 };
 
 export const checkInteraction = (x: number, y: number): number | null => {
-  const { layers } = mockScenarioData.map;
+  const { layers, objects } = mockScenarioData.map;
   
   for (const layer of layers) {
     if (layer.type.includes("Interactable")) {
@@ -31,6 +40,15 @@ export const checkInteraction = (x: number, y: number): number | null => {
       }
     }
   }
+
+  for (const object of objects) {
+    if (object.position.x === x && object.position.y === y) {
+      if (object.type.includes("Interactable")) {
+        return object.id;
+      }
+    }
+  }
+
   return null;
 };
 
