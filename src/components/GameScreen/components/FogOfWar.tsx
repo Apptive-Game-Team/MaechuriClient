@@ -2,8 +2,7 @@ import React from 'react';
 import type { Entity } from 'react-game-engine';
 import type { PlayerEntity, TileEntity } from '../types';
 import { calculateVisibleTiles, calculateFogOpacity } from '../utils/raycastUtils';
-
-const TILE_SIZE_VALUE = 64;
+import { TILE_SIZE } from '../types';
 
 export const FogOfWar = (props: Entity) => {
   const entities = props as Record<string, Entity>;
@@ -20,13 +19,12 @@ export const FogOfWar = (props: Entity) => {
   // Create fog tiles for all map tiles
   const fogTiles: React.ReactElement[] = [];
   
-  // Get map dimensions from first layer
+  // Get map dimensions from mockScenarioData to ensure reliability
   const firstTileKey = Object.keys(entities).find(key => key.startsWith('floor-'));
   if (firstTileKey) {
     const firstTile = entities[firstTileKey] as TileEntity;
-    const tileMap = firstTile.layer.tileMap;
-    const mapHeight = tileMap.length;
-    const mapWidth = tileMap[0].length;
+    const mapHeight = firstTile.layer.tileMap.length;
+    const mapWidth = firstTile.layer.tileMap[0].length;
     
     for (let y = 0; y < mapHeight; y++) {
       for (let x = 0; x < mapWidth; x++) {
@@ -46,10 +44,10 @@ export const FogOfWar = (props: Entity) => {
               key={`fog-${x}-${y}`}
               style={{
                 position: 'absolute',
-                left: x * TILE_SIZE_VALUE,
-                top: y * TILE_SIZE_VALUE,
-                width: TILE_SIZE_VALUE,
-                height: TILE_SIZE_VALUE,
+                left: x * TILE_SIZE,
+                top: y * TILE_SIZE,
+                width: TILE_SIZE,
+                height: TILE_SIZE,
                 backgroundColor: '#000000',
                 opacity: opacity,
                 pointerEvents: 'none',

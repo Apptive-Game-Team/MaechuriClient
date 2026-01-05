@@ -70,10 +70,25 @@ export const raycast = (from: Position, to: Position): boolean => {
  */
 export const calculateVisibleTiles = (playerPos: Position): Set<string> => {
   const visibleTiles = new Set<string>();
+  const { layers } = mockScenarioData.map;
   
-  // Check tiles within vision range
-  for (let y = playerPos.y - VISION_RANGE; y <= playerPos.y + VISION_RANGE; y++) {
-    for (let x = playerPos.x - VISION_RANGE; x <= playerPos.x + VISION_RANGE; x++) {
+  // Validate map structure
+  if (layers.length === 0 || layers[0].tileMap.length === 0) {
+    return visibleTiles;
+  }
+  
+  const mapHeight = layers[0].tileMap.length;
+  const mapWidth = layers[0].tileMap[0].length;
+  
+  // Use circular iteration for better performance
+  // Only check tiles within a square that bounds the circular vision range
+  const minY = Math.max(0, Math.floor(playerPos.y - VISION_RANGE));
+  const maxY = Math.min(mapHeight - 1, Math.ceil(playerPos.y + VISION_RANGE));
+  const minX = Math.max(0, Math.floor(playerPos.x - VISION_RANGE));
+  const maxX = Math.min(mapWidth - 1, Math.ceil(playerPos.x + VISION_RANGE));
+  
+  for (let y = minY; y <= maxY; y++) {
+    for (let x = minX; x <= maxX; x++) {
       // Calculate distance from player
       const dx = x - playerPos.x;
       const dy = y - playerPos.y;
@@ -84,16 +99,9 @@ export const calculateVisibleTiles = (playerPos: Position): Set<string> => {
         continue;
       }
       
-      // Check if tile is in bounds
-      const { layers } = mockScenarioData.map;
-      if (layers.length > 0) {
-        const tileMap = layers[0].tileMap;
-        if (y >= 0 && y < tileMap.length && x >= 0 && x < tileMap[0].length) {
-          // Perform raycast to check line of sight
-          if (raycast(playerPos, { x, y })) {
-            visibleTiles.add(`${x},${y}`);
-          }
-        }
+      // Perform raycast to check line of sight
+      if (raycast(playerPos, { x, y })) {
+        visibleTiles.add(`${x},${y}`);
       }
     }
   }
