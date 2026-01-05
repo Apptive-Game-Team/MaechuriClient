@@ -1,17 +1,23 @@
 import { mockScenarioData } from '../../../data/mockData';
 import type { Position } from '../types';
-import { VISION_RANGE, CLEAR_VISION_RADIUS, GRADIENT_START_RADIUS } from '../types';
+import { 
+  VISION_RANGE, 
+  CLEAR_VISION_RADIUS, 
+  GRADIENT_START_RADIUS,
+  FOG_RESOLUTION_MULTIPLIER
+} from '../types';
 
 /**
  * Check if a tile blocks vision based on layer types
  */
 export const isVisionBlocking = (x: number, y: number): boolean => {
   const { layers } = mockScenarioData.map;
+  const mapHeight = layers[0].tileMap.length;
+  const mapWidth = layers[0].tileMap[0].length;
   
   for (const layer of layers) {
     if (layer.type.includes("Blocks-Vision")) {
-      if (y >= 0 && y < layer.tileMap.length && 
-          x >= 0 && x < layer.tileMap[0].length) {
+      if (y >= 0 && y < mapHeight && x >= 0 && x < mapWidth) {
         if (layer.tileMap[y][x] !== 0) {
           return true; // This tile blocks vision
         }
@@ -22,90 +28,154 @@ export const isVisionBlocking = (x: number, y: number): boolean => {
 };
 
 /**
- * Perform raycast from start position to end position
- * Returns true if line of sight is clear, false if blocked
+ * Perform a precise raycast from a start position to an end position
+ * using a DDA-like algorithm (Amanatides & Woo).
+ * Returns true if line of sight is clear, false if blocked.
  */
 export const raycast = (from: Position, to: Position): boolean => {
-  // 1. 시작 위치를 정수로 변환하여 무한 루프 방지
-  const startX = Math.round(from.x);
-  const startY = Math.round(from.y);
+  const startMapX = Math.floor(from.x);
+  const startMapY = Math.floor(from.y);
+  const endMapX = Math.floor(to.x);
+  const endMapY = Math.floor(to.y);
 
-  const dx = Math.abs(to.x - startX);
-  const dy = Math.abs(to.y - startY);
-  const sx = startX < to.x ? 1 : -1;
-  const sy = startY < to.y ? 1 : -1;
-  let err = dx - dy;
+  // If start and end are in the same tile, visibility is clear.
+  // This prevents the player's current tile from being blacked out.
+  if (startMapX === endMapX && startMapY === endMapY) {
+    return true;
+  }
 
-  let currentX = startX;
-  let currentY = startY;
+  const rayDirX = to.x - from.x;
+  const rayDirY = to.y - from.y;
 
-  // 무한 루프 방지를 위한 안전장치 (dx + dy는 이동할 최대 타일 수)
-  const maxIterations = dx + dy + 2;
-  for (let i = 0; i < maxIterations; i++) {
-    // 2. 목표 타일이 아닌 중간 타일이 시야를 막는지 확인
-    if (isVisionBlocking(currentX, currentY)) {
-      if (currentX !== to.x || currentY !== to.y) {
-        return false; // 시야가 중간 타일에 의해 막힘
+  if (rayDirX === 0 && rayDirY === 0) {
+    return true;
+  }
+
+  let mapX = Math.floor(from.x);
+  let mapY = Math.floor(from.y);
+
+  // Length of ray from one x or y-side to next x or y-side
+  const deltaDistX = Math.abs(rayDirX === 0 ? Infinity : 1 / rayDirX);
+  const deltaDistY = Math.abs(rayDirY === 0 ? Infinity : 1 / rayDirY);
+
+  let stepX: number;
+  let sideDistX: number;
+
+  if (rayDirX < 0) {
+    stepX = -1;
+    sideDistX = (from.x - mapX) * deltaDistX;
+  } else {
+    stepX = 1;
+    sideDistX = (mapX + 1.0 - from.x) * deltaDistX;
+  }
+
+  let stepY: number;
+  let sideDistY: number;
+
+  if (rayDirY < 0) {
+    stepY = -1;
+    sideDistY = (from.y - mapY) * deltaDistY;
+  } else {
+    stepY = 1;
+    sideDistY = (mapY + 1.0 - from.y) * deltaDistY;
+  }
+
+  // Arbitrary large number to prevent infinite loops
+  const maxDistance = VISION_RANGE * 2;
+  let distance = 0;
+
+  const isDestinationBlocking = isVisionBlocking(endMapX, endMapY);
+
+  while (distance < maxDistance) {
+    if (sideDistX < sideDistY) {
+      sideDistX += deltaDistX;
+      mapX += stepX;
+    } else {
+      sideDistY += deltaDistY;
+      mapY += stepY;
+    }
+    distance++;
+
+    if (isVisionBlocking(mapX, mapY)) {
+      // If we hit a wall, we only block vision if the destination is NOT a wall.
+      // This stops walls from casting shadows on other walls.
+      if (!isDestinationBlocking) {
+        if (mapX !== endMapX || mapY !== endMapY) {
+          return false;
+        }
       }
     }
 
-    // 목표에 도달하면 시야가 트인 것
-    if (currentX === to.x && currentY === to.y) {
+    if (mapX === endMapX && mapY === endMapY) {
       return true;
-    }
-
-    const e2 = 2 * err;
-    if (e2 > -dy) {
-      err -= dy;
-      currentX += sx;
-    }
-    if (e2 < dx) {
-      err += dx;
-      currentY += sy;
     }
   }
 
-  return false; // 경로를 찾지 못한 경우
+  // If we reach max distance without hitting the target, something is wrong,
+  // but we'll consider it a clear path to avoid getting stuck in fog.
+  return true;
 };
 
+
 /**
- * Calculate which tiles are visible from the player position
- * Returns a Set of tile coordinates in the format "x,y"
+ * Calculate which fine-grained fog cells are visible from the player position
+ * Returns a Map of cell coordinates to their visibility factor (0.0 to 1.0)
  */
-export const calculateVisibleTiles = (playerPos: Position): Set<string> => {
-  const visibleTiles = new Set<string>();
+export const calculateVisibleTiles = (playerPos: Position): Map<string, number> => {
+  const visibleTiles = new Map<string, number>();
   const { layers } = mockScenarioData.map;
   
-  // Validate map structure
   if (layers.length === 0 || layers[0].tileMap.length === 0) {
     return visibleTiles;
   }
   
   const mapHeight = layers[0].tileMap.length;
   const mapWidth = layers[0].tileMap[0].length;
-  
-  // Use circular iteration for better performance
-  // Only check tiles within a square that bounds the circular vision range
-  const minY = Math.max(0, Math.floor(playerPos.y - VISION_RANGE));
-  const maxY = Math.min(mapHeight - 1, Math.ceil(playerPos.y + VISION_RANGE));
-  const minX = Math.max(0, Math.floor(playerPos.x - VISION_RANGE));
-  const maxX = Math.min(mapWidth - 1, Math.ceil(playerPos.x + VISION_RANGE));
+
+  // Operate in the high-resolution fog grid coordinate space
+  const playerXFine = playerPos.x * FOG_RESOLUTION_MULTIPLIER;
+  const playerYFine = playerPos.y * FOG_RESOLUTION_MULTIPLIER;
+  const visionRangeFine = VISION_RANGE * FOG_RESOLUTION_MULTIPLIER;
+
+  const minY = Math.max(0, Math.floor(playerYFine - visionRangeFine));
+  const maxY = Math.min(mapHeight * FOG_RESOLUTION_MULTIPLIER - 1, Math.ceil(playerYFine + visionRangeFine));
+  const minX = Math.max(0, Math.floor(playerXFine - visionRangeFine));
+  const maxX = Math.min(mapWidth * FOG_RESOLUTION_MULTIPLIER - 1, Math.ceil(playerXFine + visionRangeFine));
   
   for (let y = minY; y <= maxY; y++) {
     for (let x = minX; x <= maxX; x++) {
-      // Calculate distance from player
-      const dx = x - playerPos.x;
-      const dy = y - playerPos.y;
+      const cellCenterTileX = (x + 0.5) / FOG_RESOLUTION_MULTIPLIER;
+      const cellCenterTileY = (y + 0.5) / FOG_RESOLUTION_MULTIPLIER;
+      
+      const dx = cellCenterTileX - playerPos.x;
+      const dy = cellCenterTileY - playerPos.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
       
-      // Skip if beyond vision range
       if (distance > VISION_RANGE) {
         continue;
       }
-      
-      // Perform raycast to check line of sight
-      if (raycast(playerPos, { x, y })) {
-        visibleTiles.add(`${x},${y}`);
+
+      // Supersampling: cast 5 rays to different points in the cell
+      const samplePoints = [
+        { x: 0.5, y: 0.5 }, // Center
+        { x: 0.1, y: 0.1 }, // Top-left
+        { x: 0.9, y: 0.1 }, // Top-right
+        { x: 0.1, y: 0.9 }, // Bottom-left
+        { x: 0.9, y: 0.9 }, // Bottom-right
+      ];
+
+      let successfulRays = 0;
+      for (const point of samplePoints) {
+        const targetTileX = (x + point.x) / FOG_RESOLUTION_MULTIPLIER;
+        const targetTileY = (y + point.y) / FOG_RESOLUTION_MULTIPLIER;
+        if (raycast(playerPos, { x: targetTileX, y: targetTileY })) {
+          successfulRays++;
+        }
+      }
+
+      if (successfulRays > 0) {
+        const visibilityFactor = successfulRays / samplePoints.length;
+        visibleTiles.set(`${x},${y}`, visibilityFactor);
       }
     }
   }
@@ -122,25 +192,19 @@ export const calculateFogOpacity = (playerPos: Position, tilePos: Position): num
   const dy = tilePos.y - playerPos.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
   
-  // Within clear vision radius - no fog
+  // If within the clear vision radius, no fog
   if (distance <= GRADIENT_START_RADIUS) {
     return 0;
   }
   
-  // Between gradient start and clear vision radius
-  if (distance < CLEAR_VISION_RADIUS) {
-    const gradientRange = CLEAR_VISION_RADIUS - GRADIENT_START_RADIUS;
-    const gradientPosition = distance - GRADIENT_START_RADIUS;
-    return gradientPosition / gradientRange * 0.5; // Max 50% opacity in this range
+  // If beyond the vision range, full fog
+  if (distance >= VISION_RANGE) {
+    return 1;
   }
   
-  // Beyond clear vision radius - increase fog
-  if (distance < VISION_RANGE) {
-    const fadeRange = VISION_RANGE - CLEAR_VISION_RADIUS;
-    const fadePosition = distance - CLEAR_VISION_RADIUS;
-    return 0.5 + (fadePosition / fadeRange * 0.5); // 50% to 100% opacity
-  }
+  // Calculate linear interpolation from 0 to 1 between GRADIENT_START_RADIUS and VISION_RANGE
+  const gradientRange = VISION_RANGE - GRADIENT_START_RADIUS;
+  const gradientPosition = distance - GRADIENT_START_RADIUS;
   
-  // Beyond vision range - fully fogged
-  return 1;
+  return gradientPosition / gradientRange;
 };

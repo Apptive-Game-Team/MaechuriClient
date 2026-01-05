@@ -53,7 +53,7 @@ export const mockScenarioData: ScenarioData = {
       {
         orderInLayer: 3,
         name: "interactable-objects",
-        type: ["Interactable", "Non-Passable", "Blocks-Vision"],
+        type: ["Interactable", "Non-Passable"],
         tileMap: [
           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
