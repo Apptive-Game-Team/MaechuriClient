@@ -1,8 +1,8 @@
-import type { System } from 'react-game-engine';
+import type { System, Entity } from 'react-game-engine';
 import type { PlayerEntity, FogOfWarEntity } from '../types';
 import { calculateVisibleTiles } from '../utils/raycastUtils';
 
-const fogOfWarSystem: System = (entities) => {
+const fogOfWarSystem: System = (entities: Record<string, Entity>) => {
   const player = entities.player as PlayerEntity;
   const fogOfWar = entities.fogOfWar as FogOfWarEntity;
 

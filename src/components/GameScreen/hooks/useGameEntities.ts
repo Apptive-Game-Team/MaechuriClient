@@ -46,7 +46,7 @@ export const useGameEntities = (
   const fogOfWarEntity: FogOfWarEntity = {
     visibleTiles: new Map<string, number>(),
     playerPosition: playerPosition,
-    renderer: FogOfWar as React.FC<FogOfWarEntity>,
+    renderer: FogOfWar,
   };
 
   return {

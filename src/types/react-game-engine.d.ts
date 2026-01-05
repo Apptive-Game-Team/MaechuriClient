@@ -6,8 +6,10 @@ declare module 'react-game-engine' {
     renderer?: (entity: Entity) => React.ReactNode;
   }
 
+  export type System = (entities: Record<string, Entity>, args: Record<string, unknown>) => Record<string, Entity>;
+
   export interface GameEngineProps {
-    systems?: Array<(entities: Record<string, Entity>, args: Record<string, unknown>) => Record<string, Entity>>;
+    systems?: Array<System>;
     entities?: Record<string, Entity>;
     style?: CSSProperties;
     running?: boolean;

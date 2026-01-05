@@ -30,7 +30,7 @@ export interface TileEntity extends Entity {
 export interface FogOfWarEntity extends Entity {
   visibleTiles?: Map<string, number>;
   playerPosition?: Position;
-  renderer: React.FC<FogOfWarEntity>;
+  renderer?: any;
 }
 
 export const TILE_SIZE = 64;

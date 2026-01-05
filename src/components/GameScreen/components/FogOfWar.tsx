@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { mockScenarioData } from '../../../data/mockData';
 import type { FogOfWarEntity } from '../types';
 import { calculateFogOpacity } from '../utils/raycastUtils';

@@ -2,7 +2,7 @@ import { mockScenarioData } from '../../../data/mockData';
 import type { Position } from '../types';
 import { 
   VISION_RANGE, 
-  CLEAR_VISION_RADIUS, 
+  CLEAR_VISION_RADIUS,
   GRADIENT_START_RADIUS,
   FOG_RESOLUTION_MULTIPLIER
 } from '../types';
@@ -193,7 +193,7 @@ export const calculateFogOpacity = (playerPos: Position, tilePos: Position): num
   const distance = Math.sqrt(dx * dx + dy * dy);
   
   // If within the clear vision radius, no fog
-  if (distance <= GRADIENT_START_RADIUS) {
+  if (distance <= CLEAR_VISION_RADIUS) {
     return 0;
   }
   
