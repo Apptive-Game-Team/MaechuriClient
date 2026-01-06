@@ -1,4 +1,4 @@
-import { checkInteraction, getFacingPosition } from '../utils/gameUtils';
+import { checkInteraction, getFacingPosition, getObjectInfo } from '../utils/gameUtils';
 import type { PlayerEntity } from '../types';
 
 const interactionSystem = (entities: { player?: PlayerEntity }, { events }: any) => {
@@ -11,7 +11,18 @@ const interactionSystem = (entities: { player?: PlayerEntity }, { events }: any)
       const facingPosition = getFacingPosition(player.position, player.direction);
       const interactableId = checkInteraction(facingPosition.x, facingPosition.y);
       if (interactableId !== null) {
-        alert(`Interacting with object ID: ${interactableId}`);
+        const objectInfo = getObjectInfo(facingPosition.x, facingPosition.y);
+        if (objectInfo) {
+          // Dispatch custom event that will be handled by GameScreen
+          window.dispatchEvent(
+            new CustomEvent('gameInteraction', {
+              detail: {
+                objectId: objectInfo.id,
+                objectName: objectInfo.name,
+              },
+            })
+          );
+        }
       }
     }
   }
