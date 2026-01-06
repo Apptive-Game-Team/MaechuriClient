@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { GameEngine } from 'react-game-engine';
+import type { ScenarioData } from '../../types/map';
 import { TILE_SIZE } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
 import { useGameEntities } from './hooks/useGameEntities';
@@ -13,6 +14,14 @@ import interpolationSystem from './systems/interpolationSystem';
 import fogOfWarSystem from './systems/fogOfWarSystem';
 import ChatModal from '../ChatModal/ChatModal';
 import './GameScreen.css';
+
+// Empty scenario data used as fallback during loading
+const EMPTY_SCENARIO: ScenarioData = {
+  createdDate: '',
+  scenarioId: 0,
+  scenarioName: '',
+  map: { layers: [], objects: [], assets: [] }
+};
 
 const GameScreen: React.FC = () => {
   const gameEngineRef = useRef<GameEngine>(null);
@@ -72,12 +81,7 @@ const GameScreen: React.FC = () => {
   
   // Always call the hook, but pass fallback data if scenarioData is null
   const entities = useGameEntities(
-    scenarioData || { 
-      createdDate: '',
-      scenarioId: 0,
-      scenarioName: '',
-      map: { layers: [], objects: [], assets: [] }
-    },
+    scenarioData || EMPTY_SCENARIO,
     initialPlayerPosition,
     initialPlayerDirection,
     assetsState

@@ -99,7 +99,7 @@ export function useInteraction(): UseInteractionResult {
       setError(null);
 
       try {
-        // Add player message to history
+        // Add player message to history first for immediate UI feedback
         const playerMessage: ChatMessage = {
           content: message,
           sender: 'player',
@@ -127,10 +127,14 @@ export function useInteraction(): UseInteractionResult {
           timestamp: Date.now(),
         };
 
-        updateInteractionState(objectId, {
-          jwtHistory: response.history,
-          messages: [...currentState.messages, playerMessage, npcMessage],
-        });
+        // Get the updated state (which now includes the player message)
+        const updatedState = interactions.get(objectId);
+        if (updatedState) {
+          updateInteractionState(objectId, {
+            jwtHistory: response.history,
+            messages: [...updatedState.messages, npcMessage],
+          });
+        }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
         console.error('Error sending message:', errorMessage);

@@ -27,11 +27,10 @@ const ChatModal: React.FC<ChatModalProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Reset input when modal closes
+  // Reset input when modal opens (not when it closes)
   useEffect(() => {
-    if (!isOpen) {
-      // Use queueMicrotask to avoid synchronous setState in effect
-      queueMicrotask(() => setInputMessage(''));
+    if (isOpen) {
+      setInputMessage('');
     }
   }, [isOpen]);
 

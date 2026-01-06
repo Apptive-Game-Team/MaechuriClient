@@ -24,6 +24,7 @@ export function useMapData(options: UseMapDataOptions = {}): UseMapDataResult {
   const [data, setData] = useState<ScenarioData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(!useMockData);
   const [error, setError] = useState<string | null>(null);
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
 
   useEffect(() => {
     const fetchMapData = async () => {
@@ -57,38 +58,11 @@ export function useMapData(options: UseMapDataOptions = {}): UseMapDataResult {
     };
 
     fetchMapData();
-  }, [scenarioId, useMockData]);
+  }, [scenarioId, useMockData, refetchTrigger]);
 
   const refetch = () => {
-    // Trigger re-fetch by updating a state or calling fetch directly
-    setIsLoading(true);
-    setError(null);
-    
-    if (useMockData) {
-      setData(mockScenarioData);
-      setIsLoading(false);
-      return;
-    }
-
-    (async () => {
-      try {
-        const mapData = scenarioId !== undefined 
-          ? await getScenarioMap(scenarioId)
-          : await getTodayMap();
-        
-        setData(mapData);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch map data';
-        console.error('Error fetching map data:', errorMessage);
-        setError(errorMessage);
-        
-        // Fallback to mock data on error
-        console.log('Falling back to mock data');
-        setData(mockScenarioData);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
+    // Trigger re-fetch by updating the trigger state
+    setRefetchTrigger(prev => prev + 1);
   };
 
   return {
