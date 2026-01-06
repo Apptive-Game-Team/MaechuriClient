@@ -51,7 +51,7 @@ const GameScreen: React.FC = () => {
 
       // Start interaction if not already started
       if (scenarioData && !getInteractionState(objectId)) {
-        await startInteraction(scenarioData.scenarioId, objectId, objectName);
+        await startInteraction(scenarioData.scenarioId, objectId);
       }
     };
 
@@ -69,12 +69,19 @@ const GameScreen: React.FC = () => {
   // Initialize entities once - start player in center of top-left room
   const initialPlayerPosition = { x: 5, y: 5 };
   const initialPlayerDirection = 'down';
-  const entities = scenarioData ? useGameEntities(
-    scenarioData,
+  
+  // Always call the hook, but pass fallback data if scenarioData is null
+  const entities = useGameEntities(
+    scenarioData || { 
+      createdDate: '',
+      scenarioId: 0,
+      scenarioName: '',
+      map: { layers: [], objects: [], assets: [] }
+    },
     initialPlayerPosition,
     initialPlayerDirection,
     assetsState
-  ) : null;
+  );
 
   // Use custom hooks
   usePlayerControls(gameEngineRef);
@@ -121,16 +128,6 @@ const GameScreen: React.FC = () => {
         <div className="game-info">
           <h2>Error loading assets</h2>
           <p>{assetsState.error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!entities) {
-    return (
-      <div className="game-screen">
-        <div className="game-info">
-          <h2>Error initializing game</h2>
         </div>
       </div>
     );

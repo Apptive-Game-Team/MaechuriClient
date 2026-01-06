@@ -30,7 +30,8 @@ const ChatModal: React.FC<ChatModalProps> = ({
   // Reset input when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setInputMessage('');
+      // Use queueMicrotask to avoid synchronous setState in effect
+      queueMicrotask(() => setInputMessage(''));
     }
   }, [isOpen]);
 

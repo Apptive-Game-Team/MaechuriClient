@@ -2,13 +2,12 @@ import { useState, useCallback } from 'react';
 import { sendInteraction } from '../services/api';
 import type { 
   ObjectInteractionState, 
-  ChatMessage,
-  InteractionType 
+  ChatMessage
 } from '../types/interaction';
 
 interface UseInteractionResult {
   interactions: Map<number, ObjectInteractionState>;
-  startInteraction: (scenarioId: number, objectId: number, objectName: string) => Promise<void>;
+  startInteraction: (scenarioId: number, objectId: number) => Promise<void>;
   sendMessage: (scenarioId: number, objectId: number, message: string) => Promise<void>;
   getInteractionState: (objectId: number) => ObjectInteractionState | undefined;
   isLoading: boolean;
@@ -50,7 +49,7 @@ export function useInteraction(): UseInteractionResult {
    * Start interaction with an object (initial request with empty body)
    */
   const startInteraction = useCallback(
-    async (scenarioId: number, objectId: number, objectName: string) => {
+    async (scenarioId: number, objectId: number) => {
       setIsLoading(true);
       setError(null);
 

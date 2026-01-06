@@ -25,44 +25,76 @@ export function useMapData(options: UseMapDataOptions = {}): UseMapDataResult {
   const [isLoading, setIsLoading] = useState<boolean>(!useMockData);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchMapData = async () => {
-    // Use mock data if requested
+  useEffect(() => {
+    const fetchMapData = async () => {
+      // Use mock data if requested
+      if (useMockData) {
+        setData(mockScenarioData);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const mapData = scenarioId !== undefined 
+          ? await getScenarioMap(scenarioId)
+          : await getTodayMap();
+        
+        setData(mapData);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch map data';
+        console.error('Error fetching map data:', errorMessage);
+        setError(errorMessage);
+        
+        // Fallback to mock data on error
+        console.log('Falling back to mock data');
+        setData(mockScenarioData);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMapData();
+  }, [scenarioId, useMockData]);
+
+  const refetch = () => {
+    // Trigger re-fetch by updating a state or calling fetch directly
+    setIsLoading(true);
+    setError(null);
+    
     if (useMockData) {
       setData(mockScenarioData);
       setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const mapData = scenarioId !== undefined 
-        ? await getScenarioMap(scenarioId)
-        : await getTodayMap();
-      
-      setData(mapData);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch map data';
-      console.error('Error fetching map data:', errorMessage);
-      setError(errorMessage);
-      
-      // Fallback to mock data on error
-      console.log('Falling back to mock data');
-      setData(mockScenarioData);
-    } finally {
-      setIsLoading(false);
-    }
+    (async () => {
+      try {
+        const mapData = scenarioId !== undefined 
+          ? await getScenarioMap(scenarioId)
+          : await getTodayMap();
+        
+        setData(mapData);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch map data';
+        console.error('Error fetching map data:', errorMessage);
+        setError(errorMessage);
+        
+        // Fallback to mock data on error
+        console.log('Falling back to mock data');
+        setData(mockScenarioData);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   };
-
-  useEffect(() => {
-    fetchMapData();
-  }, [scenarioId, useMockData]);
 
   return {
     data,
     isLoading,
     error,
-    refetch: fetchMapData,
+    refetch,
   };
 }
