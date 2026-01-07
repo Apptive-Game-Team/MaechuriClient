@@ -1,36 +1,36 @@
-# API Integration Guide
+# API 연동 가이드
 
-## Overview
+## 개요
 
-This document explains how the API integration works for map loading and interaction features in the Maechuri Client.
+이 문서는 매추리 클라이언트에서 맵 로딩 및 상호작용 기능을 위한 API 연동이 어떻게 작동하는지 설명합니다.
 
-## Configuration
+## 설정
 
-### Environment Variables
+### 환경 변수
 
-Create a `.env` file in the project root (based on `.env.example`):
+프로젝트 루트에 `.env` 파일을 생성합니다 (`.env.example` 기반):
 
 ```env
 VITE_API_BASE_URL=http://localhost:8080
 ```
 
-If not set, the default value is `http://localhost:8080`.
+설정하지 않으면 기본값은 `http://localhost:8080`입니다.
 
-## API Endpoints
+## API 엔드포인트
 
-### Map Loading
+### 맵 로딩
 
-#### Get Today's Map
-- **Endpoint**: `GET /api/scenarios/today/data/map`
-- **Description**: Fetches the active scenario for today's date
-- **Response**: See ScenarioData type below
+#### 오늘의 맵 가져오기
+- **엔드포인트**: `GET /api/scenarios/today/data/map`
+- **설명**: 오늘 날짜의 활성 시나리오를 가져옵니다
+- **응답**: 아래 ScenarioData 타입 참조
 
-#### Get Specific Scenario Map
-- **Endpoint**: `GET /api/scenarios/{scenarioId}/data/map`
-- **Description**: Fetches a specific scenario by ID
-- **Response**: See ScenarioData type below
+#### 특정 시나리오 맵 가져오기
+- **엔드포인트**: `GET /api/scenarios/{scenarioId}/data/map`
+- **설명**: ID로 특정 시나리오를 가져옵니다
+- **응답**: 아래 ScenarioData 타입 참조
 
-**Response Format (ScenarioData)**:
+**응답 형식 (ScenarioData)**:
 ```typescript
 {
   "createdDate": "2025-12-22",
@@ -44,23 +44,23 @@ If not set, the default value is `http://localhost:8080`.
 }
 ```
 
-### Interactions
+### 상호작용
 
-#### Interact with Object
-- **Endpoint**: `POST /api/scenarios/{scenarioId}/interact/{objectId}`
-- **Description**: Start or continue interaction with an object
+#### 오브젝트와 상호작용
+- **엔드포인트**: `POST /api/scenarios/{scenarioId}/interact/{objectId}`
+- **설명**: 오브젝트와의 상호작용을 시작하거나 계속합니다
 
-**Request Body (Optional)**:
+**요청 본문 (선택사항)**:
 ```typescript
 {
-  "message": "너 말해봐",      // Optional: player's message (for two-way interactions)
-  "history": "jwt_token_here"  // Optional: JWT-encoded conversation history
+  "message": "너 말해봐",      // 선택사항: 플레이어의 메시지 (양방향 상호작용용)
+  "history": "jwt_token_here"  // 선택사항: JWT로 인코딩된 대화 기록
 }
 ```
 
-**Initial Request**: For the first interaction, send an empty body `{}` or no body to determine the interaction type.
+**최초 요청**: 첫 번째 상호작용의 경우, 빈 본문 `{}`을 보내거나 본문 없이 요청하여 상호작용 타입을 확인합니다.
 
-**Response - Two-way Interaction**:
+**응답 - 양방향 상호작용**:
 ```typescript
 {
   "type": "two-way",
@@ -69,44 +69,44 @@ If not set, the default value is `http://localhost:8080`.
 }
 ```
 
-**Response - Simple Interaction**:
+**응답 - 단방향 상호작용**:
 ```typescript
 {
   "type": "simple",
   "message": "안녕 난 요리사 이선민이야",
-  "name": "이선민"  // Optional
+  "name": "이선민"  // 선택사항
 }
 ```
 
-## Usage
+## 사용법
 
-### Using Map Data
+### 맵 데이터 사용하기
 
-The `useMapData` hook handles fetching map data from the API:
+`useMapData` 훅이 API에서 맵 데이터를 가져오는 것을 처리합니다:
 
 ```typescript
 import { useMapData } from '../../hooks/useMapData';
 
 function MyComponent() {
-  // Fetch today's map
+  // 오늘의 맵 가져오기
   const { data, isLoading, error } = useMapData();
   
-  // Or fetch a specific scenario
+  // 또는 특정 시나리오 가져오기
   const { data, isLoading, error } = useMapData({ scenarioId: 1 });
   
-  // Or use mock data (default for development)
+  // 또는 목 데이터 사용 (개발 시 기본값)
   const { data, isLoading, error } = useMapData({ useMockData: true });
 }
 ```
 
-**Features**:
-- Automatic fallback to mock data on API errors
-- Loading and error states
-- Supports both today's map and specific scenario fetching
+**기능**:
+- API 오류 시 목 데이터로 자동 대체
+- 로딩 및 에러 상태 제공
+- 오늘의 맵 및 특정 시나리오 가져오기 모두 지원
 
-### Managing Interactions
+### 상호작용 관리
 
-The `useInteraction` hook handles all interaction logic:
+`useInteraction` 훅이 모든 상호작용 로직을 처리합니다:
 
 ```typescript
 import { useInteraction } from '../../hooks/useInteraction';
@@ -120,27 +120,27 @@ function MyComponent() {
     error
   } = useInteraction();
   
-  // Start interaction with an object
+  // 오브젝트와 상호작용 시작
   await startInteraction(scenarioId, objectId);
   
-  // Send a message (for two-way interactions)
+  // 메시지 전송 (양방향 상호작용용)
   await sendMessage(scenarioId, objectId, "Hello!");
   
-  // Get interaction state for an object
+  // 오브젝트의 상호작용 상태 가져오기
   const state = getInteractionState(objectId);
-  // state contains: { type, messages, jwtHistory }
+  // state 내용: { type, messages, jwtHistory }
 }
 ```
 
-**Features**:
-- Per-object interaction history
-- Automatic JWT history management
-- Plaintext message history for UI display
-- Distinguishes between simple and two-way interactions
+**기능**:
+- 오브젝트별 상호작용 기록
+- 자동 JWT 기록 관리
+- UI 표시를 위한 평문 메시지 기록
+- 단방향 및 양방향 상호작용 구분
 
-### Interaction UI
+### 상호작용 UI
 
-The `ChatModal` component provides the interaction interface:
+`ChatModal` 컴포넌트가 상호작용 인터페이스를 제공합니다:
 
 ```typescript
 import ChatModal from '../ChatModal/ChatModal';
@@ -148,62 +148,62 @@ import ChatModal from '../ChatModal/ChatModal';
 <ChatModal
   isOpen={chatModalOpen}
   objectName="요리사 1"
-  messages={messages}  // Array of ChatMessage
-  interactionType="two-way"  // or "simple"
+  messages={messages}  // ChatMessage 배열
+  interactionType="two-way"  // 또는 "simple"
   onClose={() => setChatModalOpen(false)}
   onSendMessage={(message) => handleSendMessage(message)}
 />
 ```
 
-**Features**:
-- Modal dialog with messenger-like UI
-- Player messages aligned right (blue bubbles)
-- NPC messages aligned left (gray bubbles)
-- Optional NPC names displayed above messages
-- Input disabled for simple (read-only) interactions
-- Auto-scroll to latest message
+**기능**:
+- 메신저 스타일 UI를 가진 모달 다이얼로그
+- 플레이어 메시지는 오른쪽 정렬 (파란색 말풍선)
+- NPC 메시지는 왼쪽 정렬 (회색 말풍선)
+- 메시지 위에 선택적으로 NPC 이름 표시
+- 단방향(읽기 전용) 상호작용의 경우 입력 비활성화
+- 최신 메시지로 자동 스크롤
 
-## Data Flow
+## 데이터 흐름
 
-### Map Loading Flow
+### 맵 로딩 흐름
 
-1. `GameScreen` component mounts
-2. `useMapData` hook fetches map from API
-3. On success: Map data is used to render game
-4. On failure: Falls back to mock data automatically
-5. Map data is set in game utilities via `setCurrentMapData()`
+1. `GameScreen` 컴포넌트 마운트
+2. `useMapData` 훅이 API에서 맵을 가져옴
+3. 성공 시: 맵 데이터로 게임 렌더링
+4. 실패 시: 자동으로 목 데이터로 대체
+5. `setCurrentMapData()`를 통해 게임 유틸리티에 맵 데이터 설정
 
-### Interaction Flow
+### 상호작용 흐름
 
-1. Player presses interaction key (E or Space) while facing an object
-2. `interactionSystem` detects interaction and dispatches `gameInteraction` event
-3. `GameScreen` handles event and opens `ChatModal`
-4. If first interaction: Call `startInteraction()` to get initial message and type
-5. For two-way interactions: Player can send messages via input
-6. Each message updates both JWT history (for API) and plaintext messages (for UI)
-7. History is stored per-object, so switching between objects maintains separate conversations
+1. 플레이어가 오브젝트를 향한 상태에서 상호작용 키(E 또는 Space)를 누름
+2. `interactionSystem`이 상호작용을 감지하고 `gameInteraction` 이벤트 발생
+3. `GameScreen`이 이벤트를 처리하고 `ChatModal`을 엶
+4. 첫 상호작용인 경우: `startInteraction()`을 호출하여 초기 메시지와 타입을 가져옴
+5. 양방향 상호작용의 경우: 플레이어가 입력을 통해 메시지를 보낼 수 있음
+6. 각 메시지는 JWT 기록(API용)과 평문 메시지(UI용) 모두를 업데이트
+7. 기록은 오브젝트별로 저장되므로, 오브젝트를 전환해도 각각의 대화가 유지됨
 
-## History Management
+## 기록 관리
 
-### JWT History (API)
-- Stored per object in `ObjectInteractionState.jwtHistory`
-- Sent with each API request in `InteractionRequest.history`
-- Updated with each API response in `TwoWayInteractionResponse.history`
-- Used by backend to maintain conversation context
+### JWT 기록 (API)
+- `ObjectInteractionState.jwtHistory`에 오브젝트별로 저장
+- 각 API 요청 시 `InteractionRequest.history`로 전송
+- `TwoWayInteractionResponse.history`로 각 API 응답마다 업데이트
+- 백엔드에서 대화 컨텍스트를 유지하는 데 사용
 
-### Plaintext History (UI)
-- Stored per object in `ObjectInteractionState.messages`
-- Array of `ChatMessage` objects with content, sender, name, and timestamp
-- Displayed in `ChatModal` component
-- Player messages and NPC responses are both stored
-- Names are displayed for NPC messages when available
+### 평문 기록 (UI)
+- `ObjectInteractionState.messages`에 오브젝트별로 저장
+- content, sender, name, timestamp가 있는 `ChatMessage` 객체의 배열
+- `ChatModal` 컴포넌트에 표시
+- 플레이어 메시지와 NPC 응답 모두 저장
+- NPC 메시지의 경우 이름이 있으면 표시
 
-## Types
+## 타입
 
-### Key Type Definitions
+### 주요 타입 정의
 
 ```typescript
-// Interaction Types
+// 상호작용 타입
 type InteractionType = 'simple' | 'two-way';
 
 interface ChatMessage {
@@ -220,7 +220,7 @@ interface ObjectInteractionState {
   messages: ChatMessage[];
 }
 
-// Map Types (see src/types/map.ts for full definitions)
+// 맵 타입 (전체 정의는 src/types/map.ts 참조)
 interface ScenarioData {
   createdDate: string;
   scenarioId: number;
@@ -229,45 +229,45 @@ interface ScenarioData {
 }
 ```
 
-## Development Mode
+## 개발 모드
 
-By default, the game uses mock data to allow development without a running backend:
+기본적으로 게임은 백엔드 서버 없이 개발할 수 있도록 목 데이터를 사용합니다:
 
 ```typescript
-// In GameScreen.tsx
+// GameScreen.tsx에서
 const { data: scenarioData } = useMapData({
-  useMockData: true,  // Set to false to use API
+  useMockData: true,  // API를 사용하려면 false로 설정
 });
 ```
 
-To test with the real API:
-1. Set up the backend server
-2. Configure `VITE_API_BASE_URL` in `.env`
-3. Change `useMockData: true` to `useMockData: false` in GameScreen.tsx
-4. The application will automatically fall back to mock data if API calls fail
+실제 API로 테스트하려면:
+1. 백엔드 서버를 설정합니다
+2. `.env`에서 `VITE_API_BASE_URL`을 구성합니다
+3. GameScreen.tsx에서 `useMockData: true`를 `useMockData: false`로 변경합니다
+4. API 호출이 실패하면 애플리케이션이 자동으로 목 데이터로 대체합니다
 
-## Error Handling
+## 에러 처리
 
-- **Map Loading**: Automatically falls back to mock data on errors, logs error to console
-- **Interactions**: Displays error in console, maintains UI state
-- **Network Failures**: Gracefully handled with error messages and fallbacks
+- **맵 로딩**: 오류 시 자동으로 목 데이터로 대체하고, 콘솔에 오류를 기록합니다
+- **상호작용**: 콘솔에 오류를 표시하고, UI 상태를 유지합니다
+- **네트워크 장애**: 오류 메시지와 대체 방법으로 우아하게 처리합니다
 
-## Testing
+## 테스트
 
-To test the API integration:
+API 연동을 테스트하려면:
 
-1. **Map Loading**: 
-   - Start the dev server
-   - Check browser console for "Loading map data" messages
-   - Verify map renders correctly
+1. **맵 로딩**: 
+   - 개발 서버를 시작합니다
+   - 브라우저 콘솔에서 "Loading map data" 메시지를 확인합니다
+   - 맵이 올바르게 렌더링되는지 확인합니다
    
-2. **Interactions**:
-   - Move player near an interactable object (요리사 1, 2, or 3)
-   - Press E or Space to interact
-   - Chat modal should appear with initial message
-   - For two-way interactions, try sending messages
+2. **상호작용**:
+   - 플레이어를 상호작용 가능한 오브젝트(요리사 1, 2, 또는 3) 근처로 이동합니다
+   - E 또는 Space를 눌러 상호작용합니다
+   - 초기 메시지와 함께 채팅 모달이 나타나야 합니다
+   - 양방향 상호작용의 경우 메시지 전송을 시도합니다
 
-3. **History**:
-   - Interact with an object, close modal
-   - Interact again - history should be preserved
-   - Switch to different object - separate history should be maintained
+3. **기록**:
+   - 오브젝트와 상호작용하고 모달을 닫습니다
+   - 다시 상호작용하면 기록이 유지되어야 합니다
+   - 다른 오브젝트로 전환하면 별도의 기록이 유지되어야 합니다
