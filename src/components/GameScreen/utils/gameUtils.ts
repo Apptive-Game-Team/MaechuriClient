@@ -1,8 +1,16 @@
-import { mockScenarioData } from '../../../data/mockData';
 import type { Direction, Position } from '../types';
+import type { GameMap } from '../../../types/map';
+
+// Store the current map data globally for utility functions
+let currentMapData: GameMap | null = null;
+
+export const setCurrentMapData = (mapData: GameMap) => {
+  currentMapData = mapData;
+};
 
 export const checkCollision = (x: number, y: number): boolean => {
-  const { layers, objects } = mockScenarioData.map;
+  if (!currentMapData) return false;
+  const { layers, objects } = currentMapData;
   
   for (const layer of layers) {
     if (layer.type.includes("Non-Passable")) {
@@ -27,7 +35,8 @@ export const checkCollision = (x: number, y: number): boolean => {
 };
 
 export const checkInteraction = (x: number, y: number): number | null => {
-  const { layers, objects } = mockScenarioData.map;
+  if (!currentMapData) return null;
+  const { layers, objects } = currentMapData;
   
   for (const layer of layers) {
     if (layer.type.includes("Interactable")) {
@@ -49,6 +58,21 @@ export const checkInteraction = (x: number, y: number): number | null => {
     }
   }
 
+  return null;
+};
+
+export const getObjectInfo = (x: number, y: number): { id: number; name: string } | null => {
+  if (!currentMapData) return null;
+  const { objects } = currentMapData;
+  
+  for (const object of objects) {
+    if (object.position.x === x && object.position.y === y) {
+      if (object.type.includes("Interactable")) {
+        return { id: object.id, name: object.name };
+      }
+    }
+  }
+  
   return null;
 };
 
