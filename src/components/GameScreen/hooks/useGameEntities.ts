@@ -1,19 +1,20 @@
 import { useMemo } from 'react';
-import { mockScenarioData } from '../../../data/mockData';
 import type { Position, Direction, TileEntity, FogOfWarEntity } from '../types';
 import { PLAYER_ASSET_ID } from '../types';
 import type { AssetsState } from './useAssetLoader';
+import type { ScenarioData } from '../../../types/map';
 import { Tile, Player } from '../components/renderers';
 import { FogOfWar } from '../components/FogOfWar';
 
 export const useGameEntities = (
+  scenarioData: ScenarioData,
   playerPosition: Position,
   playerDirection: Direction,
   assetsState: AssetsState
 ) => {
   const tileEntities = useMemo(() => {
     const result: Record<string, TileEntity> = {};
-    const { layers, objects } = mockScenarioData.map;
+    const { layers, objects } = scenarioData.map;
 
     // Sort layers by orderInLayer
     const sortedLayers = [...layers].sort((a, b) => a.orderInLayer - b.orderInLayer);
@@ -54,7 +55,7 @@ export const useGameEntities = (
     });
 
     return result;
-  }, [assetsState.assets]);
+  }, [scenarioData.map, assetsState.assets]);
 
   const playerEntity = {
     position: playerPosition,
