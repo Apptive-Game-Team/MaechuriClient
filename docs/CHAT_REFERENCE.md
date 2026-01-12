@@ -68,7 +68,7 @@ Reference는 다음 형식으로 저장됩니다:
 
 ### Record 타입
 ```typescript
-export type RecordType = 'clue' | 'suspect' | 'CLUE' | 'NPC';
+export type RecordType = 'CLUE' | 'NPC';
 
 export interface Record {
   id: number | string; // 숫자와 문자열 모두 지원
@@ -104,22 +104,22 @@ interface InteractionResponse {
   records: [
     {
       id: "10",
-      type: "clue",
+      type: "CLUE",
       name: "눈물 젖은 빵"
     },
     {
       id: "11",
-      type: "suspect",
+      type: "NPC",
       name: "홍길동"
     },
     {
       id: "12",
-      type: "clue",
+      type: "CLUE",
       name: "피 묻은 칼"
     },
     {
       id: "13",
-      type: "suspect",
+      type: "NPC",
       name: "김철수"
     }
   ]
@@ -133,7 +133,7 @@ interface InteractionResponse {
 - 초기값: mockRecordsData
 - API 응답의 `newRecords`를 자동으로 추가
 - 중복 제거: (type, id) 조합이 같으면 추가하지 않음
-- 대소문자 정규화: "CLUE" → "clue", "NPC" → "suspect"
+- 서버 타입 사용: "CLUE", "NPC" 타입을 그대로 사용
 
 ### 동적 업데이트
 1. **상호작용 시작 시**: `startInteraction` 호출 → 서버 응답 → newRecords 추가
@@ -173,23 +173,16 @@ API 응답에 `newRecords` 필드를 포함하면 자동으로 records 목록에
 
 ### 중복 제거 로직
 - 같은 `type`과 `id`를 가진 record는 추가되지 않음
-- 대소문자를 정규화하여 비교 (CLUE → clue, NPC → suspect)
+- 타입은 대문자로 정규화하여 비교 (clue → CLUE, npc → NPC)
 - 예: `{ id: 10, type: "CLUE" }`와 `{ id: "10", type: "clue" }`는 동일한 것으로 간주
-
-### 타입 매핑
-서버의 타입을 클라이언트 타입으로 자동 변환:
-- `"CLUE"` → `"clue"`
-- `"NPC"` → `"suspect"`
 
 ### 새로운 Record 타입 추가
 1. `src/types/record.ts`에서 `RecordType` 타입에 새로운 타입 추가:
 ```typescript
-export type RecordType = 'clue' | 'suspect' | 'location';
+export type RecordType = 'CLUE' | 'NPC' | 'LOCATION';
 ```
 
 2. 해당 타입의 record를 서버 응답에 포함
-
-3. (선택) `RecordsContext.tsx`에서 타입 매핑 로직 업데이트
 
 ## 스타일링
 
