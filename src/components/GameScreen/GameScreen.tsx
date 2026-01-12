@@ -123,6 +123,7 @@ const GameScreen: React.FC = () => {
       const clampedX = Math.min(0, Math.max(viewportWidth - mapWidth, offsetX));
       const clampedY = Math.min(0, Math.max(viewportHeight - mapHeight, offsetY));
       
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCameraOffset({ x: clampedX, y: clampedY });
     }
   }, [entities.player, scenarioData]);
