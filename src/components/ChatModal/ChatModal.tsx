@@ -106,9 +106,8 @@ const ChatModal: React.FC<ChatModalProps> = ({
       const matchId = match[2];
       const record = records.find(
         r => {
-          const rType = r.type.toLowerCase();
           const rId = typeof r.id === 'string' ? r.id : r.id.toString();
-          return rType === matchType.toLowerCase() && rId === matchId;
+          return r.type === matchType && rId === matchId;
         }
       );
 
@@ -251,7 +250,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
     referenceSpan.className = 'reference-tag';
     referenceSpan.contentEditable = 'false';
     referenceSpan.textContent = record.name;
-    referenceSpan.dataset.type = record.type.toLowerCase();
+    referenceSpan.dataset.type = record.type;
     referenceSpan.dataset.id = typeof record.id === 'string' ? record.id : record.id.toString();
     
     // Delete from colon to cursor

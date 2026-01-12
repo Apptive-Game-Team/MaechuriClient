@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import type { Record, RecordType } from '../types/record';
+import type { Record } from '../types/record';
 import { mockRecordsData } from '../data/recordsData';
 
 interface RecordsContextType {
@@ -10,15 +10,6 @@ interface RecordsContextType {
 
 const RecordsContext = createContext<RecordsContextType | undefined>(undefined);
 
-// Normalize server type to client type
-const normalizeType = (serverType: string): RecordType => {
-  const normalized = serverType.toUpperCase();
-  if (normalized === 'NPC') return 'suspect';
-  if (normalized === 'CLUE') return 'clue';
-  // Fallback to lowercase for backward compatibility
-  return serverType.toLowerCase() as RecordType;
-};
-
 export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [records, setRecords] = useState<Record[]>(mockRecordsData.records);
 
@@ -27,8 +18,8 @@ export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children })
       const updatedRecords = [...prevRecords];
       
       newRecords.forEach((newRecord) => {
-        // Normalize type
-        const normalizedType = normalizeType(newRecord.type);
+        // Use server type directly (CLUE or NPC)
+        const recordType = newRecord.type.toUpperCase();
         
         // Check if record already exists (same type and id)
         const exists = updatedRecords.some(
@@ -43,8 +34,7 @@ export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children })
               existingId = existing.id;
             }
             
-            const existingType = normalizeType(existing.type);
-            return existingId === newRecord.id && existingType === normalizedType;
+            return existingId === newRecord.id && existing.type === recordType;
           }
         );
         
@@ -52,7 +42,7 @@ export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children })
         if (!exists) {
           updatedRecords.push({
             id: newRecord.id,
-            type: normalizedType,
+            type: recordType as 'CLUE' | 'NPC',
             name: newRecord.name,
           });
         }

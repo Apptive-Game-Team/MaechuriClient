@@ -5,22 +5,22 @@ export const mockRecordsData: RecordsData = {
   records: [
     {
       id: "10",
-      type: "clue",
+      type: "CLUE",
       name: "눈물 젖은 빵"
     },
     {
       id: "11",
-      type: "suspect",
+      type: "NPC",
       name: "홍길동"
     },
     {
       id: "12",
-      type: "clue",
+      type: "CLUE",
       name: "피 묻은 칼"
     },
     {
       id: "13",
-      type: "suspect",
+      type: "NPC",
       name: "김철수"
     }
   ]
