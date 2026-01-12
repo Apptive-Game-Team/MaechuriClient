@@ -10,6 +10,15 @@ interface RecordsContextType {
 
 const RecordsContext = createContext<RecordsContextType | undefined>(undefined);
 
+// Normalize server type to client type
+const normalizeType = (serverType: string): RecordType => {
+  const normalized = serverType.toUpperCase();
+  if (normalized === 'NPC') return 'suspect';
+  if (normalized === 'CLUE') return 'clue';
+  // Fallback to lowercase for backward compatibility
+  return serverType.toLowerCase() as RecordType;
+};
+
 export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [records, setRecords] = useState<Record[]>(mockRecordsData.records);
 
@@ -18,14 +27,23 @@ export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children })
       const updatedRecords = [...prevRecords];
       
       newRecords.forEach((newRecord) => {
-        // Normalize type to lowercase
-        const normalizedType = newRecord.type.toLowerCase() as RecordType;
+        // Normalize type
+        const normalizedType = normalizeType(newRecord.type);
         
         // Check if record already exists (same type and id)
         const exists = updatedRecords.some(
           (existing) => {
-            const existingId = typeof existing.id === 'string' ? parseInt(existing.id) : existing.id;
-            const existingType = existing.type.toLowerCase();
+            // Normalize existing ID to number for comparison
+            let existingId: number;
+            if (typeof existing.id === 'string') {
+              existingId = parseInt(existing.id, 10);
+              // Skip comparison if parsing failed
+              if (isNaN(existingId)) return false;
+            } else {
+              existingId = existing.id;
+            }
+            
+            const existingType = normalizeType(existing.type);
             return existingId === newRecord.id && existingType === normalizedType;
           }
         );
