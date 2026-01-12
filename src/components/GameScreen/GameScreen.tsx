@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { GameEngine } from 'react-game-engine';
-import type { ScenarioData } from '../../types/map';
+import type { ScenarioData, Position } from '../../types/map';
 import { TILE_SIZE } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
 import { useGameEntities } from './hooks/useGameEntities';
@@ -97,6 +97,7 @@ const GameScreen: React.FC = () => {
   // Initialize entities once - start player in center of top-left room
   const initialPlayerPosition = { x: 5, y: 5 };
   const initialPlayerDirection = 'down';
+  const [playerPosition, setPlayerPosition] = useState<Position>(initialPlayerPosition);
   
   // Always call the hook, but pass fallback data if scenarioData is null
   const entities = useGameEntities(
@@ -108,9 +109,8 @@ const GameScreen: React.FC = () => {
 
   // Update camera to follow player
   useEffect(() => {
-    if (entities.player && scenarioData) {
-      const playerEntity = entities.player as { position: { x: number; y: number } };
-      const playerPos = playerEntity.position;
+    if (playerPosition && scenarioData) {
+      const playerPos = playerPosition;
       
       // Calculate camera offset to center player on screen
       const offsetX = (VIEWPORT_WIDTH / 2) - (playerPos.x * TILE_SIZE + TILE_SIZE / 2);
@@ -125,11 +125,10 @@ const GameScreen: React.FC = () => {
         const clampedX = Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
         const clampedY = Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
         
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCameraOffset({ x: clampedX, y: clampedY });
       }
     }
-  }, [entities.player, scenarioData]);
+  }, [playerPosition, scenarioData]);
 
   // Use custom hooks
   usePlayerControls(gameEngineRef);
@@ -139,6 +138,12 @@ const GameScreen: React.FC = () => {
 
   // Get current interaction state
   const interactionState = currentObjectId ? getInteractionState(currentObjectId) : undefined;
+
+  const handleGameEvent = (event: { type: string; position: Position }) => {
+    if (event.type === 'player-moved') {
+      setPlayerPosition(event.position);
+    }
+  };
 
   // Handle sending messages
   const handleSendMessage = async (message: string) => {
@@ -203,6 +208,7 @@ const GameScreen: React.FC = () => {
             style={{ width: mapWidth, height: mapHeight }}
             systems={[playerControlSystem, interactionSystem, interpolationSystem, fogOfWarSystem]}
             entities={entities}
+            onEvent={handleGameEvent}
           />
         </div>
       </div>

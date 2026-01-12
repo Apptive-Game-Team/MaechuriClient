@@ -56,7 +56,7 @@ export const useAssetLoader = (assets: Asset[]): AssetsState => {
     };
 
     loadAssets();
-  }, [assets]);
+  }, [JSON.stringify(assets)]);
 
   return assetsState;
 };
