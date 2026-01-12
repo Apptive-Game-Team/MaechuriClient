@@ -32,6 +32,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
   const [autocompleteQuery, setAutocompleteQuery] = useState('');
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
+  const [isComposing, setIsComposing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   const autocompleteRef = useRef<HTMLDivElement>(null);
@@ -47,6 +48,24 @@ const ChatModal: React.FC<ChatModalProps> = ({
       setInputMessage('');
       setShowAutocomplete(false);
       setAutocompleteQuery('');
+    }
+  }, [isOpen]);
+
+  // Disable player movement when modal is open
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isOpen) {
+        // Prevent game controls when modal is open
+        const gameControlKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'W', 'a', 'A', 's', 'S', 'd', 'D', ' ', 'e', 'E'];
+        if (gameControlKeys.includes(e.key)) {
+          e.stopPropagation();
+        }
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown, true);
+      return () => window.removeEventListener('keydown', handleKeyDown, true);
     }
   }, [isOpen]);
 
@@ -126,8 +145,24 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
   const suggestions = getSuggestions(autocompleteQuery);
 
+  // Get cursor position within the contentEditable element
+  const getCursorPosition = (): number => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || !inputRef.current) return 0;
+    
+    const range = selection.getRangeAt(0);
+    const preCaretRange = range.cloneRange();
+    preCaretRange.selectNodeContents(inputRef.current);
+    preCaretRange.setEnd(range.endContainer, range.endOffset);
+    
+    return preCaretRange.toString().length;
+  };
+
   // Handle input change with reference detection
   const handleInputChange = (e: React.FormEvent<HTMLDivElement>) => {
+    // Ignore input during IME composition for Korean input
+    if (isComposing) return;
+    
     const text = e.currentTarget.textContent || '';
     const filteredText = filterInput(text);
     
@@ -148,30 +183,26 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
     setInputMessage(filteredText);
 
-    // Check for : to trigger autocomplete
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const position = range.startOffset;
-      setCursorPosition(position);
+    // Get current cursor position
+    const position = getCursorPosition();
+    setCursorPosition(position);
 
-      // Find the last : before cursor
-      const textBeforeCursor = filteredText.substring(0, position);
-      const lastColonIndex = textBeforeCursor.lastIndexOf(':');
-      
-      if (lastColonIndex !== -1) {
-        const query = textBeforeCursor.substring(lastColonIndex + 1);
-        // Check if there's no space after the colon
-        if (!query.includes(' ')) {
-          setAutocompleteQuery(query);
-          setShowAutocomplete(true);
-          setSelectedSuggestionIndex(0);
-        } else {
-          setShowAutocomplete(false);
-        }
+    // Find the last : before cursor
+    const textBeforeCursor = text.substring(0, position);
+    const lastColonIndex = textBeforeCursor.lastIndexOf(':');
+    
+    if (lastColonIndex !== -1) {
+      const query = textBeforeCursor.substring(lastColonIndex + 1);
+      // Check if there's no space after the colon
+      if (!query.includes(' ')) {
+        setAutocompleteQuery(query);
+        setShowAutocomplete(true);
+        setSelectedSuggestionIndex(0);
       } else {
         setShowAutocomplete(false);
       }
+    } else {
+      setShowAutocomplete(false);
     }
   };
 
@@ -179,13 +210,26 @@ const ChatModal: React.FC<ChatModalProps> = ({
   const insertReference = (record: Record) => {
     if (!inputRef.current) return;
 
-    const text = inputMessage;
-    const textBeforeCursor = text.substring(0, cursorPosition);
+    // Get all text content including references
+    let fullText = '';
+    
+    inputRef.current.childNodes.forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        fullText += node.textContent || '';
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as HTMLElement;
+        if (element.classList.contains('reference-tag')) {
+          fullText += element.textContent || '';
+        }
+      }
+    });
+
+    const textBeforeCursor = fullText.substring(0, cursorPosition);
     const lastColonIndex = textBeforeCursor.lastIndexOf(':');
     
     if (lastColonIndex !== -1) {
-      const beforeColon = text.substring(0, lastColonIndex);
-      const afterCursor = text.substring(cursorPosition);
+      const beforeColon = fullText.substring(0, lastColonIndex);
+      const afterCursor = fullText.substring(cursorPosition);
       
       // Create reference element
       const referenceSpan = document.createElement('span');
@@ -195,18 +239,27 @@ const ChatModal: React.FC<ChatModalProps> = ({
       referenceSpan.dataset.type = record.type;
       referenceSpan.dataset.id = record.id;
       
-      // Clear and rebuild input content
+      // Rebuild input content with proper structure
       inputRef.current.innerHTML = '';
+      
+      // Add text before colon
       if (beforeColon) {
         inputRef.current.appendChild(document.createTextNode(beforeColon));
       }
+      
+      // Add reference
       inputRef.current.appendChild(referenceSpan);
       
-      // Add space before afterCursor if needed
-      if (afterCursor && !afterCursor.startsWith(' ') && !beforeColon.endsWith(' ')) {
-        inputRef.current.appendChild(document.createTextNode(' ' + afterCursor));
-      } else if (afterCursor) {
-        inputRef.current.appendChild(document.createTextNode(afterCursor));
+      // Add space and remaining text
+      if (afterCursor) {
+        if (!afterCursor.startsWith(' ')) {
+          inputRef.current.appendChild(document.createTextNode(' ' + afterCursor));
+        } else {
+          inputRef.current.appendChild(document.createTextNode(afterCursor));
+        }
+      } else {
+        // Add space after reference if at end
+        inputRef.current.appendChild(document.createTextNode(' '));
       }
       
       // Move cursor after the reference
@@ -262,6 +315,11 @@ const ChatModal: React.FC<ChatModalProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // Don't handle Enter during IME composition
+    if (isComposing && e.key === 'Enter') {
+      return;
+    }
+    
     if (showAutocomplete && suggestions.length > 0) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -340,6 +398,8 @@ const ChatModal: React.FC<ChatModalProps> = ({
                 contentEditable
                 onInput={handleInputChange}
                 onKeyDown={handleKeyDown}
+                onCompositionStart={() => setIsComposing(true)}
+                onCompositionEnd={() => setIsComposing(false)}
                 data-placeholder="Type your message... (Use : to reference)"
               />
               {showAutocomplete && suggestions.length > 0 && (
