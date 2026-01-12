@@ -28,10 +28,25 @@ const GameScreen: React.FC = () => {
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [currentObjectId, setCurrentObjectId] = useState<number | null>(null);
   const [currentObjectName, setCurrentObjectName] = useState<string>('');
+  const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
+
+  // Disable page scrolling when GameScreen is mounted
+  useEffect(() => {
+    // Save original overflow style
+    const originalOverflow = document.body.style.overflow;
+    
+    // Disable scrolling
+    document.body.style.overflow = 'hidden';
+    
+    // Restore original overflow when component unmounts
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   // Fetch map data from API (with fallback to mock data)
   const { data: scenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({
-    useMockData: true, // Set to false to use API
+    useMockData: false, // Use API instead of mock data
   });
 
   // Manage interactions
@@ -86,6 +101,31 @@ const GameScreen: React.FC = () => {
     initialPlayerDirection,
     assetsState
   );
+
+  // Update camera to follow player
+  useEffect(() => {
+    if (entities.player && scenarioData) {
+      const playerEntity = entities.player as { position: { x: number; y: number } };
+      const playerPos = playerEntity.position;
+      
+      // Calculate viewport size (game container size)
+      const viewportWidth = 800; // Fixed viewport width
+      const viewportHeight = 600; // Fixed viewport height
+      
+      // Calculate camera offset to center player on screen
+      const offsetX = (viewportWidth / 2) - (playerPos.x * TILE_SIZE + TILE_SIZE / 2);
+      const offsetY = (viewportHeight / 2) - (playerPos.y * TILE_SIZE + TILE_SIZE / 2);
+      
+      // Clamp camera to map boundaries
+      const mapWidth = scenarioData.map.layers[0].tileMap[0].length * TILE_SIZE;
+      const mapHeight = scenarioData.map.layers[0].tileMap.length * TILE_SIZE;
+      
+      const clampedX = Math.min(0, Math.max(viewportWidth - mapWidth, offsetX));
+      const clampedY = Math.min(0, Math.max(viewportHeight - mapHeight, offsetY));
+      
+      setCameraOffset({ x: clampedX, y: clampedY });
+    }
+  }, [entities.player, scenarioData]);
 
   // Use custom hooks
   usePlayerControls(gameEngineRef);
@@ -144,13 +184,23 @@ const GameScreen: React.FC = () => {
         <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects.</p>
         {mapError && <p style={{ color: '#ff6b6b' }}>Note: Using fallback data</p>}
       </div>
-      <div className="game-container" style={{ width: mapWidth, height: mapHeight }}>
-        <GameEngine
-          ref={gameEngineRef}
-          style={{ width: mapWidth, height: mapHeight }}
-          systems={[playerControlSystem, interactionSystem, interpolationSystem, fogOfWarSystem]}
-          entities={entities}
-        />
+      <div className="game-viewport" style={{ width: 800, height: 600, position: 'relative', overflow: 'hidden' }}>
+        <div 
+          className="game-container" 
+          style={{ 
+            width: mapWidth, 
+            height: mapHeight,
+            transform: `translate(${cameraOffset.x}px, ${cameraOffset.y}px)`,
+            transition: 'transform 0.2s ease-out'
+          }}
+        >
+          <GameEngine
+            ref={gameEngineRef}
+            style={{ width: mapWidth, height: mapHeight }}
+            systems={[playerControlSystem, interactionSystem, interpolationSystem, fogOfWarSystem]}
+            entities={entities}
+          />
+        </div>
       </div>
       
       <ChatModal

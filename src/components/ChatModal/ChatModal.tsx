@@ -21,6 +21,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
 }) => {
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -31,8 +32,12 @@ const ChatModal: React.FC<ChatModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setInputMessage('');
+      // Auto-focus on input field when modal opens
+      if (inputRef.current && interactionType === 'two-way') {
+        inputRef.current.focus();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, interactionType]);
 
   if (!isOpen) {
     return null;
@@ -96,6 +101,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
+                ref={inputRef}
               />
               <button
                 className="chat-modal-send-button"
