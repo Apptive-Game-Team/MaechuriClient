@@ -188,7 +188,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
     setCursorPosition(position);
 
     // Find the last : before cursor
-    const textBeforeCursor = text.substring(0, position);
+    const textBeforeCursor = filteredText.substring(0, position);
     const lastColonIndex = textBeforeCursor.lastIndexOf(':');
     
     if (lastColonIndex !== -1) {
