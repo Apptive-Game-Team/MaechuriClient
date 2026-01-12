@@ -15,6 +15,10 @@ import fogOfWarSystem from './systems/fogOfWarSystem';
 import ChatModal from '../ChatModal/ChatModal';
 import './GameScreen.css';
 
+// Viewport dimensions for the game camera
+const VIEWPORT_WIDTH = 800;
+const VIEWPORT_HEIGHT = 600;
+
 // Empty scenario data used as fallback during loading
 const EMPTY_SCENARIO: ScenarioData = {
   createdDate: '',
@@ -108,23 +112,22 @@ const GameScreen: React.FC = () => {
       const playerEntity = entities.player as { position: { x: number; y: number } };
       const playerPos = playerEntity.position;
       
-      // Calculate viewport size (game container size)
-      const viewportWidth = 800; // Fixed viewport width
-      const viewportHeight = 600; // Fixed viewport height
-      
       // Calculate camera offset to center player on screen
-      const offsetX = (viewportWidth / 2) - (playerPos.x * TILE_SIZE + TILE_SIZE / 2);
-      const offsetY = (viewportHeight / 2) - (playerPos.y * TILE_SIZE + TILE_SIZE / 2);
+      const offsetX = (VIEWPORT_WIDTH / 2) - (playerPos.x * TILE_SIZE + TILE_SIZE / 2);
+      const offsetY = (VIEWPORT_HEIGHT / 2) - (playerPos.y * TILE_SIZE + TILE_SIZE / 2);
       
       // Clamp camera to map boundaries
-      const mapWidth = scenarioData.map.layers[0].tileMap[0].length * TILE_SIZE;
-      const mapHeight = scenarioData.map.layers[0].tileMap.length * TILE_SIZE;
-      
-      const clampedX = Math.min(0, Math.max(viewportWidth - mapWidth, offsetX));
-      const clampedY = Math.min(0, Math.max(viewportHeight - mapHeight, offsetY));
-      
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCameraOffset({ x: clampedX, y: clampedY });
+      const layers = scenarioData.map.layers;
+      if (layers.length > 0 && layers[0].tileMap.length > 0 && layers[0].tileMap[0].length > 0) {
+        const mapWidth = layers[0].tileMap[0].length * TILE_SIZE;
+        const mapHeight = layers[0].tileMap.length * TILE_SIZE;
+        
+        const clampedX = Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
+        const clampedY = Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
+        
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCameraOffset({ x: clampedX, y: clampedY });
+      }
     }
   }, [entities.player, scenarioData]);
 
@@ -185,7 +188,7 @@ const GameScreen: React.FC = () => {
         <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects.</p>
         {mapError && <p style={{ color: '#ff6b6b' }}>Note: Using fallback data</p>}
       </div>
-      <div className="game-viewport" style={{ width: 800, height: 600, position: 'relative', overflow: 'hidden' }}>
+      <div className="game-viewport" style={{ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT, position: 'relative', overflow: 'hidden' }}>
         <div 
           className="game-container" 
           style={{ 
