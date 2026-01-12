@@ -4,6 +4,8 @@
 
 대화창에서 단서(clue)나 용의자(suspect) 등의 기록(record)을 참조할 수 있는 기능을 구현했습니다. 사용자가 `:` 기호를 입력하면 자동완성 기능이 활성화되어 등록된 기록을 쉽게 참조할 수 있습니다.
 
+**새로운 기능**: API 응답에서 `newRecords`를 받아 동적으로 records 목록이 업데이트됩니다.
+
 ## 주요 기능
 
 ### 1. 입력 제한
@@ -66,10 +68,10 @@ Reference는 다음 형식으로 저장됩니다:
 
 ### Record 타입
 ```typescript
-export type RecordType = 'clue' | 'suspect';
+export type RecordType = 'clue' | 'suspect' | 'CLUE' | 'NPC';
 
 export interface Record {
-  id: string;
+  id: number | string; // 숫자와 문자열 모두 지원
   type: RecordType;
   name: string;
 }
@@ -79,8 +81,24 @@ export interface RecordsData {
 }
 ```
 
+### API 응답 형식
+서버에서 다음과 같은 형식으로 새로운 records를 전달합니다:
+```typescript
+interface InteractionResponse {
+  type: 'simple' | 'two-way';
+  message: string;
+  history?: string;
+  name?: string;
+  newRecords?: Array<{
+    id: number;
+    type: string; // "CLUE" 또는 "NPC"
+    name: string;
+  }>;
+}
+```
+
 ### Mock 데이터
-현재 다음과 같은 mock 데이터를 사용합니다 (`src/data/recordsData.ts`):
+초기 상태는 다음과 같은 mock 데이터를 사용합니다 (`src/data/recordsData.ts`):
 ```typescript
 {
   records: [
@@ -108,18 +126,60 @@ export interface RecordsData {
 }
 ```
 
+## Records 관리 (RecordsContext)
+
+### 전역 상태 관리
+`RecordsContext`를 통해 애플리케이션 전체에서 records를 공유합니다:
+- 초기값: mockRecordsData
+- API 응답의 `newRecords`를 자동으로 추가
+- 중복 제거: (type, id) 조합이 같으면 추가하지 않음
+- 대소문자 정규화: "CLUE" → "clue", "NPC" → "suspect"
+
+### 동적 업데이트
+1. **상호작용 시작 시**: `startInteraction` 호출 → 서버 응답 → newRecords 추가
+2. **메시지 전송 시**: `sendMessage` 호출 → 서버 응답 → newRecords 추가
+3. **중복 제거**: 같은 (type, id)를 가진 record는 추가되지 않음
+
+### 사용 예시
+```typescript
+// RecordsContext 사용
+const { records, addRecords } = useRecords();
+
+// 새로운 records 추가
+addRecords([
+  { id: 14, type: "CLUE", name: "새로운 단서" },
+  { id: 15, type: "NPC", name: "새로운 용의자" }
+]);
+```
+
 ## 확장성
 
-### 새로운 Record 추가
-`src/data/recordsData.ts` 파일의 `mockRecordsData` 배열에 새로운 record를 추가할 수 있습니다:
-
-```typescript
+### 동적 Record 추가
+API 응답에 `newRecords` 필드를 포함하면 자동으로 records 목록에 추가됩니다:
+```json
 {
-  id: "14",
-  type: "clue",
-  name: "새로운 단서"
+  "type": "two-way",
+  "message": "새로운 단서를 발견했습니다!",
+  "history": "...",
+  "newRecords": [
+    {
+      "id": 14,
+      "type": "CLUE",
+      "name": "피 묻은 옷"
+    }
+  ]
 }
 ```
+
+### 중복 제거 로직
+- 같은 `type`과 `id`를 가진 record는 추가되지 않음
+- 대소문자를 정규화하여 비교 (CLUE → clue, NPC → suspect)
+- 예: `{ id: 10, type: "CLUE" }`와 `{ id: "10", type: "clue" }`는 동일한 것으로 간주
+
+### 타입 매핑
+서버의 타입을 클라이언트 타입으로 자동 변환:
+- `"CLUE"` → `"clue"`
+- `"NPC"` → `"suspect"`
 
 ### 새로운 Record 타입 추가
 1. `src/types/record.ts`에서 `RecordType` 타입에 새로운 타입 추가:
@@ -127,12 +187,9 @@ export interface RecordsData {
 export type RecordType = 'clue' | 'suspect' | 'location';
 ```
 
-2. 해당 타입의 record를 `recordsData.ts`에 추가
+2. 해당 타입의 record를 서버 응답에 포함
 
-### 동적 데이터 로딩
-향후 백엔드 API와 연동하여 동적으로 record를 로드할 수 있도록 확장 가능합니다:
-- `ChatModal` 컴포넌트에 `records` prop 추가
-- API를 통해 실시간으로 record 목록 업데이트
+3. (선택) `RecordsContext.tsx`에서 타입 매핑 로직 업데이트
 
 ## 스타일링
 
