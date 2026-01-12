@@ -10,12 +10,22 @@ export interface SimpleInteractionResponse {
   type: 'simple';
   message: string;
   name?: string; // Optional name field for simple interactions
+  newRecords?: Array<{
+    id: number;
+    type: string;
+    name: string;
+  }>;
 }
 
 export interface TwoWayInteractionResponse {
   type: 'two-way';
   message: string;
   history: string; // Updated JWT encoded history string
+  newRecords?: Array<{
+    id: number;
+    type: string;
+    name: string;
+  }>;
 }
 
 export type InteractionResponse = SimpleInteractionResponse | TwoWayInteractionResponse;

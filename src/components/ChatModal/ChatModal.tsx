@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { ChatMessage, InteractionType } from '../../types/interaction';
 import type { Record } from '../../types/record';
-import { mockRecordsData } from '../../data/recordsData';
 import './ChatModal.css';
 
 interface ChatModalProps {
@@ -9,6 +8,7 @@ interface ChatModalProps {
   objectName: string;
   messages: ChatMessage[];
   interactionType: InteractionType | undefined;
+  records: Record[];
   onClose: () => void;
   onSendMessage: (message: string) => void;
 }
@@ -24,6 +24,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
   objectName,
   messages,
   interactionType,
+  records,
   onClose,
   onSendMessage,
 }) => {
@@ -104,8 +105,12 @@ const ChatModal: React.FC<ChatModalProps> = ({
       // Find the record to get the name
       const matchType = match[1];
       const matchId = match[2];
-      const record = mockRecordsData.records.find(
-        r => r.type === matchType && r.id === matchId
+      const record = records.find(
+        r => {
+          const rType = r.type.toLowerCase();
+          const rId = typeof r.id === 'string' ? r.id : r.id.toString();
+          return rType === matchType.toLowerCase() && rId === matchId;
+        }
       );
 
       if (record) {
@@ -138,7 +143,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
   // Get filtered suggestions based on query
   const getSuggestions = (query: string): Record[] => {
     const lowerQuery = query.toLowerCase();
-    return mockRecordsData.records.filter(record =>
+    return records.filter(record =>
       record.name.toLowerCase().includes(lowerQuery)
     );
   };
@@ -236,8 +241,8 @@ const ChatModal: React.FC<ChatModalProps> = ({
       referenceSpan.className = 'reference-tag';
       referenceSpan.contentEditable = 'false';
       referenceSpan.textContent = record.name;
-      referenceSpan.dataset.type = record.type;
-      referenceSpan.dataset.id = record.id;
+      referenceSpan.dataset.type = record.type.toLowerCase();
+      referenceSpan.dataset.id = typeof record.id === 'string' ? record.id : record.id.toString();
       
       // Rebuild input content with proper structure
       inputRef.current.innerHTML = '';
