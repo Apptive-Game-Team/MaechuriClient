@@ -32,7 +32,6 @@ const ChatModal: React.FC<ChatModalProps> = ({
   const [showAutocomplete, setShowAutocomplete] = useState(false);
   const [autocompleteQuery, setAutocompleteQuery] = useState('');
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
-  const [cursorPosition, setCursorPosition] = useState(0);
   const [isComposing, setIsComposing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
@@ -150,50 +149,34 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
   const suggestions = getSuggestions(autocompleteQuery);
 
-  // Get cursor position within the contentEditable element
-  const getCursorPosition = (): number => {
+  // Get the text content before cursor, considering reference elements
+  const getTextBeforeCursor = (): string => {
     const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || !inputRef.current) return 0;
+    if (!selection || selection.rangeCount === 0 || !inputRef.current) return '';
     
     const range = selection.getRangeAt(0);
     const preCaretRange = range.cloneRange();
     preCaretRange.selectNodeContents(inputRef.current);
     preCaretRange.setEnd(range.endContainer, range.endOffset);
     
-    return preCaretRange.toString().length;
+    return preCaretRange.toString();
   };
 
   // Handle input change with reference detection
-  const handleInputChange = (e: React.FormEvent<HTMLDivElement>) => {
+  const handleInputChange = () => {
     // Ignore input during IME composition for Korean input
     if (isComposing) return;
     
-    const text = e.currentTarget.textContent || '';
-    const filteredText = filterInput(text);
-    
-    // Update input
-    if (filteredText !== text) {
-      e.currentTarget.textContent = filteredText;
-      // Move cursor to end
-      const range = document.createRange();
-      const sel = window.getSelection();
-      if (e.currentTarget.childNodes.length > 0) {
-        const lastNode = e.currentTarget.childNodes[e.currentTarget.childNodes.length - 1];
-        range.setStart(lastNode, lastNode.textContent?.length || 0);
-        range.collapse(true);
-        sel?.removeAllRanges();
-        sel?.addRange(range);
-      }
-    }
+    if (!inputRef.current) return;
 
-    setInputMessage(filteredText);
+    // Get the current text content
+    const textContent = inputRef.current.textContent || '';
+    setInputMessage(textContent);
 
-    // Get current cursor position
-    const position = getCursorPosition();
-    setCursorPosition(position);
+    // Get text before cursor
+    const textBeforeCursor = getTextBeforeCursor();
 
-    // Find the last : before cursor
-    const textBeforeCursor = filteredText.substring(0, position);
+    // Find the last : before cursor that's not part of a reference
     const lastColonIndex = textBeforeCursor.lastIndexOf(':');
     
     if (lastColonIndex !== -1) {
@@ -215,73 +198,88 @@ const ChatModal: React.FC<ChatModalProps> = ({
   const insertReference = (record: Record) => {
     if (!inputRef.current) return;
 
-    // Get all text content including references
-    let fullText = '';
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
     
-    inputRef.current.childNodes.forEach(node => {
+    // Find the text before cursor to locate the colon
+    const textBeforeCursor = getTextBeforeCursor();
+    const lastColonIndex = textBeforeCursor.lastIndexOf(':');
+    
+    if (lastColonIndex === -1) return;
+
+    // We need to delete from the colon to the current cursor position
+    const preCaretRange = range.cloneRange();
+    preCaretRange.selectNodeContents(inputRef.current);
+    preCaretRange.setEnd(range.endContainer, range.endOffset);
+    
+    // Find the colon position in the DOM
+    let charCount = 0;
+    let colonNode: Node | null = null;
+    let colonOffset = 0;
+    
+    const findColonPosition = (node: Node): boolean => {
       if (node.nodeType === Node.TEXT_NODE) {
-        fullText += node.textContent || '';
+        const text = node.textContent || '';
+        if (charCount + text.length > lastColonIndex) {
+          colonNode = node;
+          colonOffset = lastColonIndex - charCount;
+          return true;
+        }
+        charCount += text.length;
       } else if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as HTMLElement;
         if (element.classList.contains('reference-tag')) {
-          fullText += element.textContent || '';
-        }
-      }
-    });
-
-    const textBeforeCursor = fullText.substring(0, cursorPosition);
-    const lastColonIndex = textBeforeCursor.lastIndexOf(':');
-    
-    if (lastColonIndex !== -1) {
-      const beforeColon = fullText.substring(0, lastColonIndex);
-      const afterCursor = fullText.substring(cursorPosition);
-      
-      // Create reference element
-      const referenceSpan = document.createElement('span');
-      referenceSpan.className = 'reference-tag';
-      referenceSpan.contentEditable = 'false';
-      referenceSpan.textContent = record.name;
-      referenceSpan.dataset.type = record.type.toLowerCase();
-      referenceSpan.dataset.id = typeof record.id === 'string' ? record.id : record.id.toString();
-      
-      // Rebuild input content with proper structure
-      inputRef.current.innerHTML = '';
-      
-      // Add text before colon
-      if (beforeColon) {
-        inputRef.current.appendChild(document.createTextNode(beforeColon));
-      }
-      
-      // Add reference
-      inputRef.current.appendChild(referenceSpan);
-      
-      // Add space and remaining text
-      if (afterCursor) {
-        if (!afterCursor.startsWith(' ')) {
-          inputRef.current.appendChild(document.createTextNode(' ' + afterCursor));
+          const text = element.textContent || '';
+          charCount += text.length;
         } else {
-          inputRef.current.appendChild(document.createTextNode(afterCursor));
+          for (let i = 0; i < node.childNodes.length; i++) {
+            if (findColonPosition(node.childNodes[i])) return true;
+          }
         }
-      } else {
-        // Add space after reference if at end
-        inputRef.current.appendChild(document.createTextNode(' '));
       }
-      
-      // Move cursor after the reference
-      const range = document.createRange();
-      const sel = window.getSelection();
-      range.setStartAfter(referenceSpan);
-      range.collapse(true);
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-      
-      // Update state
-      setInputMessage(inputRef.current.textContent || '');
-      setShowAutocomplete(false);
-      setAutocompleteQuery('');
-      
-      inputRef.current.focus();
-    }
+      return false;
+    };
+
+    findColonPosition(inputRef.current);
+
+    if (!colonNode) return;
+
+    // Create the reference element
+    const referenceSpan = document.createElement('span');
+    referenceSpan.className = 'reference-tag';
+    referenceSpan.contentEditable = 'false';
+    referenceSpan.textContent = record.name;
+    referenceSpan.dataset.type = record.type.toLowerCase();
+    referenceSpan.dataset.id = typeof record.id === 'string' ? record.id : record.id.toString();
+    
+    // Delete from colon to cursor
+    const deleteRange = document.createRange();
+    deleteRange.setStart(colonNode, colonOffset);
+    deleteRange.setEnd(range.endContainer, range.endOffset);
+    deleteRange.deleteContents();
+    
+    // Insert the reference element
+    deleteRange.insertNode(referenceSpan);
+    
+    // Add a space after the reference
+    const spaceNode = document.createTextNode(' ');
+    referenceSpan.parentNode?.insertBefore(spaceNode, referenceSpan.nextSibling);
+    
+    // Move cursor after the space
+    const newRange = document.createRange();
+    newRange.setStartAfter(spaceNode);
+    newRange.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+    
+    // Update state
+    setInputMessage(inputRef.current.textContent || '');
+    setShowAutocomplete(false);
+    setAutocompleteQuery('');
+    
+    inputRef.current.focus();
   };
 
   // Convert contentEditable content to message with [type-id] format
@@ -316,6 +314,33 @@ const ChatModal: React.FC<ChatModalProps> = ({
       }
       setInputMessage('');
       setShowAutocomplete(false);
+    }
+  };
+
+  // Filter input to allow only English, Korean, numbers, and :
+  const handleBeforeInput = (e: React.FormEvent<HTMLDivElement>) => {
+    const event = e.nativeEvent as InputEvent;
+    
+    // Allow composition events (for Korean input)
+    if (isComposing) return;
+    
+    // Only filter character input
+    if (event.inputType === 'insertText' && event.data) {
+      const filtered = filterInput(event.data);
+      if (filtered !== event.data) {
+        e.preventDefault();
+        
+        // Insert the filtered text
+        if (filtered) {
+          const selection = window.getSelection();
+          if (selection && selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(document.createTextNode(filtered));
+            range.collapse(false);
+          }
+        }
+      }
     }
   };
 
@@ -401,6 +426,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
                 ref={inputRef}
                 className="chat-modal-input-editable"
                 contentEditable
+                onBeforeInput={handleBeforeInput}
                 onInput={handleInputChange}
                 onKeyDown={handleKeyDown}
                 onCompositionStart={() => setIsComposing(true)}
