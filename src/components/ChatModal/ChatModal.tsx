@@ -120,8 +120,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
   const getSuggestions = (query: string): Record[] => {
     const lowerQuery = query.toLowerCase();
     return mockRecordsData.records.filter(record =>
-      record.name.toLowerCase().includes(lowerQuery) ||
-      record.name.includes(query)
+      record.name.toLowerCase().includes(lowerQuery)
     );
   };
 
@@ -139,8 +138,8 @@ const ChatModal: React.FC<ChatModalProps> = ({
       const range = document.createRange();
       const sel = window.getSelection();
       if (e.currentTarget.childNodes.length > 0) {
-        range.setStart(e.currentTarget.childNodes[e.currentTarget.childNodes.length - 1], 
-                      e.currentTarget.childNodes[e.currentTarget.childNodes.length - 1].textContent?.length || 0);
+        const lastNode = e.currentTarget.childNodes[e.currentTarget.childNodes.length - 1];
+        range.setStart(lastNode, lastNode.textContent?.length || 0);
         range.collapse(true);
         sel?.removeAllRanges();
         sel?.addRange(range);
@@ -202,7 +201,13 @@ const ChatModal: React.FC<ChatModalProps> = ({
         inputRef.current.appendChild(document.createTextNode(beforeColon));
       }
       inputRef.current.appendChild(referenceSpan);
-      inputRef.current.appendChild(document.createTextNode(' ' + afterCursor));
+      
+      // Add space before afterCursor if needed
+      if (afterCursor && !afterCursor.startsWith(' ') && !beforeColon.endsWith(' ')) {
+        inputRef.current.appendChild(document.createTextNode(' ' + afterCursor));
+      } else if (afterCursor) {
+        inputRef.current.appendChild(document.createTextNode(afterCursor));
+      }
       
       // Move cursor after the reference
       const range = document.createRange();
@@ -228,13 +233,15 @@ const ChatModal: React.FC<ChatModalProps> = ({
     let message = '';
     inputRef.current.childNodes.forEach(node => {
       if (node.nodeType === Node.TEXT_NODE) {
-        message += node.textContent;
+        message += node.textContent || '';
       } else if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as HTMLElement;
         if (element.classList.contains('reference-tag')) {
-          const type = element.dataset.type;
-          const id = element.dataset.id;
-          message += `[${type}-${id}]`;
+          const type = element.dataset.type || '';
+          const id = element.dataset.id || '';
+          if (type && id) {
+            message += `[${type}-${id}]`;
+          }
         }
       }
     });
