@@ -1,12 +1,12 @@
 import { checkCollision } from '../utils/gameUtils';
 import type { PlayerEntity } from '../types';
 
-const playerControlSystem = (entities: { player?: PlayerEntity }, { events }: any) => {
+const playerControlSystem = (entities: { player?: PlayerEntity }, { events }: { type: string }[]) => {
   const player = entities.player;
 
   if (player) {
     // Filter for movement events
-    const moveEvents = events.filter((e: any) => e.type.startsWith('move-'));
+    const moveEvents = events.filter((e) => e.type.startsWith('move-'));
 
     if (moveEvents.length > 0) {
       // Get the last movement event

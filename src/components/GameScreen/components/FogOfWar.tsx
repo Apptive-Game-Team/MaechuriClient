@@ -56,7 +56,7 @@ export const FogOfWar = (props: FogOfWarEntity) => {
         }
       }
     }
-  }, [visibleTiles, playerPosition]);
+  }, [visibleTiles, playerPosition, fogCellSize, mapHeightFine, mapWidthFine]);
 
   return (
     <canvas

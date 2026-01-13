@@ -18,6 +18,6 @@ declare module 'react-game-engine' {
   }
 
   export class GameEngine extends Component<GameEngineProps> {
-    dispatch(event: { type: string; [key: string]: any; }): void;
+    dispatch(event: { type: string; [key: string]: unknown; }): void;
   }
 }
