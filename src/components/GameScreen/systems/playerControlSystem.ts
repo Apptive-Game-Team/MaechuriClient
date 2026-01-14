@@ -1,7 +1,7 @@
 import { checkCollision } from '../utils/gameUtils';
 import type { PlayerEntity } from '../types';
 
-const playerControlSystem = (entities: { player?: PlayerEntity }, { events }: any) => {
+const playerControlSystem = (entities: { player?: PlayerEntity }, { events, dispatch }: any) => {
   const player = entities.player;
 
   if (player) {
@@ -38,6 +38,10 @@ const playerControlSystem = (entities: { player?: PlayerEntity }, { events }: an
       // Check for collisions before updating the position
       if (!checkCollision(newX, newY)) {
         player.position = { x: newX, y: newY };
+        dispatch({
+          type: 'player-moved',
+          position: player.position,
+        });
       }
     }
   }
