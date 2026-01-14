@@ -25,7 +25,6 @@ const ChatModal: React.FC<ChatModalProps> = ({
   onSendMessage,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
