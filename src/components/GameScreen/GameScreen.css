@@ -32,6 +32,7 @@
 .game-container {
   position: relative;
   background-color: #1a1a1a;
+  transition: transform 0.2s ease-out;
 }
 
 @media (prefers-color-scheme: light) {

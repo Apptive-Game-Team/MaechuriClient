@@ -31,7 +31,6 @@ const ChatModal: React.FC<ChatModalProps> = ({
   // Reset input when modal opens (not when it closes)
   useEffect(() => {
     if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInputMessage('');
       // Auto-focus on input field when modal opens
       if (inputRef.current && interactionType === 'two-way') {

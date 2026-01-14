@@ -75,30 +75,39 @@ useEffect(() => {
 **GameScreen.tsx**:
 ```typescript
 const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
+const [playerPosition, setPlayerPosition] = useState<Position>(initialPlayerPosition);
 
 useEffect(() => {
-  if (entities.player && scenarioData) {
-    const playerEntity = entities.player as { position: { x: number; y: number } };
-    const playerPos = playerEntity.position;
-    
-    // Calculate viewport size
-    const viewportWidth = 800;
-    const viewportHeight = 600;
-    
-    // Calculate camera offset to center player on screen
-    const offsetX = (viewportWidth / 2) - (playerPos.x * TILE_SIZE + TILE_SIZE / 2);
-    const offsetY = (viewportHeight / 2) - (playerPos.y * TILE_SIZE + TILE_SIZE / 2);
-    
-    // Clamp camera to map boundaries
-    const mapWidth = scenarioData.map.layers[0].tileMap[0].length * TILE_SIZE;
-    const mapHeight = scenarioData.map.layers[0].tileMap.length * TILE_SIZE;
-    
-    const clampedX = Math.min(0, Math.max(viewportWidth - mapWidth, offsetX));
-    const clampedY = Math.min(0, Math.max(viewportHeight - mapHeight, offsetY));
-    
-    setCameraOffset({ x: clampedX, y: clampedY });
+  if (!playerPosition) {
+    return;
   }
-}, [entities.player, scenarioData]);
+
+  const playerPos = playerPosition;
+
+  // Calculate camera offset to center player on screen
+  const offsetX = (VIEWPORT_WIDTH / 2) - (playerPos.x * TILE_SIZE + TILE_SIZE / 2);
+  const offsetY = (VIEWPORT_HEIGHT / 2) - (playerPos.y * TILE_SIZE + TILE_SIZE / 2);
+
+  // Clamp camera to map boundaries when valid layer data is available
+  const layers = scenarioData?.map.layers;
+  if (
+    layers &&
+    layers.length > 0 &&
+    layers[0].tileMap.length > 0 &&
+    layers[0].tileMap[0].length > 0
+  ) {
+    const mapWidth = layers[0].tileMap[0].length * TILE_SIZE;
+    const mapHeight = layers[0].tileMap.length * TILE_SIZE;
+
+    const clampedX = Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
+    const clampedY = Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
+
+    setCameraOffset({ x: clampedX, y: clampedY });
+  } else {
+    // Fallback: no valid map data yet; still center camera on the player
+    setCameraOffset({ x: offsetX, y: offsetY });
+  }
+}, [playerPosition, scenarioData]);
 ```
 
 **렌더링 구조**:
@@ -119,19 +128,23 @@ useEffect(() => {
 ```
 
 #### 동작 방식
-1. **뷰포트 설정**: 800x600 크기의 고정된 뷰포트를 생성
-2. **카메라 계산**: 플레이어 위치를 기준으로 카메라 오프셋 계산
+1. **플레이어 위치 추적**: 게임 엔진에서 `player-moved` 이벤트를 통해 플레이어 위치 업데이트
+2. **뷰포트 설정**: 800x600 크기의 고정된 뷰포트를 생성
+3. **카메라 계산**: 플레이어 위치를 기준으로 카메라 오프셋 계산
    - 플레이어를 화면 중앙에 배치하도록 오프셋 계산
-3. **경계 처리**: 카메라가 맵 경계를 벗어나지 않도록 클램핑
-   - 맵이 뷰포트보다 작으면 카메라 이동 제한
-4. **부드러운 전환**: CSS `transition`을 사용하여 0.2초 동안 부드럽게 이동
-5. **실시간 업데이트**: 플레이어 위치가 변경될 때마다 카메라 자동 업데이트
+4. **경계 처리**: 카메라가 맵 경계를 벗어나지 않도록 클램핑
+   - 맵 데이터가 유효한 경우 경계 내로 제한
+   - 맵 데이터가 없거나 유효하지 않은 경우 플레이어 중심으로 표시 (fallback)
+5. **부드러운 전환**: CSS `transition`을 사용하여 0.2초 동안 부드럽게 이동
+6. **실시간 업데이트**: 플레이어 위치가 변경될 때마다 카메라 자동 업데이트
 
 #### 주요 특징
 - **중앙 정렬**: 플레이어가 항상 화면 중앙에 위치
 - **부드러운 이동**: ease-out 애니메이션으로 자연스러운 카메라 이동
-- **경계 제한**: 맵 밖을 보여주지 않도록 카메라 위치 제한
+- **경계 제한**: 맵 밖을 보여주지 않도록 카메라 위치 제한 (맵 데이터 유효시)
 - **고정 뷰포트**: 800x600 크기의 일관된 게임 화면 제공
+- **안전한 처리**: 맵 데이터가 유효하지 않은 경우에도 정상 작동 (fallback 지원)
+- **이벤트 기반**: 플레이어 이동 이벤트를 통한 반응형 카메라 업데이트
 
 ### 4. API 사용으로 전환
 

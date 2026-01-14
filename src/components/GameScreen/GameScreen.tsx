@@ -109,24 +109,34 @@ const GameScreen: React.FC = () => {
 
   // Update camera to follow player
   useEffect(() => {
-    if (playerPosition && scenarioData) {
-      const playerPos = playerPosition;
-      
-      // Calculate camera offset to center player on screen
-      const offsetX = (VIEWPORT_WIDTH / 2) - (playerPos.x * TILE_SIZE + TILE_SIZE / 2);
-      const offsetY = (VIEWPORT_HEIGHT / 2) - (playerPos.y * TILE_SIZE + TILE_SIZE / 2);
-      
-      // Clamp camera to map boundaries
-      const layers = scenarioData.map.layers;
-      if (layers.length > 0 && layers[0].tileMap.length > 0 && layers[0].tileMap[0].length > 0) {
-        const mapWidth = layers[0].tileMap[0].length * TILE_SIZE;
-        const mapHeight = layers[0].tileMap.length * TILE_SIZE;
-        
-        const clampedX = Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
-        const clampedY = Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
-        
-        setCameraOffset({ x: clampedX, y: clampedY });
-      }
+    if (!playerPosition) {
+      return;
+    }
+
+    const playerPos = playerPosition;
+
+    // Calculate camera offset to center player on screen
+    const offsetX = (VIEWPORT_WIDTH / 2) - (playerPos.x * TILE_SIZE + TILE_SIZE / 2);
+    const offsetY = (VIEWPORT_HEIGHT / 2) - (playerPos.y * TILE_SIZE + TILE_SIZE / 2);
+
+    // Clamp camera to map boundaries when valid layer data is available
+    const layers = scenarioData?.map.layers;
+    if (
+      layers &&
+      layers.length > 0 &&
+      layers[0].tileMap.length > 0 &&
+      layers[0].tileMap[0].length > 0
+    ) {
+      const mapWidth = layers[0].tileMap[0].length * TILE_SIZE;
+      const mapHeight = layers[0].tileMap.length * TILE_SIZE;
+
+      const clampedX = Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
+      const clampedY = Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
+
+      setCameraOffset({ x: clampedX, y: clampedY });
+    } else {
+      // Fallback: no valid map data yet; still center camera on the player
+      setCameraOffset({ x: offsetX, y: offsetY });
     }
   }, [playerPosition, scenarioData]);
 
@@ -139,9 +149,16 @@ const GameScreen: React.FC = () => {
   // Get current interaction state
   const interactionState = currentObjectId ? getInteractionState(currentObjectId) : undefined;
 
-  const handleGameEvent = (event: { type: string; position: Position }) => {
+  const handleGameEvent = (event: Record<string, unknown>) => {
     if (event.type === 'player-moved') {
-      setPlayerPosition(event.position);
+      const position = event.position as Position | undefined;
+      if (
+        position &&
+        typeof position.x === 'number' &&
+        typeof position.y === 'number'
+      ) {
+        setPlayerPosition(position);
+      }
     }
   };
 
@@ -199,8 +216,7 @@ const GameScreen: React.FC = () => {
           style={{ 
             width: mapWidth, 
             height: mapHeight,
-            transform: `translate(${cameraOffset.x}px, ${cameraOffset.y}px)`,
-            transition: 'transform 0.2s ease-out'
+            transform: `translate(${cameraOffset.x}px, ${cameraOffset.y}px)`
           }}
         >
           <GameEngine
