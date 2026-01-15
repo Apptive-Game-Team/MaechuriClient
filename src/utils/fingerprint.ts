@@ -18,7 +18,8 @@ export async function getFingerprintId(): Promise<string> {
     return fingerprintId;
   } catch (error) {
     console.error('Failed to get fingerprint ID:', error);
-    // Return a fallback ID if fingerprinting fails
-    return 'unknown';
+    // Generate a random session-specific ID as fallback
+    fingerprintId = `fallback-${crypto.randomUUID()}`;
+    return fingerprintId;
   }
 }
