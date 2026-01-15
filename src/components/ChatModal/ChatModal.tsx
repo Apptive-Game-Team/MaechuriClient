@@ -1,12 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { ChatMessage, InteractionType } from '../../types/interaction';
+import type { Record } from '../../types/record';
 import './ChatModal.css';
+import { Message } from './components/Message';
+import { ChatInput } from './components/ChatInput';
 
 interface ChatModalProps {
   isOpen: boolean;
   objectName: string;
   messages: ChatMessage[];
   interactionType: InteractionType | undefined;
+  records: Record[];
   onClose: () => void;
   onSendMessage: (message: string) => void;
 }
@@ -16,22 +20,19 @@ const ChatModal: React.FC<ChatModalProps> = ({
   objectName,
   messages,
   interactionType,
+  records,
   onClose,
   onSendMessage,
 }) => {
-  const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Reset input when modal opens (not when it closes)
   useEffect(() => {
     if (isOpen) {
-      setInputMessage('');
       // Auto-focus on input field when modal opens
       if (inputRef.current && interactionType === 'two-way') {
         inputRef.current.focus();
@@ -39,23 +40,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
     }
   }, [isOpen, interactionType]);
 
-  if (!isOpen) {
-    return null;
-  }
-
-  const handleSendMessage = () => {
-    if (inputMessage.trim()) {
-      onSendMessage(inputMessage.trim());
-      setInputMessage('');
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
+  if (!isOpen) return null;
 
   const isTwoWay = interactionType === 'two-way';
   const isSimple = interactionType === 'simple';
@@ -65,52 +50,19 @@ const ChatModal: React.FC<ChatModalProps> = ({
       <div className="chat-modal" onClick={(e) => e.stopPropagation()}>
         <div className="chat-modal-header">
           <h3>{objectName}</h3>
-          <button 
-            className="chat-modal-close" 
-            onClick={onClose}
-            aria-label="Close"
-          >
-            ×
-          </button>
+          <button className="chat-modal-close" onClick={onClose} aria-label="Close">×</button>
         </div>
 
         <div className="chat-modal-messages">
           {messages.map((msg, index) => (
-            <div 
-              key={index} 
-              className={`chat-message ${msg.sender}`}
-            >
-              {msg.name && msg.sender === 'npc' && (
-                <div className="chat-message-name">{msg.name}</div>
-              )}
-              <div className="chat-message-bubble">
-                {msg.content}
-              </div>
-            </div>
+            <Message key={index} message={msg} records={records} />
           ))}
           <div ref={messagesEndRef} />
         </div>
 
         <div className={`chat-modal-input-area ${isSimple ? 'disabled' : ''}`}>
           {isTwoWay ? (
-            <>
-              <input
-                type="text"
-                className="chat-modal-input"
-                placeholder="Type your message..."
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                ref={inputRef}
-              />
-              <button
-                className="chat-modal-send-button"
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim()}
-              >
-                Send
-              </button>
-            </>
+            <ChatInput ref={inputRef} records={records} onSendMessage={onSendMessage} />
           ) : (
             <div className="chat-modal-disabled-notice">
               {isSimple ? 'This is a read-only interaction' : 'Initializing...'}

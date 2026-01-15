@@ -8,10 +8,10 @@ interface GameLoopArgs {
 
 interface SystemArgs {
   time: GameLoopArgs;
-  events: any[];
-  screen: any;
-  input: any;
-  [key: string]: any; // Allow other properties
+  events: unknown[];
+  screen: unknown;
+  input: unknown;
+  [key: string]: unknown; // Allow other properties
 }
 
 const interpolationSystem = (entities: { player?: PlayerEntity }, args: Record<string, unknown>) => {

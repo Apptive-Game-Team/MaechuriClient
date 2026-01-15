@@ -1,3 +1,4 @@
+import type { ElementType } from 'react';
 import type { Entity } from 'react-game-engine';
 import type { Layer, DirectionalAsset } from '../../../types/map';
 
@@ -30,7 +31,7 @@ export interface TileEntity extends Entity {
 export interface FogOfWarEntity extends Entity {
   visibleTiles?: Map<string, number>;
   playerPosition?: Position;
-  renderer?: any;
+  renderer?: ElementType;
 }
 
 export const TILE_SIZE = 64;

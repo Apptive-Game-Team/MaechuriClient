@@ -7,6 +7,7 @@ import { useGameEntities } from './hooks/useGameEntities';
 import { useAssetLoader } from './hooks/useAssetLoader';
 import { useMapData } from '../../hooks/useMapData';
 import { useInteraction } from '../../hooks/useInteraction';
+import { useRecords } from '../../contexts/RecordsContext';
 import { setCurrentMapData } from './utils/gameUtils';
 import playerControlSystem from './systems/playerControlSystem';
 import interactionSystem from './systems/interactionSystem';
@@ -47,6 +48,8 @@ const GameScreen: React.FC = () => {
       document.body.style.overflow = originalOverflow;
     };
   }, []);
+  // Get records context
+  const { records, addRecords } = useRecords();
 
   // Fetch map data from API (with fallback to mock data)
   const { data: scenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({
@@ -79,7 +82,7 @@ const GameScreen: React.FC = () => {
 
       // Start interaction if not already started
       if (scenarioData && !getInteractionState(objectId)) {
-        await startInteraction(scenarioData.scenarioId, objectId);
+        await startInteraction(scenarioData.scenarioId, objectId, addRecords);
       }
     };
 
@@ -87,7 +90,7 @@ const GameScreen: React.FC = () => {
     return () => {
       window.removeEventListener('gameInteraction', handleInteraction);
     };
-  }, [scenarioData, getInteractionState, startInteraction]);
+  }, [scenarioData, getInteractionState, startInteraction, addRecords]);
 
   // Load assets
   const assetsState = useAssetLoader(
@@ -165,7 +168,7 @@ const GameScreen: React.FC = () => {
   // Handle sending messages
   const handleSendMessage = async (message: string) => {
     if (scenarioData && currentObjectId) {
-      await sendMessage(scenarioData.scenarioId, currentObjectId, message);
+      await sendMessage(scenarioData.scenarioId, currentObjectId, message, addRecords);
     }
   };
 
@@ -234,6 +237,7 @@ const GameScreen: React.FC = () => {
         objectName={currentObjectName}
         messages={interactionState?.messages || []}
         interactionType={interactionState?.type}
+        records={records}
         onClose={() => setChatModalOpen(false)}
         onSendMessage={handleSendMessage}
       />

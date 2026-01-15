@@ -7,8 +7,8 @@ import type {
 
 interface UseInteractionResult {
   interactions: Map<number, ObjectInteractionState>;
-  startInteraction: (scenarioId: number, objectId: number) => Promise<void>;
-  sendMessage: (scenarioId: number, objectId: number, message: string) => Promise<void>;
+  startInteraction: (scenarioId: number, objectId: number, onNewRecords?: (records: Array<{ id: number; type: string; name: string }>) => void) => Promise<void>;
+  sendMessage: (scenarioId: number, objectId: number, message: string, onNewRecords?: (records: Array<{ id: number; type: string; name: string }>) => void) => Promise<void>;
   getInteractionState: (objectId: number) => ObjectInteractionState | undefined;
   isLoading: boolean;
   error: string | null;
@@ -49,7 +49,7 @@ export function useInteraction(): UseInteractionResult {
    * Start interaction with an object (initial request with empty body)
    */
   const startInteraction = useCallback(
-    async (scenarioId: number, objectId: number) => {
+    async (scenarioId: number, objectId: number, onNewRecords?: (records: Array<{ id: number; type: string; name: string }>) => void) => {
       setIsLoading(true);
       setError(null);
 
@@ -73,6 +73,11 @@ export function useInteraction(): UseInteractionResult {
           jwtHistory: response.type === 'two-way' ? response.history : undefined,
           messages,
         });
+
+        // Handle new records if present
+        if (response.newRecords && response.newRecords.length > 0 && onNewRecords) {
+          onNewRecords(response.newRecords);
+        }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to start interaction';
         console.error('Error starting interaction:', errorMessage);
@@ -88,7 +93,7 @@ export function useInteraction(): UseInteractionResult {
    * Send a message in a two-way interaction
    */
   const sendMessage = useCallback(
-    async (scenarioId: number, objectId: number, message: string) => {
+    async (scenarioId: number, objectId: number, message: string, onNewRecords?: (records: Array<{ id: number; type: string; name: string }>) => void) => {
       const currentState = interactions.get(objectId);
       if (!currentState || currentState.type !== 'two-way') {
         console.error('Cannot send message: not a two-way interaction');
@@ -134,6 +139,11 @@ export function useInteraction(): UseInteractionResult {
             jwtHistory: response.history,
             messages: [...updatedState.messages, npcMessage],
           });
+        }
+
+        // Handle new records if present
+        if (response.newRecords && response.newRecords.length > 0 && onNewRecords) {
+          onNewRecords(response.newRecords);
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to send message';

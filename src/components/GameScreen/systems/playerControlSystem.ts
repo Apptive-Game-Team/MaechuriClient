@@ -6,7 +6,7 @@ const playerControlSystem = (entities: { player?: PlayerEntity }, { events, disp
 
   if (player) {
     // Filter for movement events
-    const moveEvents = events.filter((e: any) => e.type.startsWith('move-'));
+    const moveEvents = events.filter((e) => e.type.startsWith('move-'));
 
     if (moveEvents.length > 0) {
       // Get the last movement event
