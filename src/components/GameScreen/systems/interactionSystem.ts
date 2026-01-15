@@ -1,19 +1,12 @@
+import type { System } from 'react-game-engine';
 import { checkInteraction, getFacingPosition, getObjectInfo } from '../utils/gameUtils';
 import type { PlayerEntity } from '../types';
 
-interface GameEvent {
-  type: string;
-}
+const interactionSystem: System = (entities, { events }) => {
+  const player = entities.player as PlayerEntity;
 
-interface SystemContext {
-  events?: GameEvent[];
-}
-
-const interactionSystem = (entities: { player?: PlayerEntity }, context: SystemContext) => {
-  const player = entities.player;
-
-  if (player && context.events) {
-    const interactionEvents = context.events.filter((e) => e.type === 'interact');
+  if (player && events) {
+    const interactionEvents = (events as { type: string }[]).filter((e) => e.type === 'interact');
 
     if (interactionEvents.length > 0) {
       const facingPosition = getFacingPosition(player.position, player.direction);
@@ -28,7 +21,7 @@ const interactionSystem = (entities: { player?: PlayerEntity }, context: SystemC
                 objectId: objectInfo.id,
                 objectName: objectInfo.name,
               },
-            })
+            }),
           );
         }
       }

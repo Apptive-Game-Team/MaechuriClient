@@ -1,9 +1,9 @@
 declare module 'react-game-engine' {
-  import { Component, CSSProperties } from 'react';
+  import { Component, CSSProperties, ElementType } from 'react';
 
   export interface Entity {
     [key: string]: unknown;
-    renderer?: (entity: Entity) => React.ReactNode;
+    renderer?: ElementType;
   }
 
   export type System = (entities: Record<string, Entity>, args: Record<string, unknown>) => Record<string, Entity>;

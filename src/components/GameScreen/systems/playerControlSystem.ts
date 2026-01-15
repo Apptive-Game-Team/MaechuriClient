@@ -1,17 +1,18 @@
+import type { System } from 'react-game-engine';
 import { checkCollision } from '../utils/gameUtils';
-import type { PlayerEntity } from '../types';
+import type { PlayerEntity, Direction } from '../types';
 
-const playerControlSystem = (entities: { player?: PlayerEntity }, { events, dispatch }: any) => {
-  const player = entities.player;
+const playerControlSystem: System = (entities, { events, dispatch }) => {
+  const player = entities.player as PlayerEntity;
 
   if (player) {
     // Filter for movement events
-    const moveEvents = events.filter((e) => e.type.startsWith('move-'));
+    const moveEvents = (events as { type: string }[]).filter((e) => e.type.startsWith('move-'));
 
     if (moveEvents.length > 0) {
       // Get the last movement event
       const moveEvent = moveEvents[moveEvents.length - 1];
-      const newDirection = moveEvent.type.split('-')[1];
+      const newDirection = moveEvent.type.split('-')[1] as Direction;
 
       // Update player direction
       player.direction = newDirection;
@@ -38,7 +39,7 @@ const playerControlSystem = (entities: { player?: PlayerEntity }, { events, disp
       // Check for collisions before updating the position
       if (!checkCollision(newX, newY)) {
         player.position = { x: newX, y: newY };
-        dispatch({
+        (dispatch as (event: any) => void)({
           type: 'player-moved',
           position: player.position,
         });

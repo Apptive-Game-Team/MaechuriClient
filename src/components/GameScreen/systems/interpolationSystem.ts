@@ -1,3 +1,4 @@
+import type { System } from 'react-game-engine';
 import { MOVEMENT_DURATION } from '../types';
 import type { PlayerEntity } from '../types';
 
@@ -6,17 +7,9 @@ interface GameLoopArgs {
   delta: number;
 }
 
-interface SystemArgs {
-  time: GameLoopArgs;
-  events: unknown[];
-  screen: unknown;
-  input: unknown;
-  [key: string]: unknown; // Allow other properties
-}
-
-const interpolationSystem = (entities: { player?: PlayerEntity }, args: Record<string, unknown>) => {
-  const { time } = args as SystemArgs;
-  const player = entities.player;
+const interpolationSystem: System = (entities, args) => {
+  const time = args.time as GameLoopArgs;
+  const player = entities.player as PlayerEntity;
 
   if (player) {
     // Initialize properties if they don't exist

@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle } from 'react';
+import { forwardRef, useImperativeHandle } from 'react';
 import { useChatInput } from '../hooks/useChatInput';
 import type { Record } from '../../../types/record';
 
