@@ -48,7 +48,6 @@ const GameScreen: React.FC = () => {
       document.body.style.overflow = originalOverflow;
     };
   }, []);
-
   // Get records context
   const { records, addRecords } = useRecords();
 

@@ -25,10 +25,20 @@ const ChatModal: React.FC<ChatModalProps> = ({
   onSendMessage,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Auto-focus on input field when modal opens
+      if (inputRef.current && interactionType === 'two-way') {
+        inputRef.current.focus();
+      }
+    }
+  }, [isOpen, interactionType]);
 
   if (!isOpen) return null;
 
@@ -52,7 +62,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
         <div className={`chat-modal-input-area ${isSimple ? 'disabled' : ''}`}>
           {isTwoWay ? (
-            <ChatInput records={records} onSendMessage={onSendMessage} />
+            <ChatInput ref={inputRef} records={records} onSendMessage={onSendMessage} />
           ) : (
             <div className="chat-modal-disabled-notice">
               {isSimple ? 'This is a read-only interaction' : 'Initializing...'}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef, useImperativeHandle } from 'react';
 import { useChatInput } from '../hooks/useChatInput';
 import type { Record } from '../../../types/record';
 
@@ -7,7 +7,7 @@ interface ChatInputProps {
   onSendMessage: (message: string) => void;
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({ records, onSendMessage }) => {
+export const ChatInput = forwardRef<HTMLDivElement, ChatInputProps>(({ records, onSendMessage }, ref) => {
   const {
     inputRef,
     autocompleteRef,
@@ -21,6 +21,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({ records, onSendMessage }) 
     setIsComposing,
     insertReference,
   } = useChatInput(records, onSendMessage);
+
+  useImperativeHandle(ref, () => inputRef.current as HTMLDivElement);
 
   return (
     <div className="chat-input-wrapper">
@@ -63,4 +65,4 @@ export const ChatInput: React.FC<ChatInputProps> = ({ records, onSendMessage }) 
       </button>
     </div>
   );
-};
+});
