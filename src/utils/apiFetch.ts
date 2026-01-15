@@ -1,4 +1,4 @@
-import { getFingerprintId } from '../utils/fingerprint';
+import { getFingerprintId } from './fingerprint';
 
 /**
  * Fetch wrapper that adds fingerprint ID header and credentials to all requests

@@ -7,7 +7,7 @@ let fingerprintId: string | null = null;
  */
 function generateFallbackId(): string {
   // Try crypto.randomUUID if available (requires HTTPS or localhost)
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return `fallback-${crypto.randomUUID()}`;
   }
   // Fallback to Math.random for broader compatibility
