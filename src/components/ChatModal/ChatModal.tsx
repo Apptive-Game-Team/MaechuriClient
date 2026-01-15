@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import type { ChatMessage, InteractionType } from '../../../types/interaction';
-import type { Record } from '../../../types/record';
+import type { ChatMessage, InteractionType } from '../../types/interaction';
+import type { Record } from '../../types/record';
 import './ChatModal.css';
 import { Message } from './components/Message';
 import { ChatInput } from './components/ChatInput';
