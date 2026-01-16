@@ -1,4 +1,5 @@
 import { API_ENDPOINTS } from '../config/api';
+import { apiFetch } from '../utils/apiFetch';
 import type { ScenarioData } from '../types/map';
 import type { InteractionRequest, InteractionResponse } from '../types/interaction';
 
@@ -6,7 +7,7 @@ import type { InteractionRequest, InteractionResponse } from '../types/interacti
  * Fetch today's map data
  */
 export async function getTodayMap(): Promise<ScenarioData> {
-  const response = await fetch(API_ENDPOINTS.getTodayMap(), {
+  const response = await apiFetch(API_ENDPOINTS.getTodayMap(), {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -24,7 +25,7 @@ export async function getTodayMap(): Promise<ScenarioData> {
  * Fetch specific scenario map data
  */
 export async function getScenarioMap(scenarioId: number): Promise<ScenarioData> {
-  const response = await fetch(API_ENDPOINTS.getScenarioMap(scenarioId), {
+  const response = await apiFetch(API_ENDPOINTS.getScenarioMap(scenarioId), {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -47,7 +48,7 @@ export async function sendInteraction(
   objectId: number,
   request: InteractionRequest = {}
 ): Promise<InteractionResponse> {
-  const response = await fetch(API_ENDPOINTS.interact(scenarioId, objectId), {
+  const response = await apiFetch(API_ENDPOINTS.interact(scenarioId, objectId), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
