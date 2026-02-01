@@ -53,21 +53,21 @@ export const mockScenarioData: ScenarioData = {
     ],
     objects: [
       {
-        id: 100,
+        id: '100',
         orderInLayer: 3,
         name: "요리사 1",
         type: ["Interactable", "Non-Passable"],
         position: { x: 2, y: 3 }
       },
       {
-        id: 100,
+        id: '100',
         orderInLayer: 3,
         name: "요리사 2",
         type: ["Interactable", "Non-Passable"],
         position: { x: 11, y: 3 }
       },
       {
-        id: 100,
+        id: '100',
         orderInLayer: 3,
         name: "요리사 3",
         type: ["Interactable", "Non-Passable"],
@@ -76,19 +76,19 @@ export const mockScenarioData: ScenarioData = {
     ],
     assets: [
       {
-        id: 1,
+        id: '1',
         imageUrl: "https://s3.yunseong.dev/maechuri/objects/wood_floor.json"
       },
       {
-        id: 2,
+        id: '2',
         imageUrl: "https://s3.yunseong.dev/maechuri/objects/tile_floor.json"
       },
       {
-        id: 100,
+        id: '100',
         imageUrl: "https://s3.yunseong.dev/maechuri/objects/cook_1.json"
       },
       {
-        id: 999,
+        id: '999',
         imageUrl: "https://s3.yunseong.dev/maechuri/objects/player.json"
       }
     ]

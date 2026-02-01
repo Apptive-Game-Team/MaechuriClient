@@ -31,7 +31,7 @@ const EMPTY_SCENARIO: ScenarioData = {
 const GameScreen: React.FC = () => {
   const gameEngineRef = useRef<GameEngine>(null);
   const [chatModalOpen, setChatModalOpen] = useState(false);
-  const [currentObjectId, setCurrentObjectId] = useState<number | null>(null);
+  const [currentObjectId, setCurrentObjectId] = useState<string | null>(null);
   const [currentObjectName, setCurrentObjectName] = useState<string>('');
   const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
 
@@ -73,7 +73,7 @@ const GameScreen: React.FC = () => {
   // Listen for interaction events from the game
   useEffect(() => {
     const handleInteraction = async (event: Event) => {
-      const customEvent = event as CustomEvent<{ objectId: number; objectName: string }>;
+      const customEvent = event as CustomEvent<{ objectId: string; objectName: string }>;
       const { objectId, objectName } = customEvent.detail;
 
       setCurrentObjectId(objectId);

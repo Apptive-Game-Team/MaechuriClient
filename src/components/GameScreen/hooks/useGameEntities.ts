@@ -25,7 +25,7 @@ export const useGameEntities = (
         row.forEach((tileId, x) => {
           if (tileId === 0) return;
           const key = `${layer.name}-${x}-${y}`;
-          const asset = assetsState.assets.get(tileId);
+          const asset = assetsState.assets.get(String(tileId));
           result[key] = {
             position: { x, y },
             tileId,

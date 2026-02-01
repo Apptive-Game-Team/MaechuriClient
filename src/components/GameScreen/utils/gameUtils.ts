@@ -34,7 +34,7 @@ export const checkCollision = (x: number, y: number): boolean => {
   return false;
 };
 
-export const checkInteraction = (x: number, y: number): number | null => {
+export const checkInteraction = (x: number, y: number): string | null => {
   if (!currentMapData) return null;
   const { layers, objects } = currentMapData;
   
@@ -44,7 +44,7 @@ export const checkInteraction = (x: number, y: number): number | null => {
           x >= 0 && x < layer.tileMap[0].length) {
         const tileId = layer.tileMap[y][x];
         if (tileId !== 0) {
-          return tileId;
+          return String(tileId);
         }
       }
     }
@@ -61,7 +61,7 @@ export const checkInteraction = (x: number, y: number): number | null => {
   return null;
 };
 
-export const getObjectInfo = (x: number, y: number): { id: number; name: string } | null => {
+export const getObjectInfo = (x: number, y: number): { id: string; name: string } | null => {
   if (!currentMapData) return null;
   const { objects } = currentMapData;
   
