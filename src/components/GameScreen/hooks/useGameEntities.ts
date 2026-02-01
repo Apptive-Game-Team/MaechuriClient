@@ -48,7 +48,12 @@ export const useGameEntities = (
       } else {
         // Extract numeric part from IDs like "s:1" -> 1
         const match = object.id.match(/\d+/);
-        assetId = match ? parseInt(match[0], 10) : 0;
+        if (match) {
+          assetId = parseInt(match[0], 10);
+        } else {
+          console.warn(`Unable to extract asset ID from object ID: ${object.id}`);
+          assetId = 0;
+        }
       }
       const asset = assetsState.assets.get(assetId);
       result[key] = {
