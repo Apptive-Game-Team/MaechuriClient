@@ -5,7 +5,7 @@ import { mockRecordsData } from '../data/recordsData';
 
 interface RecordsContextType {
   records: Record[];
-  addRecords: (newRecords: Array<{ id: number; type: string; name: string }>) => void;
+  addRecords: (newRecords: Array<{ id: string; type: string; name: string }>) => void;
 }
 
 const RecordsContext = createContext<RecordsContextType | undefined>(undefined);
@@ -13,7 +13,7 @@ const RecordsContext = createContext<RecordsContextType | undefined>(undefined);
 export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [records, setRecords] = useState<Record[]>(mockRecordsData.records);
 
-  const addRecords = useCallback((newRecords: Array<{ id: number; type: string; name: string }>) => {
+  const addRecords = useCallback((newRecords: Array<{ id: string; type: string; name: string }>) => {
     setRecords((prevRecords) => {
       const updatedRecords = [...prevRecords];
       
@@ -24,17 +24,11 @@ export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children })
         // Check if record already exists (same type and id)
         const exists = updatedRecords.some(
           (existing) => {
-            // Normalize existing ID to number for comparison
-            let existingId: number;
-            if (typeof existing.id === 'string') {
-              existingId = parseInt(existing.id, 10);
-              // Skip comparison if parsing failed
-              if (isNaN(existingId)) return false;
-            } else {
-              existingId = existing.id;
-            }
+            // Compare IDs as strings
+            const existingIdStr = String(existing.id);
+            const newRecordIdStr = String(newRecord.id);
             
-            return existingId === newRecord.id && existing.type === recordType;
+            return existingIdStr === newRecordIdStr && existing.type === recordType;
           }
         );
         

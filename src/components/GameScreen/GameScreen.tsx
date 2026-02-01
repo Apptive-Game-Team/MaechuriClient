@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { GameEngine } from 'react-game-engine';
-import type { ScenarioData, Position } from '../../types/map';
+import type { Position } from '../../types/map';
 import { TILE_SIZE } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
 import { useGameEntities } from './hooks/useGameEntities';
@@ -14,6 +14,8 @@ import interactionSystem from './systems/interactionSystem';
 import interpolationSystem from './systems/interpolationSystem';
 import fogOfWarSystem from './systems/fogOfWarSystem';
 import ChatModal from '../ChatModal/ChatModal';
+import ErrorScreen from '../ErrorScreen/ErrorScreen'; // Import ErrorScreen
+import { HTTPError } from '../../utils/httpError'; // Import HTTPError
 import './GameScreen.css';
 
 // Viewport dimensions for the game camera
@@ -21,7 +23,7 @@ const VIEWPORT_WIDTH = 800;
 const VIEWPORT_HEIGHT = 600;
 
 // Empty scenario data used as fallback during loading
-const EMPTY_SCENARIO: ScenarioData = {
+const EMPTY_SCENARIO = {
   createdDate: '',
   scenarioId: 0,
   scenarioName: '',
@@ -31,7 +33,7 @@ const EMPTY_SCENARIO: ScenarioData = {
 const GameScreen: React.FC = () => {
   const gameEngineRef = useRef<GameEngine>(null);
   const [chatModalOpen, setChatModalOpen] = useState(false);
-  const [currentObjectId, setCurrentObjectId] = useState<number | null>(null);
+  const [currentObjectId, setCurrentObjectId] = useState<string | null>(null);
   const [currentObjectName, setCurrentObjectName] = useState<string>('');
   const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
 
@@ -51,10 +53,8 @@ const GameScreen: React.FC = () => {
   // Get records context
   const { records, addRecords } = useRecords();
 
-  // Fetch map data from API (with fallback to mock data)
-  const { data: scenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({
-    useMockData: false, // Use API instead of mock data
-  });
+  // Fetch map data from API
+  const { data: scenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({});
 
   // Manage interactions
   const {
@@ -73,7 +73,7 @@ const GameScreen: React.FC = () => {
   // Listen for interaction events from the game
   useEffect(() => {
     const handleInteraction = async (event: Event) => {
-      const customEvent = event as CustomEvent<{ objectId: number; objectName: string }>;
+      const customEvent = event as CustomEvent<{ objectId: string; objectName: string }>;
       const { objectId, objectName } = customEvent.detail;
 
       setCurrentObjectId(objectId);
@@ -98,15 +98,28 @@ const GameScreen: React.FC = () => {
   );
 
   // Initialize entities once - start player in center of top-left room
-  const initialPlayerPosition = { x: 5, y: 5 };
-  const initialPlayerDirection = 'down';
-  const [playerPosition, setPlayerPosition] = useState<Position>(initialPlayerPosition);
+  const [playerPosition, setPlayerPosition] = useState<Position>({ x: 5, y: 5 });
+  const [playerDirection, setPlayerDirection] = useState<string>('down'); // New state for playerDirection
   
-  // Always call the hook, but pass fallback data if scenarioData is null
+  // Determine initial player position and direction from map data
+  useEffect(() => {
+    if (scenarioData) {
+      const playerObject = scenarioData.map.objects.find(obj => obj.id === 'p:1');
+      if (playerObject) {
+        setPlayerPosition(playerObject.position);
+        setPlayerDirection(playerObject.direction || 'down'); // Default to 'down' if not specified
+      } else {
+        // Fallback to default position if 'p:1' is not found
+        setPlayerPosition({ x: 5, y: 5 });
+        setPlayerDirection('down');
+      }
+    }
+  }, [scenarioData]);
+  
   const entities = useGameEntities(
-    scenarioData || EMPTY_SCENARIO,
-    initialPlayerPosition,
-    initialPlayerDirection,
+    scenarioData || EMPTY_SCENARIO, // Always call useGameEntities
+    playerPosition,
+    playerDirection,
     assetsState
   );
 
@@ -172,8 +185,13 @@ const GameScreen: React.FC = () => {
     }
   };
 
-  // Show loading state
-  if (isLoadingMap || !scenarioData) {
+  // Show error state for map loading
+  if (mapError instanceof HTTPError) {
+    return <ErrorScreen statusCode={mapError.status} message={mapError.message} />;
+  }
+
+  // Show loading state for map data
+  if (isLoadingMap || !scenarioData || !playerDirection) {
     return (
       <div className="game-screen">
         <div className="game-info">
@@ -194,7 +212,7 @@ const GameScreen: React.FC = () => {
     );
   }
 
-  // Show error state
+  // Show error state for assets
   if (assetsState.error) {
     return (
       <div className="game-screen">
@@ -211,7 +229,6 @@ const GameScreen: React.FC = () => {
       <div className="game-info">
         <h2>{scenarioData.scenarioName}</h2>
         <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects.</p>
-        {mapError && <p style={{ color: '#ff6b6b' }}>Note: Using fallback data</p>}
       </div>
       <div className="game-viewport" style={{ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT, position: 'relative', overflow: 'hidden' }}>
         <div 

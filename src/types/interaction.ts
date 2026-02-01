@@ -11,7 +11,7 @@ export interface SimpleInteractionResponse {
   message: string;
   name?: string; // Optional name field for simple interactions
   newRecords?: Array<{
-    id: number;
+    id: string;
     type: string;
     name: string;
   }>;
@@ -22,7 +22,7 @@ export interface TwoWayInteractionResponse {
   message: string;
   history: string; // Updated JWT encoded history string
   newRecords?: Array<{
-    id: number;
+    id: string;
     type: string;
     name: string;
   }>;
@@ -40,7 +40,7 @@ export interface ChatMessage {
 
 // Object-specific interaction state
 export interface ObjectInteractionState {
-  objectId: number;
+  objectId: string;
   type?: InteractionType;
   jwtHistory?: string; // JWT encoded history
   messages: ChatMessage[]; // Plaintext history for display

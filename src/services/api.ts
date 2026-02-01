@@ -45,7 +45,7 @@ export async function getScenarioMap(scenarioId: number): Promise<ScenarioData> 
  */
 export async function sendInteraction(
   scenarioId: number,
-  objectId: number,
+  objectId: string,
   request: InteractionRequest = {}
 ): Promise<InteractionResponse> {
   const response = await apiFetch(API_ENDPOINTS.interact(scenarioId, objectId), {

@@ -20,7 +20,7 @@ export interface Position {
 }
 
 export interface MapObject {
-  id: number;
+  id: string;
   orderInLayer: number;
   name: string;
   type: LayerType[];

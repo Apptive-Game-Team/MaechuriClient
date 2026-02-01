@@ -1,15 +1,18 @@
 import { useEffect, useRef } from 'react';
-import { mockScenarioData } from '../../../data/mockData';
 import type { FogOfWarEntity } from '../types';
 import { calculateFogOpacity } from '../utils/raycastUtils';
 import { TILE_SIZE, FOG_RESOLUTION_MULTIPLIER } from '../types';
 
 export const FogOfWar = (props: FogOfWarEntity) => {
-  const { visibleTiles, playerPosition } = props;
+  const { visibleTiles, playerPosition, mapWidth, mapHeight } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const mapHeight = mockScenarioData.map.layers[0].tileMap.length;
-  const mapWidth = mockScenarioData.map.layers[0].tileMap[0].length;
+  if (mapWidth === undefined || mapHeight === undefined) {
+    // This should ideally not happen if the system passes the props correctly
+    console.warn("FogOfWar received undefined mapWidth or mapHeight");
+    return null; // Or render a placeholder/error
+  }
+
   const mapPixelWidth = mapWidth * TILE_SIZE;
   const mapPixelHeight = mapHeight * TILE_SIZE;
 
@@ -56,7 +59,7 @@ export const FogOfWar = (props: FogOfWarEntity) => {
         }
       }
     }
-  }, [visibleTiles, playerPosition, fogCellSize, mapHeightFine, mapWidthFine]);
+  }, [visibleTiles, playerPosition, fogCellSize, mapHeightFine, mapWidthFine, mapWidth, mapHeight]);
 
   return (
     <canvas

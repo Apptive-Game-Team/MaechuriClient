@@ -8,5 +8,5 @@ export const API_BASE_URL = isDev
 export const API_ENDPOINTS = {
   getTodayMap: () => `${API_BASE_URL}/api/scenarios/today/data/map`,
   getScenarioMap: (scenarioId: number) => `${API_BASE_URL}/api/scenarios/${scenarioId}/data/map`,
-  interact: (scenarioId: number, objectId: number) => `${API_BASE_URL}/api/scenarios/${scenarioId}/interact/${objectId}`,
+  interact: (scenarioId: number, objectId: string) => `${API_BASE_URL}/api/scenarios/${scenarioId}/interact/${objectId}`,
 } as const;

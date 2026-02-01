@@ -6,10 +6,10 @@ import type {
 } from '../types/interaction';
 
 interface UseInteractionResult {
-  interactions: Map<number, ObjectInteractionState>;
-  startInteraction: (scenarioId: number, objectId: number, onNewRecords?: (records: Array<{ id: number; type: string; name: string }>) => void) => Promise<void>;
-  sendMessage: (scenarioId: number, objectId: number, message: string, onNewRecords?: (records: Array<{ id: number; type: string; name: string }>) => void) => Promise<void>;
-  getInteractionState: (objectId: number) => ObjectInteractionState | undefined;
+  interactions: Map<string, ObjectInteractionState>;
+  startInteraction: (scenarioId: number, objectId: string, onNewRecords?: (records: Array<{ id: string; type: string; name: string }>) => void) => Promise<void>;
+  sendMessage: (scenarioId: number, objectId: string, message: string, onNewRecords?: (records: Array<{ id: string; type: string; name: string }>) => void) => Promise<void>;
+  getInteractionState: (objectId: string) => ObjectInteractionState | undefined;
   isLoading: boolean;
   error: string | null;
 }
@@ -19,19 +19,19 @@ interface UseInteractionResult {
  * Stores interaction history per object (both JWT and plaintext)
  */
 export function useInteraction(): UseInteractionResult {
-  const [interactions, setInteractions] = useState<Map<number, ObjectInteractionState>>(
+  const [interactions, setInteractions] = useState<Map<string, ObjectInteractionState>>(
     new Map()
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const getInteractionState = useCallback(
-    (objectId: number) => interactions.get(objectId),
+    (objectId: string) => interactions.get(objectId),
     [interactions]
   );
 
   const updateInteractionState = useCallback(
-    (objectId: number, update: Partial<ObjectInteractionState>) => {
+    (objectId: string, update: Partial<ObjectInteractionState>) => {
       setInteractions((prev) => {
         const newMap = new Map(prev);
         const existing = newMap.get(objectId) || {
@@ -49,7 +49,7 @@ export function useInteraction(): UseInteractionResult {
    * Start interaction with an object (initial request with empty body)
    */
   const startInteraction = useCallback(
-    async (scenarioId: number, objectId: number, onNewRecords?: (records: Array<{ id: number; type: string; name: string }>) => void) => {
+    async (scenarioId: number, objectId: string, onNewRecords?: (records: Array<{ id: string; type: string; name: string }>) => void) => {
       setIsLoading(true);
       setError(null);
 
@@ -93,7 +93,7 @@ export function useInteraction(): UseInteractionResult {
    * Send a message in a two-way interaction
    */
   const sendMessage = useCallback(
-    async (scenarioId: number, objectId: number, message: string, onNewRecords?: (records: Array<{ id: number; type: string; name: string }>) => void) => {
+    async (scenarioId: number, objectId: string, message: string, onNewRecords?: (records: Array<{ id: string; type: string; name: string }>) => void) => {
       const currentState = interactions.get(objectId);
       if (!currentState || currentState.type !== 'two-way') {
         console.error('Cannot send message: not a two-way interaction');
