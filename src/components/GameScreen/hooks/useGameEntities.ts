@@ -25,7 +25,7 @@ export const useGameEntities = (
         row.forEach((tileId, x) => {
           if (tileId === 0) return;
           const key = `${layer.name}-${x}-${y}`;
-          const asset = assetsState.assets.get(tileId);
+          const asset = assetsState.assets.get(String(tileId));
           result[key] = {
             position: { x, y },
             tileId,
@@ -38,25 +38,11 @@ export const useGameEntities = (
     });
 
     objects.forEach((object) => {
-      const key = `${object.name}-${object.position.x}-${object.position.y}`;
-      // Parse object ID to number for asset lookup if it's a numeric string
-      // Object ID formats: "s:1" (suspect), "p:1" (player), "100" (legacy numeric)
-      // All extract numeric part for asset lookup: "s:1" -> 1, "p:1" -> 1, "100" -> 100
-      let assetId: number;
-      if (/^\d+$/.test(object.id)) {
-        // Pure numeric string like "100"
-        assetId = parseInt(object.id, 10);
-      } else {
-        // Extract numeric part from IDs like "s:1" or "p:1"
-        const match = object.id.match(/\d+/);
-        if (match) {
-          assetId = parseInt(match[0], 10);
-        } else {
-          console.warn(`Unable to extract asset ID from object ID: ${object.id}`);
-          assetId = 0;
-        }
+      if (object.id === PLAYER_ASSET_ID) {
+        return; // Skip the player entity
       }
-      const asset = assetsState.assets.get(assetId);
+      const key = `${object.name}-${object.position.x}-${object.position.y}`;
+      const asset = assetsState.assets.get(object.id);
       result[key] = {
         position: object.position,
         tileId: object.id,
@@ -81,9 +67,14 @@ export const useGameEntities = (
     renderer: Player,
   };
 
+  const mapWidth = scenarioData.map.layers[0]?.tileMap[0]?.length || 0;
+  const mapHeight = scenarioData.map.layers[0]?.tileMap?.length || 0;
+
   const fogOfWarEntity: FogOfWarEntity = {
     visibleTiles: new Map<string, number>(),
     playerPosition: playerPosition,
+    mapWidth: mapWidth,
+    mapHeight: mapHeight,
     renderer: FogOfWar,
   };
 
@@ -91,5 +82,6 @@ export const useGameEntities = (
     ...tileEntities,
     player: playerEntity,
     fogOfWar: fogOfWarEntity,
+    scenarioData: scenarioData, // Add scenarioData to entities for fogOfWarSystem
   };
 };
