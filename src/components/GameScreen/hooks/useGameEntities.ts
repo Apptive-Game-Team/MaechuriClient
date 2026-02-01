@@ -40,13 +40,14 @@ export const useGameEntities = (
     objects.forEach((object) => {
       const key = `${object.name}-${object.position.x}-${object.position.y}`;
       // Parse object ID to number for asset lookup if it's a numeric string
-      // For IDs like "100", convert to 100. For IDs like "s:1", extract numeric part
+      // Object ID formats: "s:1" (suspect), "p:1" (player), "100" (legacy numeric)
+      // All extract numeric part for asset lookup: "s:1" -> 1, "p:1" -> 1, "100" -> 100
       let assetId: number;
       if (/^\d+$/.test(object.id)) {
         // Pure numeric string like "100"
         assetId = parseInt(object.id, 10);
       } else {
-        // Extract numeric part from IDs like "s:1" -> 1
+        // Extract numeric part from IDs like "s:1" or "p:1"
         const match = object.id.match(/\d+/);
         if (match) {
           assetId = parseInt(match[0], 10);
