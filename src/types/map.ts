@@ -28,7 +28,7 @@ export interface MapObject {
 }
 
 export interface Asset {
-  id: string;
+  id: number;
   imageUrl: string;
 }
 

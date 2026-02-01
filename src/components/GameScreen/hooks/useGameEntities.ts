@@ -25,7 +25,7 @@ export const useGameEntities = (
         row.forEach((tileId, x) => {
           if (tileId === 0) return;
           const key = `${layer.name}-${x}-${y}`;
-          const asset = assetsState.assets.get(String(tileId));
+          const asset = assetsState.assets.get(tileId);
           result[key] = {
             position: { x, y },
             tileId,
@@ -39,7 +39,18 @@ export const useGameEntities = (
 
     objects.forEach((object) => {
       const key = `${object.name}-${object.position.x}-${object.position.y}`;
-      const asset = assetsState.assets.get(object.id);
+      // Parse object ID to number for asset lookup if it's a numeric string
+      // For IDs like "100", convert to 100. For IDs like "s:1", extract numeric part
+      let assetId: number;
+      if (/^\d+$/.test(object.id)) {
+        // Pure numeric string like "100"
+        assetId = parseInt(object.id, 10);
+      } else {
+        // Extract numeric part from IDs like "s:1" -> 1
+        const match = object.id.match(/\d+/);
+        assetId = match ? parseInt(match[0], 10) : 0;
+      }
+      const asset = assetsState.assets.get(assetId);
       result[key] = {
         position: object.position,
         tileId: object.id,

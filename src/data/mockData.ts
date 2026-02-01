@@ -76,19 +76,19 @@ export const mockScenarioData: ScenarioData = {
     ],
     assets: [
       {
-        id: '1',
+        id: 1,
         imageUrl: "https://s3.yunseong.dev/maechuri/objects/wood_floor.json"
       },
       {
-        id: '2',
+        id: 2,
         imageUrl: "https://s3.yunseong.dev/maechuri/objects/tile_floor.json"
       },
       {
-        id: '100',
+        id: 100,
         imageUrl: "https://s3.yunseong.dev/maechuri/objects/cook_1.json"
       },
       {
-        id: '999',
+        id: 999,
         imageUrl: "https://s3.yunseong.dev/maechuri/objects/player.json"
       }
     ]

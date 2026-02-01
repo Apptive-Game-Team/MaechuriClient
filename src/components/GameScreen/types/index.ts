@@ -36,7 +36,7 @@ export interface FogOfWarEntity extends Entity {
 
 export const TILE_SIZE = 64;
 export const MOVEMENT_DURATION = 200; // milliseconds for smooth movement
-export const PLAYER_ASSET_ID = '999'; // Asset ID for player in the assets array
+export const PLAYER_ASSET_ID = 999; // Asset ID for player in the assets array
 
 // Vision system constants
 export const VISION_RANGE = 16; // tiles - maximum vision range

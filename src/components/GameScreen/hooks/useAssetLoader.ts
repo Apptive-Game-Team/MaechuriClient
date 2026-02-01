@@ -3,7 +3,7 @@ import type { DirectionalAsset, Asset } from '../../../types/map';
 import { fetchObjectAsset } from '../../../utils/assetLoader';
 
 export interface AssetsState {
-  assets: Map<string, DirectionalAsset>;
+  assets: Map<number, DirectionalAsset>;
   isLoading: boolean;
   error: string | null;
 }
@@ -26,7 +26,7 @@ export const useAssetLoader = (assets: Asset[]): AssetsState => {
 
       try {
         // Load assets
-        const loadedAssets = new Map<string, DirectionalAsset>();
+        const loadedAssets = new Map<number, DirectionalAsset>();
         await Promise.all(
           assets.map(async (asset) => {
             try {
