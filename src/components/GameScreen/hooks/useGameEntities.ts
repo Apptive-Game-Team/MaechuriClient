@@ -25,7 +25,7 @@ export const useGameEntities = (
         row.forEach((tileId, x) => {
           if (tileId === 0) return;
           const key = `${layer.name}-${x}-${y}`;
-          const asset = assetsState.assets.get(tileId);
+          const asset = assetsState.assets.get(String(tileId));
           result[key] = {
             position: { x, y },
             tileId,
@@ -42,7 +42,7 @@ export const useGameEntities = (
         return; // Skip the player entity
       }
       const key = `${object.name}-${object.position.x}-${object.position.y}`;
-      const assetId = parseInt(object.id.split(':')[1], 10);
+      const assetId = object.id;
       const asset = assetsState.assets.get(assetId);
       result[key] = {
         position: object.position,
@@ -61,7 +61,7 @@ export const useGameEntities = (
     return result;
   }, [scenarioData.map, assetsState.assets]);
 
-  const playerAssetId = parseInt(PLAYER_ASSET_ID.split(':')[1], 10);
+  const playerAssetId = PLAYER_ASSET_ID;
   const playerEntity = {
     position: playerPosition,
     direction: playerDirection,
