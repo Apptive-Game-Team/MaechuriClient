@@ -53,21 +53,21 @@ export const mockScenarioData: ScenarioData = {
     ],
     objects: [
       {
-        id: 100,
+        id: '100',
         orderInLayer: 3,
         name: "요리사 1",
         type: ["Interactable", "Non-Passable"],
         position: { x: 2, y: 3 }
       },
       {
-        id: 100,
+        id: '100',
         orderInLayer: 3,
         name: "요리사 2",
         type: ["Interactable", "Non-Passable"],
         position: { x: 11, y: 3 }
       },
       {
-        id: 100,
+        id: '100',
         orderInLayer: 3,
         name: "요리사 3",
         type: ["Interactable", "Non-Passable"],
