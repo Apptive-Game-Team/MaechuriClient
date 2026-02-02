@@ -73,6 +73,7 @@ export const useGameEntities = (
   const mapHeight = scenarioData.map.layers[0]?.tileMap?.length || 0;
 
   const fogOfWarEntity: FogOfWarEntity = {
+    map: scenarioData.map,
     visibleTiles: new Map<string, number>(),
     playerPosition: playerPosition,
     mapWidth: mapWidth,

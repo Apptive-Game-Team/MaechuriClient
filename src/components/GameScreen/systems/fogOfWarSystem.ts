@@ -16,7 +16,7 @@ const fogOfWarSystem: System = (entities: Record<string, Entity>) => {
       y: playerPos.y + 0.5,
     };
 
-    fogOfWar.visibleTiles = calculateVisibleTiles(raycastOrigin);
+    fogOfWar.visibleTiles = calculateVisibleTiles(raycastOrigin, fogOfWar.map);
     fogOfWar.playerPosition = raycastOrigin; // Pass centered position for opacity calculation
   }
 

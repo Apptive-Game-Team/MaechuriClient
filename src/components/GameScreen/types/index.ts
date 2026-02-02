@@ -1,6 +1,6 @@
 import type { ElementType } from 'react';
 import type { Entity } from 'react-game-engine';
-import type { Layer, DirectionalAsset, Direction } from '../../../types/map';
+import type { Layer, DirectionalAsset, Direction, GameMap } from '../../../types/map';
 
 export type { Direction };
 export interface Position {
@@ -28,6 +28,7 @@ export interface TileEntity extends Entity {
 }
 
 export interface FogOfWarEntity extends Entity {
+  map: GameMap;
   visibleTiles?: Map<string, number>;
   playerPosition?: Position;
   mapWidth?: number;

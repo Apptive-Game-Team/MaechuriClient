@@ -4,7 +4,7 @@
 
 ## 맵 오브젝트 정의하기
 
-맵 오브젝트는 `GameMap` 데이터 구조 내의 `objects` 배열에 정의됩니다 (예: `src/data/mockData.ts`).
+맵 오브젝트는 API를 통해 전달되는 `GameMap` 데이터 구조 내의 `objects` 배열에 정의됩니다.
 
 각 `MapObject`는 `src/types/map.ts`에 정의된 다음 구조를 가집니다.
 

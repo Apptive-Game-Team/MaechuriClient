@@ -93,16 +93,13 @@ function MyComponent() {
   
   // 또는 특정 시나리오 가져오기
   const { data, isLoading, error } = useMapData({ scenarioId: 1 });
-  
-  // 또는 목 데이터 사용 (개발 시 기본값)
-  const { data, isLoading, error } = useMapData({ useMockData: true });
 }
 ```
 
 **기능**:
-- API 오류 시 목 데이터로 자동 대체
 - 로딩 및 에러 상태 제공
 - 오늘의 맵 및 특정 시나리오 가져오기 모두 지원
+
 
 ### 상호작용 관리
 
@@ -170,7 +167,7 @@ import ChatModal from '../ChatModal/ChatModal';
 1. `GameScreen` 컴포넌트 마운트
 2. `useMapData` 훅이 API에서 맵을 가져옴
 3. 성공 시: 맵 데이터로 게임 렌더링
-4. 실패 시: 자동으로 목 데이터로 대체
+4. 실패 시: 에러 화면을 표시
 5. `setCurrentMapData()`를 통해 게임 유틸리티에 맵 데이터 설정
 
 ### 상호작용 흐름
@@ -229,45 +226,4 @@ interface ScenarioData {
 }
 ```
 
-## 개발 모드
 
-기본적으로 게임은 백엔드 서버 없이 개발할 수 있도록 목 데이터를 사용합니다:
-
-```typescript
-// GameScreen.tsx에서
-const { data: scenarioData } = useMapData({
-  useMockData: true,  // API를 사용하려면 false로 설정
-});
-```
-
-실제 API로 테스트하려면:
-1. 백엔드 서버를 설정합니다
-2. `.env`에서 `VITE_API_BASE_URL`을 구성합니다
-3. GameScreen.tsx에서 `useMockData: true`를 `useMockData: false`로 변경합니다
-4. API 호출이 실패하면 애플리케이션이 자동으로 목 데이터로 대체합니다
-
-## 에러 처리
-
-- **맵 로딩**: 오류 시 자동으로 목 데이터로 대체하고, 콘솔에 오류를 기록합니다
-- **상호작용**: 콘솔에 오류를 표시하고, UI 상태를 유지합니다
-- **네트워크 장애**: 오류 메시지와 대체 방법으로 우아하게 처리합니다
-
-## 테스트
-
-API 연동을 테스트하려면:
-
-1. **맵 로딩**: 
-   - 개발 서버를 시작합니다
-   - 브라우저 콘솔에서 "Loading map data" 메시지를 확인합니다
-   - 맵이 올바르게 렌더링되는지 확인합니다
-   
-2. **상호작용**:
-   - 플레이어를 상호작용 가능한 오브젝트(요리사 1, 2, 또는 3) 근처로 이동합니다
-   - E 또는 Space를 눌러 상호작용합니다
-   - 초기 메시지와 함께 채팅 모달이 나타나야 합니다
-   - 양방향 상호작용의 경우 메시지 전송을 시도합니다
-
-3. **기록**:
-   - 오브젝트와 상호작용하고 모달을 닫습니다
-   - 다시 상호작용하면 기록이 유지되어야 합니다
-   - 다른 오브젝트로 전환하면 별도의 기록이 유지되어야 합니다

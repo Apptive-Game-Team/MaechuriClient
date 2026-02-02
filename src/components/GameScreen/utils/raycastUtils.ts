@@ -1,4 +1,4 @@
-import { mockScenarioData } from '../../../data/mockData';
+import type { GameMap } from '../../../types/map';
 import type { Position } from '../types';
 import { 
   VISION_RANGE, 
@@ -10,8 +10,11 @@ import {
 /**
  * Check if a tile blocks vision based on layer types
  */
-export const isVisionBlocking = (x: number, y: number): boolean => {
-  const { layers } = mockScenarioData.map;
+export const isVisionBlocking = (x: number, y: number, map: GameMap): boolean => {
+  const { layers } = map;
+  if (!layers || layers.length === 0 || !layers[0].tileMap) {
+    return false;
+  }
   const mapHeight = layers[0].tileMap.length;
   const mapWidth = layers[0].tileMap[0].length;
   
@@ -32,7 +35,7 @@ export const isVisionBlocking = (x: number, y: number): boolean => {
  * using a DDA-like algorithm (Amanatides & Woo).
  * Returns true if line of sight is clear, false if blocked.
  */
-export const raycast = (from: Position, to: Position): boolean => {
+export const raycast = (from: Position, to: Position, map: GameMap): boolean => {
   const startMapX = Math.floor(from.x);
   const startMapY = Math.floor(from.y);
   const endMapX = Math.floor(to.x);
@@ -84,7 +87,7 @@ export const raycast = (from: Position, to: Position): boolean => {
   const maxDistance = VISION_RANGE * 2;
   let distance = 0;
 
-  const isDestinationBlocking = isVisionBlocking(endMapX, endMapY);
+  const isDestinationBlocking = isVisionBlocking(endMapX, endMapY, map);
 
   while (distance < maxDistance) {
     if (sideDistX < sideDistY) {
@@ -96,7 +99,7 @@ export const raycast = (from: Position, to: Position): boolean => {
     }
     distance++;
 
-    if (isVisionBlocking(mapX, mapY)) {
+    if (isVisionBlocking(mapX, mapY, map)) {
       // If we hit a wall, we only block vision if the destination is NOT a wall.
       // This stops walls from casting shadows on other walls.
       if (!isDestinationBlocking) {
@@ -121,9 +124,9 @@ export const raycast = (from: Position, to: Position): boolean => {
  * Calculate which fine-grained fog cells are visible from the player position
  * Returns a Map of cell coordinates to their visibility factor (0.0 to 1.0)
  */
-export const calculateVisibleTiles = (playerPos: Position): Map<string, number> => {
+export const calculateVisibleTiles = (playerPos: Position, map: GameMap): Map<string, number> => {
   const visibleTiles = new Map<string, number>();
-  const { layers } = mockScenarioData.map;
+  const { layers } = map;
   
   if (layers.length === 0 || layers[0].tileMap.length === 0) {
     return visibleTiles;
@@ -168,7 +171,7 @@ export const calculateVisibleTiles = (playerPos: Position): Map<string, number> 
       for (const point of samplePoints) {
         const targetTileX = (x + point.x) / FOG_RESOLUTION_MULTIPLIER;
         const targetTileY = (y + point.y) / FOG_RESOLUTION_MULTIPLIER;
-        if (raycast(playerPos, { x: targetTileX, y: targetTileY })) {
+        if (raycast(playerPos, { x: targetTileX, y: targetTileY }, map)) {
           successfulRays++;
         }
       }

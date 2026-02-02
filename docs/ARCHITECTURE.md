@@ -49,7 +49,6 @@ graph TD
     subgraph "Data & Services"
         direction LR
         APIService["API Service<br/>(src/services/api.ts)"]
-        MockData["Local Data<br/>(mockData, recordsData)"]
     end
 
     subgraph "Reusable Logic & Types"
@@ -72,8 +71,7 @@ graph TD
     APIService -- uses --> TS_Types
     GameEntities -- uses --> TS_Types
     SharedHooks -- uses --> TS_Types
-    MockData -- defines --> TS_Types
-
+    
     style GameScreen fill:#f9f,stroke:#333,stroke-width:2px
     style GameLogic fill:#ccf,stroke:#333,stroke-width:2px
 ```
