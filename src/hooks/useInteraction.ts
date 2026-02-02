@@ -31,14 +31,22 @@ export function useInteraction(): UseInteractionResult {
   );
 
   const updateInteractionState = useCallback(
-    (objectId: string, update: Partial<ObjectInteractionState>) => {
+    (
+      objectId: string,
+      update:
+        | Partial<ObjectInteractionState>
+        | ((prevState: ObjectInteractionState) => Partial<ObjectInteractionState>)
+    ) => {
       setInteractions((prev) => {
         const newMap = new Map(prev);
         const existing = newMap.get(objectId) || {
           objectId,
           messages: [],
         };
-        newMap.set(objectId, { ...existing, ...update });
+        
+        const newUpdate = typeof update === 'function' ? update(existing) : update;
+
+        newMap.set(objectId, { ...existing, ...newUpdate });
         return newMap;
       });
     },
@@ -132,14 +140,11 @@ export function useInteraction(): UseInteractionResult {
           timestamp: Date.now(),
         };
 
-        // Get the updated state (which now includes the player message)
-        const updatedState = interactions.get(objectId);
-        if (updatedState) {
-          updateInteractionState(objectId, {
-            jwtHistory: response.history,
-            messages: [...updatedState.messages, npcMessage],
-          });
-        }
+        // Use functional update to append the NPC message to the latest state
+        updateInteractionState(objectId, (prevState) => ({
+          jwtHistory: response.history,
+          messages: [...prevState.messages, npcMessage],
+        }));
 
         // Handle new records if present
         if (response.newRecords && response.newRecords.length > 0 && onNewRecords) {
