@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { GameEngine } from 'react-game-engine';
-import type { Position } from '../../types/map';
+import type { Position, Direction } from '../../types/map';
 import { TILE_SIZE } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
 import { useGameEntities } from './hooks/useGameEntities';
@@ -99,7 +99,7 @@ const GameScreen: React.FC = () => {
 
   // Initialize entities once - start player in center of top-left room
   const [playerPosition, setPlayerPosition] = useState<Position>({ x: 5, y: 5 });
-  const [playerDirection, setPlayerDirection] = useState<string>('down'); // New state for playerDirection
+  const [playerDirection, setPlayerDirection] = useState<Direction>('down'); // New state for playerDirection
   
   // Determine initial player position and direction from map data
   useEffect(() => {
@@ -186,7 +186,7 @@ const GameScreen: React.FC = () => {
   };
 
   // Show error state for map loading
-  if (mapError instanceof HTTPError) {
+  if (mapError && mapError instanceof HTTPError) {
     return <ErrorScreen statusCode={mapError.status} message={mapError.message} />;
   }
 

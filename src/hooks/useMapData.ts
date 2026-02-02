@@ -11,7 +11,7 @@ interface UseMapDataOptions {
 interface UseMapDataResult {
   data: ScenarioData | null;
   isLoading: boolean;
-  error: string | null;
+  error: Error | null;
   refetch: () => void;
 }
 
@@ -23,7 +23,7 @@ export function useMapData(options: UseMapDataOptions = {}): UseMapDataResult {
   const { scenarioId, useMockData = false } = options;
   const [data, setData] = useState<ScenarioData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(!useMockData);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const [refetchTrigger, setRefetchTrigger] = useState(0);
 
   useEffect(() => {
@@ -45,9 +45,12 @@ export function useMapData(options: UseMapDataOptions = {}): UseMapDataResult {
         
         setData(mapData);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch map data';
-        console.error('Error fetching map data:', errorMessage);
-        setError(errorMessage);
+        console.error('Error fetching map data:', err);
+        if (err instanceof Error) {
+          setError(err);
+        } else {
+          setError(new Error('Failed to fetch map data'));
+        }
         
         // Fallback to mock data on error
         console.log('Falling back to mock data');

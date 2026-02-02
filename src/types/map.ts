@@ -7,6 +7,8 @@ export interface Layer {
   tileMap: number[][];
 }
 
+export type Direction = 'up' | 'down' | 'left' | 'right';
+
 export interface DirectionalAsset {
   left?: string;
   right?: string;
@@ -25,6 +27,7 @@ export interface MapObject {
   name: string;
   type: LayerType[];
   position: Position;
+  direction?: Direction;
 }
 
 export interface Asset {

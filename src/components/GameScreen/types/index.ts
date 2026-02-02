@@ -1,13 +1,12 @@
 import type { ElementType } from 'react';
 import type { Entity } from 'react-game-engine';
-import type { Layer, DirectionalAsset } from '../../../types/map';
+import type { Layer, DirectionalAsset, Direction } from '../../../types/map';
 
+export type { Direction };
 export interface Position {
   x: number;
   y: number;
 }
-
-export type Direction = 'up' | 'down' | 'left' | 'right';
 
 export interface PlayerEntity extends Entity {
   position: Position;

@@ -86,6 +86,9 @@ export const getFacingPosition = (position: Position, direction: Direction): Pos
       return { x: position.x - 1, y: position.y };
     case 'right':
       return { x: position.x + 1, y: position.y };
+    default:
+      // This should not happen with the Direction type, but it satisfies the compiler
+      throw new Error(`Invalid direction: ${direction}`);
   }
 };
 

@@ -25,7 +25,7 @@ export const useGameEntities = (
         row.forEach((tileId, x) => {
           if (tileId === 0) return;
           const key = `${layer.name}-${x}-${y}`;
-          const asset = assetsState.assets.get(String(tileId));
+          const asset = assetsState.assets.get(tileId);
           result[key] = {
             position: { x, y },
             tileId,
@@ -42,7 +42,8 @@ export const useGameEntities = (
         return; // Skip the player entity
       }
       const key = `${object.name}-${object.position.x}-${object.position.y}`;
-      const asset = assetsState.assets.get(object.id);
+      const assetId = parseInt(object.id.split(':')[1], 10);
+      const asset = assetsState.assets.get(assetId);
       result[key] = {
         position: object.position,
         tileId: object.id,
@@ -60,10 +61,11 @@ export const useGameEntities = (
     return result;
   }, [scenarioData.map, assetsState.assets]);
 
+  const playerAssetId = parseInt(PLAYER_ASSET_ID.split(':')[1], 10);
   const playerEntity = {
     position: playerPosition,
     direction: playerDirection,
-    asset: assetsState.assets.get(PLAYER_ASSET_ID),
+    asset: assetsState.assets.get(playerAssetId),
     renderer: Player,
   };
 
@@ -82,6 +84,5 @@ export const useGameEntities = (
     ...tileEntities,
     player: playerEntity,
     fogOfWar: fogOfWarEntity,
-    scenarioData: scenarioData, // Add scenarioData to entities for fogOfWarSystem
   };
 };
