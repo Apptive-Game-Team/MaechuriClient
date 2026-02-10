@@ -4,6 +4,7 @@ import type { Record } from '../../types/record';
 import './ChatModal.css';
 import { Message } from './components/Message';
 import { ChatInput } from './components/ChatInput';
+import { Modal } from '../common/Modal/Modal';
 
 interface ChatModalProps {
   isOpen: boolean;
@@ -25,52 +26,45 @@ const ChatModal: React.FC<ChatModalProps> = ({
   onSendMessage,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLDivElement>(null); // For the contentEditable div in ChatInput
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
-    if (isOpen) {
-      // Auto-focus on input field when modal opens
-      if (inputRef.current && interactionType === 'two-way') {
-        inputRef.current.focus();
-      }
+    if (isOpen && interactionType === 'two-way') {
+      setTimeout(() => inputRef.current?.focus(), 100); // Allow modal to render
     }
   }, [isOpen, interactionType]);
 
-  if (!isOpen) return null;
-
-  const isTwoWay = interactionType === 'two-way';
-  const isSimple = interactionType === 'simple';
+  const chatFooter = (
+    <div className={`chat-modal-input-area ${interactionType === 'simple' ? 'disabled' : ''}`}>
+      {interactionType === 'two-way' ? (
+        <ChatInput ref={inputRef} records={records} onSendMessage={onSendMessage} />
+      ) : (
+        <div className="chat-modal-disabled-notice">
+          {interactionType === 'simple' ? 'This is a read-only interaction' : 'Initializing...'}
+        </div>
+      )}
+    </div>
+  );
 
   return (
-    <div className="chat-modal-overlay" onClick={onClose}>
-      <div className="chat-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="chat-modal-header">
-          <h3>{objectName}</h3>
-          <button className="chat-modal-close" onClick={onClose} aria-label="Close">×</button>
-        </div>
-
-        <div className="chat-modal-messages">
-          {messages.map((msg, index) => (
-            <Message key={index} message={msg} records={records} />
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-
-        <div className={`chat-modal-input-area ${isSimple ? 'disabled' : ''}`}>
-          {isTwoWay ? (
-            <ChatInput ref={inputRef} records={records} onSendMessage={onSendMessage} />
-          ) : (
-            <div className="chat-modal-disabled-notice">
-              {isSimple ? 'This is a read-only interaction' : 'Initializing...'}
-            </div>
-          )}
-        </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={objectName}
+      footer={chatFooter}
+      maxWidth="600px"
+    >
+      <div className="chat-modal-messages">
+        {messages.map((msg, index) => (
+          <Message key={index} message={msg} records={records} />
+        ))}
+        <div ref={messagesEndRef} />
       </div>
-    </div>
+    </Modal>
   );
 };
 
