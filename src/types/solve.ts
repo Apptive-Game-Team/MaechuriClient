@@ -14,11 +14,11 @@ export interface CulpritMatch {
 export interface SolveResponse {
   status: SolveStatus;
   success: boolean;
-  culprit_score: number;
-  reasoning_score: number;
-  total_score: number;
+  culpritScore: number;
+  reasoningScore: number;
+  totalScore: number;
   culprit_match: CulpritMatch;
-  similarity_score: number;
+  similarityScore: number;
   message: string;
   feedback?: string;
   hints?: string[];
