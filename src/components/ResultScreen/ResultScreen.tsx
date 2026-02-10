@@ -19,7 +19,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ result, onGoHome }) => {
         <div className="result-scores">
           <div className="score-item">
             <div className="score-label">Culprit Score</div>
-            <div className="score-value">{result.culprit_score.toFixed(0)}%</div>
+            <div className="score-value">{result.culprit_score.toFixed(1)}%</div>
           </div>
           <div className="score-item">
             <div className="score-label">Reasoning Score</div>
