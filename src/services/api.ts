@@ -2,6 +2,7 @@ import { API_ENDPOINTS } from '../config/api';
 import { apiFetch } from '../utils/apiFetch';
 import type { ScenarioData } from '../types/map';
 import type { InteractionRequest, InteractionResponse } from '../types/interaction';
+import type { SolveRequest, SolveResponse } from '../types/solve';
 
 /**
  * Fetch today's map data
@@ -58,6 +59,28 @@ export async function sendInteraction(
 
   if (!response.ok) {
     throw new Error(`Failed to interact with object: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Submit a solve attempt
+ */
+export async function submitSolve(
+  scenarioId: number,
+  request: SolveRequest
+): Promise<SolveResponse> {
+  const response = await apiFetch(API_ENDPOINTS.solve(scenarioId), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to submit solve: ${response.statusText}`);
   }
 
   return response.json();
