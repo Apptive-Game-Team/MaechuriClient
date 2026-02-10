@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { GameEngine } from 'react-game-engine';
 import type { Position, Direction } from '../../types/map';
+import type { SolveResponse, SolveAttempt } from '../../types/solve';
 import { TILE_SIZE } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
 import { useGameEntities } from './hooks/useGameEntities';
@@ -9,11 +10,13 @@ import { useMapData } from '../../hooks/useMapData';
 import { useInteraction } from '../../hooks/useInteraction';
 import { useRecords } from '../../contexts/RecordsContext';
 import { setCurrentMapData } from './utils/gameUtils';
+import { submitSolve } from '../../services/api';
 import playerControlSystem from './systems/playerControlSystem';
 import interactionSystem from './systems/interactionSystem';
 import interpolationSystem from './systems/interpolationSystem';
 import fogOfWarSystem from './systems/fogOfWarSystem';
 import ChatModal from '../ChatModal/ChatModal';
+import SolveModal from '../SolveModal/SolveModal';
 import ErrorScreen from '../ErrorScreen/ErrorScreen'; // Import ErrorScreen
 import { HTTPError } from '../../utils/httpError'; // Import HTTPError
 import './GameScreen.css';
@@ -30,12 +33,18 @@ const EMPTY_SCENARIO = {
   map: { layers: [], objects: [], assets: [] }
 };
 
-const GameScreen: React.FC = () => {
+interface GameScreenProps {
+  onShowResult: (result: SolveResponse) => void;
+}
+
+const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
   const gameEngineRef = useRef<GameEngine>(null);
   const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [solveModalOpen, setSolveModalOpen] = useState(false);
   const [currentObjectId, setCurrentObjectId] = useState<string | null>(null);
   const [currentObjectName, setCurrentObjectName] = useState<string>('');
   const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
+  const [solveAttempts, setSolveAttempts] = useState<SolveAttempt[]>([]);
 
   // Disable page scrolling when GameScreen is mounted
   useEffect(() => {
@@ -75,6 +84,12 @@ const GameScreen: React.FC = () => {
     const handleInteraction = async (event: Event) => {
       const customEvent = event as CustomEvent<{ objectId: string; objectName: string }>;
       const { objectId, objectName } = customEvent.detail;
+
+      // Check if this is the solve object (d:1)
+      if (objectId === 'd:1') {
+        setSolveModalOpen(true);
+        return;
+      }
 
       setCurrentObjectId(objectId);
       setCurrentObjectName(objectName);
@@ -185,6 +200,39 @@ const GameScreen: React.FC = () => {
     }
   };
 
+  // Handle solve submission
+  const handleSolveSubmit = async (message: string, suspectIds: string[]) => {
+    if (!scenarioData) return;
+
+    try {
+      const response = await submitSolve(scenarioData.scenarioId, {
+        message,
+        suspectIds,
+      });
+
+      const attempt: SolveAttempt = {
+        message,
+        suspectIds,
+        response,
+        timestamp: Date.now(),
+      };
+
+      setSolveAttempts(prev => [...prev, attempt]);
+
+      // If successful, navigate to result screen
+      if (response.success) {
+        setSolveModalOpen(false);
+        onShowResult(response);
+      }
+    } catch (error) {
+      console.error('Failed to submit solve:', error);
+      // Could add error handling UI here
+    }
+  };
+
+  // Get suspects from map objects (objects with id starting with "s:")
+  const suspects = scenarioData?.map.objects.filter(obj => obj.id.startsWith('s:')) || [];
+
   // Show error state for map loading
   if (mapError && mapError instanceof HTTPError) {
     return <ErrorScreen statusCode={mapError.status} message={mapError.message} />;
@@ -257,6 +305,14 @@ const GameScreen: React.FC = () => {
         records={records}
         onClose={() => setChatModalOpen(false)}
         onSendMessage={handleSendMessage}
+      />
+
+      <SolveModal
+        isOpen={solveModalOpen}
+        suspects={suspects}
+        attempts={solveAttempts}
+        onClose={() => setSolveModalOpen(false)}
+        onSubmit={handleSolveSubmit}
       />
     </div>
   );
