@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Record } from '../../../types/record';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
@@ -9,6 +9,7 @@ interface RecordCardProps {
 }
 
 export const RecordCard: React.FC<RecordCardProps> = ({ record }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: String(record.id),
     data: record,
@@ -38,27 +39,40 @@ export const RecordCard: React.FC<RecordCardProps> = ({ record }) => {
       ref={setNodeRef}
       style={style}
       className={`record-card record-card-${record.type.toLowerCase()}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       {...listeners}
       {...attributes}
     >
-      <div className="record-card-type">{getTypeLabel()}</div>
-      {record.imageUrl && (
-        <div 
-          className="record-card-image"
-          style={{ backgroundImage: `url(${record.imageUrl})` }}
-        />
-      )}
-      {!record.imageUrl && record.type === 'FACT' && (
-        <div className="record-card-placeholder">
-          <span>📋</span>
+      {/* Simplified view */}
+      <div className="record-card-simple">
+        {record.type === 'FACT' ? (
+          <div className="record-card-memo-icon">
+            📝
+          </div>
+        ) : (
+          record.imageUrl && (
+            <div 
+              className="record-card-image"
+              style={{ backgroundImage: `url(${record.imageUrl})` }}
+            />
+          )
+        )}
+        <div className="record-card-simple-name">{record.name}</div>
+      </div>
+
+      {/* Hover tooltip */}
+      {isHovered && (
+        <div className="record-card-tooltip">
+          <div className="record-card-tooltip-header">
+            <span className="record-card-tooltip-type">{getTypeLabel()}</span>
+            <h4 className="record-card-tooltip-name">{record.name}</h4>
+          </div>
+          {record.content && (
+            <p className="record-card-tooltip-content">{record.content}</p>
+          )}
         </div>
       )}
-      <div className="record-card-content">
-        <h4 className="record-card-name">{record.name}</h4>
-        {record.content && (
-          <p className="record-card-description">{record.content}</p>
-        )}
-      </div>
     </div>
   );
 };

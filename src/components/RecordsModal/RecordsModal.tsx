@@ -71,9 +71,9 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose }) => {
       const newPositions = new Map(prevPositions);
       let row = 0;
       let col = 0;
-      const itemsPerRow = 3;
-      const cardWidth = 220; // 200px + 20px margin
-      const cardHeight = 200; // Approximate height + margin
+      const itemsPerRow = 4;
+      const cardWidth = 170; // 150px + 20px margin
+      const cardHeight = 170; // 150px + 20px margin
 
       records.forEach(record => {
         const recordId = String(record.id);
