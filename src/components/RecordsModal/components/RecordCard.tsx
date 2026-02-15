@@ -11,7 +11,7 @@ interface RecordCardProps {
 export const RecordCard: React.FC<RecordCardProps> = ({ record }) => {
   const [isHovered, setIsHovered] = useState(false);
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: String(record.id),
+    id: record.id,
     data: record,
   });
 

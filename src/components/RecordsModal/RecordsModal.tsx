@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { DndContext, DragOverlay } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import type { Record } from '../../types/record';
+import { mapApiRecordToRecord } from '../../types/record'; // Changed from type import
 import type { ScenarioData } from '../../types/map';
 import { Modal } from '../common/Modal/Modal';
 import { RecordCard } from './components/RecordCard';
@@ -79,7 +80,10 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
         const recordsData = await getRecords(scenarioData.scenarioId);
         // Set records from API - they should have id, type, name, content
         if (recordsData.records && recordsData.records.length > 0) {
-          setRecords(recordsData.records);
+          const mappedRecords = recordsData.records
+            .map(mapApiRecordToRecord)
+            .filter((record): record is Record => record !== null); // Filter out invalid records
+          setRecords(mappedRecords);
         }
       } catch (error) {
         console.error('Failed to fetch records:', error);
@@ -101,8 +105,8 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
     const enrichRecords = async () => {
       const enriched = await Promise.all(
         records.map(async (record) => {
-          // Skip if already has imageUrl or is FACT type
-          if (record.imageUrl || record.type === 'FACT') {
+          // Skip if already has imageUrl
+          if (record.imageUrl) {
             return record;
           }
 
@@ -154,7 +158,7 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
       const cardHeight = 170; // 150px + 20px margin
 
       enrichedRecords.forEach(record => {
-        const recordId = String(record.id);
+        const recordId = record.id;
         if (!newPositions.has(recordId)) {
           newPositions.set(recordId, {
             x: 20 + col * cardWidth,
@@ -173,7 +177,7 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
   }, [enrichedRecords, isOpen]);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    const record = enrichedRecords.find(r => String(r.id) === event.active.id);
+    const record = enrichedRecords.find(r => r.id === event.active.id);
     setActiveRecord(record || null);
   }, [enrichedRecords]);
 
@@ -181,7 +185,7 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
     setActiveRecord(null);
 
     const { active, delta } = event;
-    const recordId = String(active.id);
+    const recordId = active.id as string;
 
     setPositions(prevPositions => {
       const newPositions = new Map(prevPositions);
@@ -224,7 +228,7 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
           <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             <div className="records-canvas">
               {enrichedRecords.map(record => {
-                const recordId = String(record.id);
+                const recordId = record.id;
                 const position = positions.get(recordId) || { x: 0, y: 0 };
                 
                 return (
