@@ -7,6 +7,7 @@ import { Modal } from '../common/Modal/Modal';
 import { RecordCard } from './components/RecordCard';
 import { useRecords } from '../../contexts/RecordsContext';
 import { fetchObjectAsset, getAssetImage } from '../../utils/assetLoader';
+import { getRecords } from '../../services/api';
 import './RecordsModal.css';
 
 interface RecordsModalProps {
@@ -56,16 +57,39 @@ const savePositions = (positions: Map<string, { x: number; y: number }>) => {
 };
 
 const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioData }) => {
-  const { records, updateRecordPosition } = useRecords();
+  const { records, updateRecordPosition, setRecords } = useRecords();
   const [positions, setPositions] = useState<Map<string, { x: number; y: number }>>(new Map());
   const [activeRecord, setActiveRecord] = useState<Record | null>(null);
   const [enrichedRecords, setEnrichedRecords] = useState<Record[]>([]);
+  const [isLoadingRecords, setIsLoadingRecords] = useState(false);
 
   // Load positions on mount
   useEffect(() => {
     const loadedPositions = loadPositions();
     setPositions(loadedPositions);
   }, []);
+
+  // Fetch records from API when modal opens
+  useEffect(() => {
+    if (!isOpen || !scenarioData) return;
+
+    const fetchRecords = async () => {
+      setIsLoadingRecords(true);
+      try {
+        const recordsData = await getRecords(scenarioData.scenarioId);
+        // Set records from API - they should have id, type, name, content
+        if (recordsData.records && recordsData.records.length > 0) {
+          setRecords(recordsData.records);
+        }
+      } catch (error) {
+        console.error('Failed to fetch records:', error);
+      } finally {
+        setIsLoadingRecords(false);
+      }
+    };
+
+    fetchRecords();
+  }, [isOpen, scenarioData, setRecords]);
 
   // Enrich records with images from map objects
   useEffect(() => {
@@ -188,31 +212,41 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
       maxWidth="1000px"
     >
       <div className="records-modal-content">
-        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="records-canvas">
-            {enrichedRecords.map(record => {
-              const recordId = String(record.id);
-              const position = positions.get(recordId) || { x: 0, y: 0 };
-              
-              return (
-                <div
-                  key={recordId}
-                  className="record-item-wrapper"
-                  style={{
-                    position: 'absolute',
-                    left: position.x,
-                    top: position.y,
-                  }}
-                >
-                  <RecordCard record={record} />
-                </div>
-              );
-            })}
+        {isLoadingRecords ? (
+          <div className="records-loading">
+            <p>Loading records...</p>
           </div>
-          <DragOverlay>
-            {activeRecord ? <RecordCard record={activeRecord} /> : null}
-          </DragOverlay>
-        </DndContext>
+        ) : enrichedRecords.length === 0 ? (
+          <div className="records-empty">
+            <p>No records found. Interact with objects to collect records.</p>
+          </div>
+        ) : (
+          <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            <div className="records-canvas">
+              {enrichedRecords.map(record => {
+                const recordId = String(record.id);
+                const position = positions.get(recordId) || { x: 0, y: 0 };
+                
+                return (
+                  <div
+                    key={recordId}
+                    className="record-item-wrapper"
+                    style={{
+                      position: 'absolute',
+                      left: position.x,
+                      top: position.y,
+                    }}
+                  >
+                    <RecordCard record={record} />
+                  </div>
+                );
+              })}
+            </div>
+            <DragOverlay>
+              {activeRecord ? <RecordCard record={activeRecord} /> : null}
+            </DragOverlay>
+          </DndContext>
+        )}
       </div>
     </Modal>
   );

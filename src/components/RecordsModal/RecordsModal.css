@@ -21,6 +21,28 @@
   transition: none;
 }
 
+/* Loading state */
+.records-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 500px;
+  color: #666;
+  font-size: 16px;
+}
+
+/* Empty state */
+.records-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 500px;
+  color: #999;
+  font-size: 16px;
+  text-align: center;
+  padding: 40px;
+}
+
 /* Help text when no records */
 .records-empty-state {
   display: flex;
