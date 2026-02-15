@@ -1,4 +1,6 @@
 // Interaction API Types
+import type { ApiRecord } from './record'; // Added import for ApiRecord
+
 export type InteractionType = 'simple' | 'two-way';
 
 export interface InteractionRequest {
@@ -10,22 +12,14 @@ export interface SimpleInteractionResponse {
   type: 'simple';
   message: string;
   name?: string; // Optional name field for simple interactions
-  newRecords?: Array<{
-    id: string;
-    type: string;
-    name: string;
-  }>;
+  newRecords?: ApiRecord[]; // Changed type to ApiRecord[]
 }
 
 export interface TwoWayInteractionResponse {
   type: 'two-way';
   message: string;
   history: string; // Updated JWT encoded history string
-  newRecords?: Array<{
-    id: string;
-    type: string;
-    name: string;
-  }>;
+  newRecords?: ApiRecord[]; // Changed type to ApiRecord[]
 }
 
 export type InteractionResponse = SimpleInteractionResponse | TwoWayInteractionResponse;

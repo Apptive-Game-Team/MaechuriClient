@@ -1,44 +1,39 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import type { Record } from '../types/record';
-import { mockRecordsData } from '../data/recordsData';
+import type { Record, Position, ApiRecord } from '../types/record'; // ApiRecord is still used in RecordsContextType
+import { mapApiRecordToRecord } from '../types/record'; // Changed from type import
 
 interface RecordsContextType {
   records: Record[];
-  addRecords: (newRecords: Array<{ id: string; type: string; name: string }>) => void;
+  addRecords: (newRecords: ApiRecord[]) => void;
+  updateRecordPosition: (recordId: string, position: Position) => void;
+  setRecords: (records: Record[]) => void;
 }
 
 const RecordsContext = createContext<RecordsContextType | undefined>(undefined);
 
 export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [records, setRecords] = useState<Record[]>(mockRecordsData.records);
+  const [records, setRecords] = useState<Record[]>([]);
 
-  const addRecords = useCallback((newRecords: Array<{ id: string; type: string; name: string }>) => {
+  const addRecords = useCallback((newRecords: ApiRecord[]) => {
     setRecords((prevRecords) => {
       const updatedRecords = [...prevRecords];
       
-      newRecords.forEach((newRecord) => {
-        // Use server type directly (CLUE or NPC)
-        const recordType = newRecord.type.toUpperCase();
-        
-        // Check if record already exists (same type and id)
+      newRecords.forEach((newApiRecord) => {
+        const newRecord = mapApiRecordToRecord(newApiRecord); // Can be Record | null
+
+        if (newRecord === null) {
+          return; // Skip invalid records from API
+        }
+
+        // Check if record already exists by ID
         const exists = updatedRecords.some(
-          (existing) => {
-            // Compare IDs as strings
-            const existingIdStr = String(existing.id);
-            const newRecordIdStr = String(newRecord.id);
-            
-            return existingIdStr === newRecordIdStr && existing.type === recordType;
-          }
+          (existing) => existing.id === newRecord.id
         );
         
         // Only add if it doesn't exist
         if (!exists) {
-          updatedRecords.push({
-            id: newRecord.id,
-            type: recordType as 'CLUE' | 'NPC',
-            name: newRecord.name,
-          });
+          updatedRecords.push(newRecord);
         }
       });
       
@@ -46,8 +41,20 @@ export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   }, []);
 
+  const updateRecordPosition = useCallback((recordId: string, position: Position) => {
+    setRecords((prevRecords) => 
+      prevRecords.map((record) => {
+        // record.id is guaranteed to be string here
+        if (record.id === recordId) {
+          return { ...record, position };
+        }
+        return record;
+      })
+    );
+  }, []);
+
   return (
-    <RecordsContext.Provider value={{ records, addRecords }}>
+    <RecordsContext.Provider value={{ records, addRecords, updateRecordPosition, setRecords }}>
       {children}
     </RecordsContext.Provider>
   );

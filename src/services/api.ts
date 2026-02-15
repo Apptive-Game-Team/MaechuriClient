@@ -3,6 +3,7 @@ import { apiFetch } from '../utils/apiFetch';
 import type { ScenarioData } from '../types/map';
 import type { InteractionRequest, InteractionResponse } from '../types/interaction';
 import type { SolveRequest, SolveResponse } from '../types/solve';
+import type { RecordsData, RecordDetail } from '../types/record';
 
 /**
  * Fetch today's map data
@@ -81,6 +82,45 @@ export async function submitSolve(
 
   if (!response.ok) {
     throw new Error(`Failed to submit solve: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetch all records for a scenario
+ */
+export async function getRecords(scenarioId: number): Promise<RecordsData> {
+  const response = await apiFetch(API_ENDPOINTS.getRecords(scenarioId), {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch records: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetch a single record detail
+ */
+export async function getRecord(
+  scenarioId: number,
+  recordId: string
+): Promise<RecordDetail> {
+  const response = await apiFetch(API_ENDPOINTS.getRecord(scenarioId, recordId), {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch record: ${response.statusText}`);
   }
 
   return response.json();

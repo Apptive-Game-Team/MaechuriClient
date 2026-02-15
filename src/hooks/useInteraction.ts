@@ -4,11 +4,12 @@ import type {
   ObjectInteractionState, 
   ChatMessage
 } from '../types/interaction';
+import type { ApiRecord } from '../types/record';
 
 interface UseInteractionResult {
   interactions: Map<string, ObjectInteractionState>;
-  startInteraction: (scenarioId: number, objectId: string, onNewRecords?: (records: Array<{ id: string; type: string; name: string }>) => void) => Promise<void>;
-  sendMessage: (scenarioId: number, objectId: string, message: string, onNewRecords?: (records: Array<{ id: string; type: string; name: string }>) => void) => Promise<void>;
+  startInteraction: (scenarioId: number, objectId: string, onNewRecords?: (records: ApiRecord[]) => void) => Promise<void>;
+  sendMessage: (scenarioId: number, objectId: string, message: string, onNewRecords?: (records: ApiRecord[]) => void) => Promise<void>;
   getInteractionState: (objectId: string) => ObjectInteractionState | undefined;
   isLoading: boolean;
   error: string | null;
@@ -57,7 +58,7 @@ export function useInteraction(): UseInteractionResult {
    * Start interaction with an object (initial request with empty body)
    */
   const startInteraction = useCallback(
-    async (scenarioId: number, objectId: string, onNewRecords?: (records: Array<{ id: string; type: string; name: string }>) => void) => {
+    async (scenarioId: number, objectId: string, onNewRecords?: (records: ApiRecord[]) => void) => {
       setIsLoading(true);
       setError(null);
 
@@ -101,7 +102,7 @@ export function useInteraction(): UseInteractionResult {
    * Send a message in a two-way interaction
    */
   const sendMessage = useCallback(
-    async (scenarioId: number, objectId: string, message: string, onNewRecords?: (records: Array<{ id: string; type: string; name: string }>) => void) => {
+    async (scenarioId: number, objectId: string, message: string, onNewRecords?: (records: ApiRecord[]) => void) => {
       const currentState = interactions.get(objectId);
       if (!currentState || currentState.type !== 'two-way') {
         console.error('Cannot send message: not a two-way interaction');

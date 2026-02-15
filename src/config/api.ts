@@ -10,4 +10,6 @@ export const API_ENDPOINTS = {
   getScenarioMap: (scenarioId: number) => `${API_BASE_URL}/api/scenarios/${scenarioId}/data/map`,
   interact: (scenarioId: number, objectId: string) => `${API_BASE_URL}/api/scenarios/${scenarioId}/interact/${objectId}`,
   solve: (scenarioId: number) => `${API_BASE_URL}/api/scenarios/${scenarioId}/solve`,
+  getRecords: (scenarioId: number) => `${API_BASE_URL}/api/scenarios/${scenarioId}/records`,
+  getRecord: (scenarioId: number, recordId: string) => `${API_BASE_URL}/api/scenarios/${scenarioId}/records/${recordId}`,
 } as const;
