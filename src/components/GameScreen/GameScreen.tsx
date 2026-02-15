@@ -343,6 +343,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
       <RecordsModal
         isOpen={recordsModalOpen}
         onClose={() => setRecordsModalOpen(false)}
+        scenarioData={scenarioData}
       />
     </div>
   );

@@ -2,14 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { DndContext, DragOverlay } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import type { Record } from '../../types/record';
+import type { ScenarioData } from '../../types/map';
 import { Modal } from '../common/Modal/Modal';
 import { RecordCard } from './components/RecordCard';
 import { useRecords } from '../../contexts/RecordsContext';
+import { fetchObjectAsset, getAssetImage } from '../../utils/assetLoader';
 import './RecordsModal.css';
 
 interface RecordsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  scenarioData: ScenarioData | null;
 }
 
 interface RecordPosition {
@@ -52,16 +55,67 @@ const savePositions = (positions: Map<string, { x: number; y: number }>) => {
   }
 };
 
-const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose }) => {
+const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioData }) => {
   const { records, updateRecordPosition } = useRecords();
   const [positions, setPositions] = useState<Map<string, { x: number; y: number }>>(new Map());
   const [activeRecord, setActiveRecord] = useState<Record | null>(null);
+  const [enrichedRecords, setEnrichedRecords] = useState<Record[]>([]);
 
   // Load positions on mount
   useEffect(() => {
     const loadedPositions = loadPositions();
     setPositions(loadedPositions);
   }, []);
+
+  // Enrich records with images from map objects
+  useEffect(() => {
+    if (!scenarioData || !isOpen) {
+      setEnrichedRecords(records);
+      return;
+    }
+
+    const enrichRecords = async () => {
+      const enriched = await Promise.all(
+        records.map(async (record) => {
+          // Skip if already has imageUrl or is FACT type
+          if (record.imageUrl || record.type === 'FACT') {
+            return record;
+          }
+
+          // Find the corresponding object in map data
+          const mapObject = scenarioData.map.objects.find(obj => obj.id === record.id);
+          if (!mapObject) {
+            return record;
+          }
+
+          // Find the asset for this object
+          const asset = scenarioData.map.assets.find(a => a.id === mapObject.id);
+          if (!asset || !asset.imageUrl) {
+            return record;
+          }
+
+          try {
+            // Fetch the directional asset JSON
+            const directionalAsset = await fetchObjectAsset(asset.imageUrl);
+            // Get the appropriate image URL
+            const imageUrl = getAssetImage(directionalAsset, mapObject.direction as 'left' | 'right' | 'front' | 'back');
+            
+            return {
+              ...record,
+              imageUrl: imageUrl || undefined,
+            };
+          } catch (error) {
+            console.error(`Failed to load image for record ${record.id}:`, error);
+            return record;
+          }
+        })
+      );
+
+      setEnrichedRecords(enriched);
+    };
+
+    enrichRecords();
+  }, [records, scenarioData, isOpen]);
 
   // Initialize positions for new records in a grid layout
   useEffect(() => {
@@ -75,7 +129,7 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose }) => {
       const cardWidth = 170; // 150px + 20px margin
       const cardHeight = 170; // 150px + 20px margin
 
-      records.forEach(record => {
+      enrichedRecords.forEach(record => {
         const recordId = String(record.id);
         if (!newPositions.has(recordId)) {
           newPositions.set(recordId, {
@@ -92,12 +146,12 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose }) => {
 
       return newPositions;
     });
-  }, [records, isOpen]);
+  }, [enrichedRecords, isOpen]);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    const record = records.find(r => String(r.id) === event.active.id);
+    const record = enrichedRecords.find(r => String(r.id) === event.active.id);
     setActiveRecord(record || null);
-  }, [records]);
+  }, [enrichedRecords]);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     setActiveRecord(null);
@@ -136,7 +190,7 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose }) => {
       <div className="records-modal-content">
         <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="records-canvas">
-            {records.map(record => {
+            {enrichedRecords.map(record => {
               const recordId = String(record.id);
               const position = positions.get(recordId) || { x: 0, y: 0 };
               

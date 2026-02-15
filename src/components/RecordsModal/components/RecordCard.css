@@ -38,6 +38,11 @@
   flex-shrink: 0;
 }
 
+.record-card-image-empty {
+  background-color: #e0e0e0;
+  border: 2px dashed #bdbdbd;
+}
+
 .record-card-memo-icon {
   width: 100%;
   height: 80px;

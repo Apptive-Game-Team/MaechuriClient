@@ -50,13 +50,13 @@ export const RecordCard: React.FC<RecordCardProps> = ({ record }) => {
           <div className="record-card-memo-icon">
             📝
           </div>
+        ) : record.imageUrl ? (
+          <div 
+            className="record-card-image"
+            style={{ backgroundImage: `url(${record.imageUrl})` }}
+          />
         ) : (
-          record.imageUrl && (
-            <div 
-              className="record-card-image"
-              style={{ backgroundImage: `url(${record.imageUrl})` }}
-            />
-          )
+          <div className="record-card-image record-card-image-empty" />
         )}
         <div className="record-card-simple-name">{record.name}</div>
       </div>
