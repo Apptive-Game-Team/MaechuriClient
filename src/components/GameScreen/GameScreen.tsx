@@ -17,6 +17,7 @@ import interpolationSystem from './systems/interpolationSystem';
 import fogOfWarSystem from './systems/fogOfWarSystem';
 import ChatModal from '../ChatModal/ChatModal';
 import SolveModal from '../SolveModal/SolveModal';
+import RecordsModal from '../RecordsModal/RecordsModal';
 import ErrorScreen from '../ErrorScreen/ErrorScreen'; // Import ErrorScreen
 import { HTTPError } from '../../utils/httpError'; // Import HTTPError
 import './GameScreen.css';
@@ -41,6 +42,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
   const gameEngineRef = useRef<GameEngine>(null);
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [solveModalOpen, setSolveModalOpen] = useState(false);
+  const [recordsModalOpen, setRecordsModalOpen] = useState(false);
   const [currentObjectId, setCurrentObjectId] = useState<string | null>(null);
   const [currentObjectName, setCurrentObjectName] = useState<string>('');
   const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
@@ -171,6 +173,29 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
     }
   }, [playerPosition, scenarioData]);
 
+  // Keyboard handler for 'r' key to open records modal
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle if no other modals are open and not in an input field
+      if (
+        event.key === 'r' &&
+        !chatModalOpen &&
+        !solveModalOpen &&
+        !recordsModalOpen &&
+        !(event.target instanceof HTMLInputElement) &&
+        !(event.target instanceof HTMLTextAreaElement) &&
+        !(event.target as HTMLElement).isContentEditable
+      ) {
+        setRecordsModalOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [chatModalOpen, solveModalOpen, recordsModalOpen]);
+
   // Use custom hooks
   usePlayerControls(gameEngineRef);
 
@@ -276,7 +301,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
     <div className="game-screen">
       <div className="game-info">
         <h2>{scenarioData.scenarioName}</h2>
-        <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects.</p>
+        <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects. Press R to view records.</p>
       </div>
       <div className="game-viewport" style={{ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT, position: 'relative', overflow: 'hidden' }}>
         <div 
@@ -313,6 +338,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
         attempts={solveAttempts}
         onClose={() => setSolveModalOpen(false)}
         onSubmit={handleSolveSubmit}
+      />
+
+      <RecordsModal
+        isOpen={recordsModalOpen}
+        onClose={() => setRecordsModalOpen(false)}
       />
     </div>
   );

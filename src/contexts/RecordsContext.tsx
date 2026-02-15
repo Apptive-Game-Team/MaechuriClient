@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import type { Record } from '../types/record';
+import type { Record, Position } from '../types/record';
 import { mockRecordsData } from '../data/recordsData';
 
 interface RecordsContextType {
   records: Record[];
   addRecords: (newRecords: Array<{ id: string; type: string; name: string }>) => void;
+  updateRecordPosition: (recordId: string | number, position: Position) => void;
+  setRecords: (records: Record[]) => void;
 }
 
 const RecordsContext = createContext<RecordsContextType | undefined>(undefined);
@@ -46,8 +48,22 @@ export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   }, []);
 
+  const updateRecordPosition = useCallback((recordId: string | number, position: Position) => {
+    setRecords((prevRecords) => 
+      prevRecords.map((record) => {
+        const recordIdStr = String(record.id);
+        const targetIdStr = String(recordId);
+        
+        if (recordIdStr === targetIdStr) {
+          return { ...record, position };
+        }
+        return record;
+      })
+    );
+  }, []);
+
   return (
-    <RecordsContext.Provider value={{ records, addRecords }}>
+    <RecordsContext.Provider value={{ records, addRecords, updateRecordPosition, setRecords }}>
       {children}
     </RecordsContext.Provider>
   );
