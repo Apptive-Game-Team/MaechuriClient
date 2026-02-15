@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { Record, Position } from '../types/record';
-import { mockRecordsData } from '../data/recordsData';
 
 interface RecordsContextType {
   records: Record[];
@@ -13,7 +12,7 @@ interface RecordsContextType {
 const RecordsContext = createContext<RecordsContextType | undefined>(undefined);
 
 export const RecordsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [records, setRecords] = useState<Record[]>(mockRecordsData.records);
+  const [records, setRecords] = useState<Record[]>([]);
 
   const addRecords = useCallback((newRecords: Array<{ id: string; type: string; name: string }>) => {
     setRecords((prevRecords) => {
