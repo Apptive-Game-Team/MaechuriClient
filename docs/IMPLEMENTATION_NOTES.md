@@ -26,7 +26,7 @@ Successfully implemented a comprehensive records visualization modal that allows
 - Positions saved to localStorage automatically
 - Storage key: `maechuri-record-positions`
 - Positions restored when modal reopens
-- New records auto-layout in a grid (3 per row)
+- New records auto-layout in a grid (4 per row)
 
 ### 5. API Integration ✅
 - Added endpoints:
