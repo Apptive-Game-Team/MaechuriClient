@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import type { Record } from '../../../types/record';
 
-export const useChatInput = (records: Record[], onSendMessage: (message: string) => void) => {
+export const useChatInput = (records: Record[], onSendMessage: (message: string) => void, isNearObject: boolean) => {
   const [showAutocomplete, setShowAutocomplete] = useState(false);
   const [autocompleteQuery, setAutocompleteQuery] = useState('');
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
@@ -205,6 +205,7 @@ export const useChatInput = (records: Record[], onSendMessage: (message: string)
 
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+      if (!isNearObject) return; // Prevent sending message if not near object
       handleSendMessage();
     }
   };

@@ -21,7 +21,7 @@ export const ChatInput = forwardRef<HTMLDivElement, ChatInputProps>(({ records, 
     handleSendMessage,
     setIsComposing,
     insertReference,
-  } = useChatInput(records, onSendMessage);
+  } = useChatInput(records, onSendMessage, isNearObject);
 
   useImperativeHandle(ref, () => inputRef.current as HTMLDivElement);
 
