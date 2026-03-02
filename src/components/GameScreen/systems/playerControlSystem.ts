@@ -16,39 +16,47 @@ const playerControlSystem: System = (entities, { events, dispatch }) => {
     const moveEvents = (events as { type: string }[]).filter((e) => e.type.startsWith('move-'));
 
     if (moveEvents.length > 0) {
-      // Get the last movement event
-      const moveEvent = moveEvents[moveEvents.length - 1];
-      const newDirection = moveEvent.type.split('-')[1] as Direction;
+      // Block new movement while the current animation is still in progress
+      const isAnimating =
+        player.interpolatedPosition &&
+        (Math.abs(player.interpolatedPosition.x - player.position.x) > 0.01 ||
+          Math.abs(player.interpolatedPosition.y - player.position.y) > 0.01);
 
-      // Update player direction
-      player.direction = newDirection;
+      if (!isAnimating) {
+        // Get the last movement event
+        const moveEvent = moveEvents[moveEvents.length - 1];
+        const newDirection = moveEvent.type.split('-')[1] as Direction;
 
-      // Calculate new position based on direction
-      let newX = player.position.x;
-      let newY = player.position.y;
+        // Update player direction
+        player.direction = newDirection;
 
-      switch (newDirection) {
-        case 'up':
-          newY -= 1;
-          break;
-        case 'down':
-          newY += 1;
-          break;
-        case 'left':
-          newX -= 1;
-          break;
-        case 'right':
-          newX += 1;
-          break;
-      }
+        // Calculate new position based on direction
+        let newX = player.position.x;
+        let newY = player.position.y;
 
-      // Check for collisions before updating the position
-      if (!checkCollision(newX, newY)) {
-        player.position = { x: newX, y: newY };
-        (dispatch as (event: PlayerMovedEvent) => void)({
-          type: 'player-moved',
-          position: player.position,
-        });
+        switch (newDirection) {
+          case 'up':
+            newY -= 1;
+            break;
+          case 'down':
+            newY += 1;
+            break;
+          case 'left':
+            newX -= 1;
+            break;
+          case 'right':
+            newX += 1;
+            break;
+        }
+
+        // Check for collisions before updating the position
+        if (!checkCollision(newX, newY)) {
+          player.position = { x: newX, y: newY };
+          (dispatch as (event: PlayerMovedEvent) => void)({
+            type: 'player-moved',
+            position: player.position,
+          });
+        }
       }
     }
   }

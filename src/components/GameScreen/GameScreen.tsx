@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { GameEngine } from 'react-game-engine';
 import type { Position, Direction, ScenarioData, Layer, MapObject } from '../../types/map';
 import type { SolveResponse, SolveAttempt } from '../../types/solve';
-import { TILE_SIZE } from './types';
+import { TILE_SIZE, MOVEMENT_DURATION } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
 import { useGameEntities } from './hooks/useGameEntities';
 import { useAssetLoader } from './hooks/useAssetLoader';
@@ -391,7 +391,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
           style={{ 
             width: mapWidth, 
             height: mapHeight,
-            transform: `translate(${cameraOffset.x}px, ${cameraOffset.y}px)`
+            transform: `translate(${cameraOffset.x}px, ${cameraOffset.y}px)`,
+            transition: `transform ${MOVEMENT_DURATION}ms cubic-bezier(0.0, 0.0, 0.2, 1)`,
           }}
         >
           <GameEngine

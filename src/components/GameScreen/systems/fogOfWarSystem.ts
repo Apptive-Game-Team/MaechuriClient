@@ -7,8 +7,9 @@ const fogOfWarSystem: System = (entities: Record<string, Entity>) => {
   const fogOfWar = entities.fogOfWar as FogOfWarEntity;
 
   if (player?.position && fogOfWar) {
-    // Use interpolated position for smoother updates if available
-    const playerPos = player.interpolatedPosition || player.position;
+    // Always use discrete position for fog-of-war logic so that tile visibility
+    // is determined by the player's actual tile, not the visual animation.
+    const playerPos = player.position;
 
     // Adjust player position to be the center of the tile for raycasting
     const raycastOrigin = {
