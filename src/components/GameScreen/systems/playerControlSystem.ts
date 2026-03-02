@@ -1,6 +1,12 @@
 import type { System } from 'react-game-engine';
 import { checkCollision } from '../utils/gameUtils';
-import type { PlayerEntity, Direction } from '../types';
+import type { PlayerEntity, Direction, Position } from '../types'; // Import Position type
+
+// Define the type for the player-moved event
+interface PlayerMovedEvent {
+  type: 'player-moved';
+  position: Position;
+}
 
 const playerControlSystem: System = (entities, { events, dispatch }) => {
   const player = entities.player as PlayerEntity;
@@ -39,7 +45,7 @@ const playerControlSystem: System = (entities, { events, dispatch }) => {
       // Check for collisions before updating the position
       if (!checkCollision(newX, newY)) {
         player.position = { x: newX, y: newY };
-        (dispatch as (event: any) => void)({
+        (dispatch as (event: PlayerMovedEvent) => void)({
           type: 'player-moved',
           position: player.position,
         });
