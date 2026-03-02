@@ -11,13 +11,10 @@ export interface Position {
 export interface PlayerEntity extends Entity {
   position: Position;
   direction: Direction;
+  speed: number;
   asset: DirectionalAsset | null;
   interpolatedPosition?: Position; // Smoothly interpolated position for rendering
-  animation?: {
-    startTime: number;
-    startPos: Position;
-    targetPos: Position;
-  };
+  lastTilePosition?: Position;
 }
 
 export interface TileEntity extends Entity {
@@ -34,6 +31,7 @@ export interface FogOfWarEntity extends Entity {
   mapWidth?: number;
   mapHeight?: number;
   renderer?: ElementType;
+  isInitialized?: boolean;
 }
 
 export const TILE_SIZE = 64;

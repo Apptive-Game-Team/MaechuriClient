@@ -11,12 +11,15 @@ export const setCurrentMapData = (mapData: GameMap) => {
 export const checkCollision = (x: number, y: number): boolean => {
   if (!currentMapData) return false;
   const { layers, objects } = currentMapData;
-  
+
+  const tileX = Math.round(x);
+  const tileY = Math.round(y);
+
   for (const layer of layers) {
     if (layer.type.includes("Non-Passable")) {
-      if (y >= 0 && y < layer.tileMap.length && 
-          x >= 0 && x < layer.tileMap[0].length) {
-        if (layer.tileMap[y][x] !== 0) {
+      if (tileY >= 0 && tileY < layer.tileMap.length && 
+          tileX >= 0 && tileX < layer.tileMap[0].length) {
+        if (layer.tileMap[tileY][tileX] !== 0) {
           return true; // Collision detected
         }
       }
@@ -24,7 +27,7 @@ export const checkCollision = (x: number, y: number): boolean => {
   }
 
   for (const object of objects) {
-    if (object.position.x === x && object.position.y === y) {
+    if (Math.round(object.position.x) === tileX && Math.round(object.position.y) === tileY) {
       if (object.type.includes("Non-Passable")) {
         return true; // Collision with object detected
       }
@@ -37,12 +40,14 @@ export const checkCollision = (x: number, y: number): boolean => {
 export const checkInteraction = (x: number, y: number): string | null => {
   if (!currentMapData) return null;
   const { layers, objects } = currentMapData;
-  
+  const tileX = Math.round(x);
+  const tileY = Math.round(y);
+
   for (const layer of layers) {
     if (layer.type.includes("Interactable")) {
-      if (y >= 0 && y < layer.tileMap.length && 
-          x >= 0 && x < layer.tileMap[0].length) {
-        const tileId = layer.tileMap[y][x];
+      if (tileY >= 0 && tileY < layer.tileMap.length && 
+          tileX >= 0 && tileX < layer.tileMap[0].length) {
+        const tileId = layer.tileMap[tileY][tileX];
         if (tileId !== 0) {
           return String(tileId);
         }
@@ -51,7 +56,7 @@ export const checkInteraction = (x: number, y: number): string | null => {
   }
 
   for (const object of objects) {
-    if (object.position.x === x && object.position.y === y) {
+    if (Math.round(object.position.x) === tileX && Math.round(object.position.y) === tileY) {
       if (object.type.includes("Interactable")) {
         return object.id;
       }
@@ -64,9 +69,11 @@ export const checkInteraction = (x: number, y: number): string | null => {
 export const getObjectInfo = (x: number, y: number): { id: string; name: string } | null => {
   if (!currentMapData) return null;
   const { objects } = currentMapData;
-  
+  const tileX = Math.round(x);
+  const tileY = Math.round(y);
+
   for (const object of objects) {
-    if (object.position.x === x && object.position.y === y) {
+    if (Math.round(object.position.x) === tileX && Math.round(object.position.y) === tileY) {
       if (object.type.includes("Interactable")) {
         return { id: object.id, name: object.name };
       }

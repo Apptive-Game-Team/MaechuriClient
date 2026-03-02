@@ -65,6 +65,7 @@ export const useGameEntities = (
   const playerEntity = {
     position: playerPosition,
     direction: playerDirection,
+    speed: 0.2,
     asset: assetsState.assets.get(playerAssetId),
     renderer: Player,
   };

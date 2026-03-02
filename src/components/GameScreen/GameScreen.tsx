@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { GameEngine } from 'react-game-engine';
 import type { Position, Direction, ScenarioData, Layer, MapObject } from '../../types/map';
 import type { SolveResponse, SolveAttempt } from '../../types/solve';
-import { TILE_SIZE, MOVEMENT_DURATION } from './types';
+import { TILE_SIZE } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
 import { useGameEntities } from './hooks/useGameEntities';
 import { useAssetLoader } from './hooks/useAssetLoader';
@@ -18,15 +18,13 @@ import fogOfWarSystem from './systems/fogOfWarSystem';
 import ChatModal from '../ChatModal/ChatModal';
 import SolveModal from '../SolveModal/SolveModal';
 import RecordsModal from '../RecordsModal/RecordsModal';
-import ErrorScreen from '../ErrorScreen/ErrorScreen'; // Import ErrorScreen
-import { HTTPError } from '../../utils/httpError'; // Import HTTPError
+import ErrorScreen from '../ErrorScreen/ErrorScreen';
+import { HTTPError } from '../../utils/httpError';
 import './GameScreen.css';
 
-// Viewport dimensions for the game camera
 const VIEWPORT_WIDTH = 800;
 const VIEWPORT_HEIGHT = 600;
 
-// Empty scenario data used as fallback during loading
 const EMPTY_SCENARIO = {
   createdDate: '',
   scenarioId: 0,
@@ -40,45 +38,33 @@ interface GameScreenProps {
 
 const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
   const gameEngineRef = useRef<GameEngine>(null);
+  const gameContainerRef = useRef<HTMLDivElement>(null);
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [solveModalOpen, setSolveModalOpen] = useState(false);
   const [recordsModalOpen, setRecordsModalOpen] = useState(false);
   const [currentObjectId, setCurrentObjectId] = useState<string | null>(null);
   const [currentObjectName, setCurrentObjectName] = useState<string>('');
-  const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
   const [solveAttempts, setSolveAttempts] = useState<SolveAttempt[]>([]);
-  const isInitialPlayerStateSet = useRef(false); // New ref for player position/direction initialization
+  const isInitialPlayerStateSet = useRef(false);
 
-  // Disable page scrolling when GameScreen is mounted
   useEffect(() => {
-    // Save original overflow style
     const originalOverflow = document.body.style.overflow;
-    
-    // Disable scrolling
     document.body.style.overflow = 'hidden';
-    
-    // Restore original overflow when component unmounts
     return () => {
       document.body.style.overflow = originalOverflow;
     };
   }, []);
-  // Get records context
-  const { records, addRecords } = useRecords();
 
-  // Fetch map data from API
+  const { records, addRecords } = useRecords();
   const { data: originalScenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({});
   const [scenarioData, setScenarioData] = useState<ScenarioData | null>(null);
 
-  // Add a border to the map once data is loaded
   useEffect(() => {
     if (originalScenarioData) {
       const newScenarioData = JSON.parse(JSON.stringify(originalScenarioData));
-
       const mapWidthInTiles = Math.max(0, ...newScenarioData.map.layers.flatMap((l: Layer) => l.tileMap.map((row: number[]) => row.length)));
       const mapHeightInTiles = Math.max(0, ...newScenarioData.map.layers.map((l: Layer) => l.tileMap.length));
-
       let borderLayer = newScenarioData.map.layers.find((l: Layer) => l.name === "Borders");
-
       if (!borderLayer) {
         borderLayer = {
           name: "Borders",
@@ -88,217 +74,135 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
         };
         newScenarioData.map.layers.push(borderLayer);
       }
-
-      // Ensure the border layer is the correct size and has a border
       for (let y = 0; y < mapHeightInTiles; y++) {
         if (!borderLayer.tileMap[y]) {
           borderLayer.tileMap[y] = Array(mapWidthInTiles).fill(0);
         }
         for (let x = 0; x < mapWidthInTiles; x++) {
           if (x === 0 || x === mapWidthInTiles - 1 || y === 0 || y === mapHeightInTiles - 1) {
-            borderLayer.tileMap[y][x] = 1; // Set border tile
+            borderLayer.tileMap[y][x] = 1;
           }
         }
       }
-      
-      // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
       setScenarioData(newScenarioData);
     }
   }, [originalScenarioData]);
 
-  // Manage interactions
-  const {
-    interactions,
-    startInteraction,
-    sendMessage,
-    getInteractionState,
-  } = useInteraction();
+  const { interactions, startInteraction, sendMessage, getInteractionState } = useInteraction();
 
-  // Set current map data for game utils
   useEffect(() => {
     if (scenarioData) {
       setCurrentMapData(scenarioData.map);
     }
   }, [scenarioData]);
 
-  // Listen for interaction events from the game
   useEffect(() => {
     const handleInteraction = async (event: Event) => {
       const customEvent = event as CustomEvent<{ objectId: string; objectName: string }>;
       const { objectId, objectName } = customEvent.detail;
-
-      // Check if this is the solve object (d:1)
       if (objectId === 'd:1') {
         setSolveModalOpen(true);
         return;
       }
-
       setCurrentObjectId(objectId);
       setCurrentObjectName(objectName);
       setChatModalOpen(true);
-
-      // Start interaction if not already started
       if (scenarioData && !getInteractionState(objectId)) {
         await startInteraction(scenarioData.scenarioId, objectId, addRecords);
       }
     };
-
     window.addEventListener('gameInteraction', handleInteraction);
     return () => {
       window.removeEventListener('gameInteraction', handleInteraction);
     };
   }, [scenarioData, getInteractionState, startInteraction, addRecords]);
 
-  // Memoize assets to prevent re-renders caused by new array reference on each render
   const assetsToLoad = useMemo(() => scenarioData?.map.assets || [], [scenarioData]);
+  const assetsState = useAssetLoader(assetsToLoad);
 
-  // Load assets
-  const assetsState = useAssetLoader(
-    assetsToLoad
-  );
-
-  // Initialize entities once - start player in center of top-left room
   const [playerPosition, setPlayerPosition] = useState<Position>({ x: 5, y: 5 });
-  const [playerDirection, setPlayerDirection] = useState<Direction>('down'); // New state for playerDirection
-  
+  const [playerDirection, setPlayerDirection] = useState<Direction>('down');
+
   useEffect(() => {
     if (scenarioData && !isInitialPlayerStateSet.current) {
       const playerObject = scenarioData.map.objects.find((obj: MapObject) => obj.id === 'p:1');
       if (playerObject) {
-        // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
         setPlayerPosition(playerObject.position);
-        // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
-        setPlayerDirection(playerObject.direction || 'down'); // Default to 'down' if not specified
+        setPlayerDirection(playerObject.direction || 'down');
       } else {
-        // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
         setPlayerPosition({ x: 5, y: 5 });
-        // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
         setPlayerDirection('down');
       }
-      isInitialPlayerStateSet.current = true; // Mark as initialized
+      isInitialPlayerStateSet.current = true;
     }
   }, [scenarioData]);
-  
-  const entities = useGameEntities(
-    scenarioData || EMPTY_SCENARIO, // Always call useGameEntities
-    playerPosition,
-    playerDirection,
-    assetsState
-  );
 
-  // Update camera to follow player
-  useEffect(() => {
-    if (!playerPosition) {
-      return;
+  const entities = useGameEntities(scenarioData || EMPTY_SCENARIO, playerPosition, playerDirection, assetsState);
+
+  const handleGameEvent = (event: Record<string, unknown>) => {
+    if (event.type === 'player-moved-tile') {
+      const position = event.position as Position | undefined;
+      if (position && typeof position.x === 'number' && typeof position.y === 'number') {
+        setPlayerPosition(position);
+      }
+    } else if (event.type === 'interpolated-position-changed') {
+      const position = event.position as Position | undefined;
+      if (position && typeof position.x === 'number' && typeof position.y === 'number' && gameContainerRef.current && scenarioData) {
+        const offsetX = (VIEWPORT_WIDTH / 2) - (position.x * TILE_SIZE + TILE_SIZE / 2);
+        const offsetY = (VIEWPORT_HEIGHT / 2) - (position.y * TILE_SIZE + TILE_SIZE / 2);
+        
+        const mapWidth = Math.max(0, ...scenarioData.map.layers.flatMap((layer: Layer) => layer.tileMap.map((row: number[]) => row.length))) * TILE_SIZE;
+        const mapHeight = Math.max(0, ...scenarioData.map.layers.map((layer: Layer) => layer.tileMap.length)) * TILE_SIZE;
+
+        let finalClampedX = offsetX;
+        if (mapWidth < VIEWPORT_WIDTH) {
+          finalClampedX = (VIEWPORT_WIDTH - mapWidth) / 2;
+        } else {
+          finalClampedX = Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
+        }
+
+        let finalClampedY = offsetY;
+        if (mapHeight < VIEWPORT_HEIGHT) {
+          finalClampedY = (VIEWPORT_HEIGHT - mapHeight) / 2;
+        } else {
+          finalClampedY = Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
+        }
+        
+        gameContainerRef.current.style.transform = `translate(${finalClampedX}px, ${finalClampedY}px)`;
+      }
     }
+  };
 
-    const playerPos = playerPosition;
-
-    // Calculate camera offset to center player on screen
-    const offsetX = (VIEWPORT_WIDTH / 2) - (playerPos.x * TILE_SIZE + TILE_SIZE / 2);
-    const offsetY = (VIEWPORT_HEIGHT / 2) - (playerPos.y * TILE_SIZE + TILE_SIZE / 2);
-
-    let newCameraOffset = { x: offsetX, y: offsetY };
-
-    // Clamp camera to map boundaries when valid layer data is available
-    const layers = scenarioData?.map.layers;
-    if (
-      layers &&
-      layers.length > 0
-    ) {
-      // Robustly calculate map dimensions by checking all layers and rows
-      const mapWidth = Math.max(0, ...layers.flatMap((layer: Layer) => layer.tileMap.map((row: number[]) => row.length))) * TILE_SIZE;
-      const mapHeight = Math.max(0, ...layers.map((layer: Layer) => layer.tileMap.length)) * TILE_SIZE;
-
-      let finalClampedX = offsetX;
-      let finalClampedY = offsetY;
-
-      // X-axis clamping
-      if (mapWidth < VIEWPORT_WIDTH) {
-        // Center map if smaller than viewport
-        finalClampedX = (VIEWPORT_WIDTH - mapWidth) / 2;
-      } else {
-        // Clamp camera to map edges if larger than viewport
-        finalClampedX = Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
-      }
-
-      // Y-axis clamping
-      if (mapHeight < VIEWPORT_HEIGHT) {
-        // Center map if smaller than viewport
-        finalClampedY = (VIEWPORT_HEIGHT - mapHeight) / 2;
-      } else {
-        // Clamp camera to map edges if larger than viewport
-        finalClampedY = Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
-      }
-      
-      newCameraOffset = { x: finalClampedX, y: finalClampedY };
-    }
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
-    setCameraOffset(prevOffset => {
-      if (prevOffset.x !== newCameraOffset.x || prevOffset.y !== newCameraOffset.y) {
-        return newCameraOffset;
-      }
-      return prevOffset;
-    });
-  }, [playerPosition, scenarioData]);
-
-  // Keyboard handler for 'r' key to open records modal and 'c' key to open chat
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Only handle if no other modals are open and not in an input field
-      const isTyping =
-        event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLTextAreaElement ||
-        (event.target as HTMLElement).isContentEditable;
-
+      const isTyping = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || (event.target as HTMLElement).isContentEditable;
       if (!chatModalOpen && !solveModalOpen && !recordsModalOpen && !isTyping) {
-        if (event.key === 'r') {
-          setRecordsModalOpen(true);
-        } else if (event.key === 'c') {
+        if (event.key === 'r') setRecordsModalOpen(true);
+        else if (event.key === 'c') {
           setCurrentObjectId(null);
           setCurrentObjectName('');
           setChatModalOpen(true);
         }
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [chatModalOpen, solveModalOpen, recordsModalOpen]);
 
-  // Use custom hooks
   usePlayerControls(gameEngineRef);
 
   const mapWidth = scenarioData ? Math.max(0, ...scenarioData.map.layers.flatMap((layer: Layer) => layer.tileMap.map((row: number[]) => row.length))) * TILE_SIZE : 0;
   const mapHeight = scenarioData ? Math.max(0, ...scenarioData.map.layers.map((layer: Layer) => layer.tileMap.length)) * TILE_SIZE : 0;
-
-  // Get current interaction state
   const interactionState = currentObjectId ? getInteractionState(currentObjectId) : undefined;
 
-  const handleGameEvent = (event: Record<string, unknown>) => {
-    if (event.type === 'player-moved') {
-      const position = event.position as Position | undefined;
-      if (
-        position &&
-        typeof position.x === 'number' &&
-        typeof position.y === 'number'
-      ) {
-        setPlayerPosition(position);
-      }
-    }
-  };
-
-  // Handle sending messages
   const handleSendMessage = async (message: string) => {
     if (scenarioData && currentObjectId) {
       await sendMessage(scenarioData.scenarioId, currentObjectId, message, addRecords);
     }
   };
 
-  // Handle switching to a different interactable object from the chat sidebar
   const handleSwitchObject = async (objectId: string, objectName: string) => {
     setCurrentObjectId(objectId);
     setCurrentObjectName(objectName);
@@ -307,77 +211,27 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
     }
   };
 
-  // Handle solve submission
   const handleSolveSubmit = async (message: string, suspectIds: string[]) => {
     if (!scenarioData) return;
-
     try {
-      const response = await submitSolve(scenarioData.scenarioId, {
-        message,
-        suspectIds,
-      });
-
-      const attempt: SolveAttempt = {
-        message,
-        suspectIds,
-        response,
-        timestamp: Date.now(),
-      };
-
+      const response = await submitSolve(scenarioData.scenarioId, { message, suspectIds });
+      const attempt: SolveAttempt = { message, suspectIds, response, timestamp: Date.now() };
       setSolveAttempts(prev => [...prev, attempt]);
-
-      // If successful, navigate to result screen
       if (response.success) {
         setSolveModalOpen(false);
         onShowResult(response);
       }
     } catch (error) {
       console.error('Failed to submit solve:', error);
-      // Could add error handling UI here
     }
   };
 
-  // Get suspects from map objects (objects with id starting with "s:")
   const suspects = scenarioData?.map.objects.filter((obj: MapObject) => obj.id.startsWith('s:')) || [];
 
-  // Show error state for map loading
-  if (mapError && mapError instanceof HTTPError) {
-    return <ErrorScreen statusCode={mapError.status} message={mapError.message} />;
-  }
-
-  // Show loading state for map data
-  if (isLoadingMap || !scenarioData || !playerDirection) {
-    return (
-      <div className="game-screen">
-        <div className="game-info">
-          <h2>Loading map data...</h2>
-        </div>
-      </div>
-    );
-  }
-
-  // Show loading state for assets
-  if (assetsState.isLoading) {
-    return (
-      <div className="game-screen">
-        <div className="game-info">
-          <h2>Loading assets...</h2>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error state for assets
-  if (assetsState.error) {
-    return (
-      <div className="game-screen">
-        <div className="game-info">
-          <h2>Error loading assets</h2>
-          <p>{assetsState.error}</p>
-        </div>
-      </div>
-    );
-  }
+  if (mapError && mapError instanceof HTTPError) return <ErrorScreen statusCode={mapError.status} message={mapError.message} />;
+  if (isLoadingMap || !scenarioData || !playerDirection) return <div className="game-screen"><h2>Loading map data...</h2></div>;
+  if (assetsState.isLoading) return <div className="game-screen"><h2>Loading assets...</h2></div>;
+  if (assetsState.error) return <div className="game-screen"><h2>Error loading assets</h2><p>{assetsState.error}</p></div>;
 
   return (
     <div className="game-screen">
@@ -387,13 +241,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
       </div>
       <div className="game-viewport" style={{ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT, position: 'relative', overflow: 'hidden' }}>
         <div 
+          ref={gameContainerRef}
           className="game-container" 
-          style={{ 
-            width: mapWidth, 
-            height: mapHeight,
-            transform: `translate(${cameraOffset.x}px, ${cameraOffset.y}px)`,
-            transition: `transform ${MOVEMENT_DURATION}ms cubic-bezier(0.0, 0.0, 0.2, 1)`,
-          }}
+          style={{ width: mapWidth, height: mapHeight }}
         >
           <GameEngine
             ref={gameEngineRef}
@@ -404,7 +254,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
           />
         </div>
       </div>
-      
       <ChatModal
         isOpen={chatModalOpen}
         objectName={currentObjectName}
@@ -419,7 +268,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
         currentObjectId={currentObjectId}
         onSwitchObject={handleSwitchObject}
       />
-
       <SolveModal
         isOpen={solveModalOpen}
         suspects={suspects}
@@ -427,7 +275,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
         onClose={() => setSolveModalOpen(false)}
         onSubmit={handleSolveSubmit}
       />
-
       <RecordsModal
         isOpen={recordsModalOpen}
         onClose={() => setRecordsModalOpen(false)}
