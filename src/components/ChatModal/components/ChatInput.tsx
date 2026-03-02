@@ -5,9 +5,10 @@ import type { Record } from '../../../types/record';
 interface ChatInputProps {
   records: Record[];
   onSendMessage: (message: string) => void;
+  isNearObject: boolean;
 }
 
-export const ChatInput = forwardRef<HTMLDivElement, ChatInputProps>(({ records, onSendMessage }, ref) => {
+export const ChatInput = forwardRef<HTMLDivElement, ChatInputProps>(({ records, onSendMessage, isNearObject }, ref) => {
   const {
     inputRef,
     autocompleteRef,
@@ -59,7 +60,7 @@ export const ChatInput = forwardRef<HTMLDivElement, ChatInputProps>(({ records, 
       <button
         className="chat-modal-send-button"
         onClick={handleSendMessage}
-        disabled={isSendButtonDisabled}
+        disabled={isSendButtonDisabled || !isNearObject}
       >
         Send
       </button>

@@ -69,6 +69,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
 
   // Manage interactions
   const {
+    interactions,
     startInteraction,
     sendMessage,
     getInteractionState,
@@ -173,20 +174,23 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
     }
   }, [playerPosition, scenarioData]);
 
-  // Keyboard handler for 'r' key to open records modal
+  // Keyboard handler for 'r' key to open records modal and 'c' key to open chat
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Only handle if no other modals are open and not in an input field
-      if (
-        event.key === 'r' &&
-        !chatModalOpen &&
-        !solveModalOpen &&
-        !recordsModalOpen &&
-        !(event.target instanceof HTMLInputElement) &&
-        !(event.target instanceof HTMLTextAreaElement) &&
-        !(event.target as HTMLElement).isContentEditable
-      ) {
-        setRecordsModalOpen(true);
+      const isTyping =
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement ||
+        (event.target as HTMLElement).isContentEditable;
+
+      if (!chatModalOpen && !solveModalOpen && !recordsModalOpen && !isTyping) {
+        if (event.key === 'r') {
+          setRecordsModalOpen(true);
+        } else if (event.key === 'c') {
+          setCurrentObjectId(null);
+          setCurrentObjectName('');
+          setChatModalOpen(true);
+        }
       }
     };
 
@@ -222,6 +226,15 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
   const handleSendMessage = async (message: string) => {
     if (scenarioData && currentObjectId) {
       await sendMessage(scenarioData.scenarioId, currentObjectId, message, addRecords);
+    }
+  };
+
+  // Handle switching to a different interactable object from the chat sidebar
+  const handleSwitchObject = async (objectId: string, objectName: string) => {
+    setCurrentObjectId(objectId);
+    setCurrentObjectName(objectName);
+    if (scenarioData && !getInteractionState(objectId)) {
+      await startInteraction(scenarioData.scenarioId, objectId, addRecords);
     }
   };
 
@@ -301,7 +314,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
     <div className="game-screen">
       <div className="game-info">
         <h2>{scenarioData.scenarioName}</h2>
-        <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects. Press R to view records.</p>
+        <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects. Press R to view records. Press C to open chat.</p>
       </div>
       <div className="game-viewport" style={{ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT, position: 'relative', overflow: 'hidden' }}>
         <div 
@@ -330,6 +343,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
         records={records}
         onClose={() => setChatModalOpen(false)}
         onSendMessage={handleSendMessage}
+        playerPosition={playerPosition}
+        mapObjects={scenarioData.map.objects}
+        interactions={interactions}
+        currentObjectId={currentObjectId}
+        onSwitchObject={handleSwitchObject}
       />
 
       <SolveModal
