@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import type { FogOfWarEntity } from '../types';
 import { calculateFogOpacity } from '../utils/raycastUtils';
 import { TILE_SIZE, FOG_RESOLUTION_MULTIPLIER } from '../types';
@@ -7,25 +7,30 @@ export const FogOfWar = (props: FogOfWarEntity) => {
   const { visibleTiles, playerPosition, mapWidth, mapHeight } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  if (mapWidth === undefined || mapHeight === undefined) {
-    // This should ideally not happen if the system passes the props correctly
-    console.warn("FogOfWar received undefined mapWidth or mapHeight");
-    return null; // Or render a placeholder/error
-  }
-
-  const mapPixelWidth = mapWidth * TILE_SIZE;
-  const mapPixelHeight = mapHeight * TILE_SIZE;
-
-  const fogCellSize = TILE_SIZE / FOG_RESOLUTION_MULTIPLIER;
-  const mapHeightFine = mapHeight * FOG_RESOLUTION_MULTIPLIER;
-  const mapWidthFine = mapWidth * FOG_RESOLUTION_MULTIPLIER;
+  const { mapPixelWidth, mapPixelHeight, fogCellSize, mapHeightFine, mapWidthFine } = useMemo(() => {
+    const mapPixelWidth = mapWidth ? mapWidth * TILE_SIZE : 0;
+    const mapPixelHeight = mapHeight ? mapHeight * TILE_SIZE : 0;
+    const fogCellSize = TILE_SIZE / FOG_RESOLUTION_MULTIPLIER;
+    const mapHeightFine = mapHeight ? mapHeight * FOG_RESOLUTION_MULTIPLIER : 0;
+    const mapWidthFine = mapWidth ? mapWidth * FOG_RESOLUTION_MULTIPLIER : 0;
+    return { mapPixelWidth, mapPixelHeight, fogCellSize, mapHeightFine, mapWidthFine };
+  }, [mapWidth, mapHeight]);
 
   useEffect(() => {
+    if (mapWidth === undefined || mapHeight === undefined || !playerPosition) {
+      console.warn("FogOfWar received undefined mapWidth, mapHeight, or playerPosition, not rendering effect.");
+      return; // Return early from the effect
+    }
+
     const canvas = canvasRef.current;
-    if (!canvas || !playerPosition) return;
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Set canvas dimensions here to be safe
+    canvas.width = mapPixelWidth;
+    canvas.height = mapPixelHeight;
 
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -59,7 +64,7 @@ export const FogOfWar = (props: FogOfWarEntity) => {
         }
       }
     }
-  }, [visibleTiles, playerPosition, fogCellSize, mapHeightFine, mapWidthFine, mapWidth, mapHeight]);
+  }, [visibleTiles, playerPosition, mapWidth, mapHeight, fogCellSize, mapHeightFine, mapPixelWidth, mapPixelHeight, mapWidthFine]);
 
   return (
     <canvas
@@ -76,4 +81,3 @@ export const FogOfWar = (props: FogOfWarEntity) => {
     />
   );
 };
-

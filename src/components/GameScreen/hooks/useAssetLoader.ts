@@ -60,7 +60,7 @@ export const useAssetLoader = (assets: Asset[]): AssetsState => {
     };
 
     loadAssets();
-  }, [JSON.stringify(assets)]);
+  }, [assets]); // Changed dependency from JSON.stringify(assets) to assets
 
   return assetsState;
 };

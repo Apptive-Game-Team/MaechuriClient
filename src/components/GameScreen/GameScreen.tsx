@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { GameEngine } from 'react-game-engine';
-import type { Position, Direction } from '../../types/map';
+import type { Position, Direction, ScenarioData, Layer, MapObject } from '../../types/map';
 import type { SolveResponse, SolveAttempt } from '../../types/solve';
 import { TILE_SIZE } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
@@ -47,6 +47,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
   const [currentObjectName, setCurrentObjectName] = useState<string>('');
   const [cameraOffset, setCameraOffset] = useState({ x: 0, y: 0 });
   const [solveAttempts, setSolveAttempts] = useState<SolveAttempt[]>([]);
+  const isInitialPlayerStateSet = useRef(false); // New ref for player position/direction initialization
 
   // Disable page scrolling when GameScreen is mounted
   useEffect(() => {
@@ -65,10 +66,49 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
   const { records, addRecords } = useRecords();
 
   // Fetch map data from API
-  const { data: scenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({});
+  const { data: originalScenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({});
+  const [scenarioData, setScenarioData] = useState<ScenarioData | null>(null);
+
+  // Add a border to the map once data is loaded
+  useEffect(() => {
+    if (originalScenarioData) {
+      const newScenarioData = JSON.parse(JSON.stringify(originalScenarioData));
+
+      const mapWidthInTiles = Math.max(0, ...newScenarioData.map.layers.flatMap((l: Layer) => l.tileMap.map((row: number[]) => row.length)));
+      const mapHeightInTiles = Math.max(0, ...newScenarioData.map.layers.map((l: Layer) => l.tileMap.length));
+
+      let borderLayer = newScenarioData.map.layers.find((l: Layer) => l.name === "Borders");
+
+      if (!borderLayer) {
+        borderLayer = {
+          name: "Borders",
+          type: ["Non-Passable"],
+          orderInLayer: 99,
+          tileMap: Array(mapHeightInTiles).fill(0).map(() => Array(mapWidthInTiles).fill(0)),
+        };
+        newScenarioData.map.layers.push(borderLayer);
+      }
+
+      // Ensure the border layer is the correct size and has a border
+      for (let y = 0; y < mapHeightInTiles; y++) {
+        if (!borderLayer.tileMap[y]) {
+          borderLayer.tileMap[y] = Array(mapWidthInTiles).fill(0);
+        }
+        for (let x = 0; x < mapWidthInTiles; x++) {
+          if (x === 0 || x === mapWidthInTiles - 1 || y === 0 || y === mapHeightInTiles - 1) {
+            borderLayer.tileMap[y][x] = 1; // Set border tile
+          }
+        }
+      }
+      
+      // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
+      setScenarioData(newScenarioData);
+    }
+  }, [originalScenarioData]);
 
   // Manage interactions
   const {
+    interactions,
     startInteraction,
     sendMessage,
     getInteractionState,
@@ -109,27 +149,33 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
     };
   }, [scenarioData, getInteractionState, startInteraction, addRecords]);
 
+  // Memoize assets to prevent re-renders caused by new array reference on each render
+  const assetsToLoad = useMemo(() => scenarioData?.map.assets || [], [scenarioData]);
+
   // Load assets
   const assetsState = useAssetLoader(
-    scenarioData?.map.assets || []
+    assetsToLoad
   );
 
   // Initialize entities once - start player in center of top-left room
   const [playerPosition, setPlayerPosition] = useState<Position>({ x: 5, y: 5 });
   const [playerDirection, setPlayerDirection] = useState<Direction>('down'); // New state for playerDirection
   
-  // Determine initial player position and direction from map data
   useEffect(() => {
-    if (scenarioData) {
-      const playerObject = scenarioData.map.objects.find(obj => obj.id === 'p:1');
+    if (scenarioData && !isInitialPlayerStateSet.current) {
+      const playerObject = scenarioData.map.objects.find((obj: MapObject) => obj.id === 'p:1');
       if (playerObject) {
+        // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
         setPlayerPosition(playerObject.position);
+        // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
         setPlayerDirection(playerObject.direction || 'down'); // Default to 'down' if not specified
       } else {
-        // Fallback to default position if 'p:1' is not found
+        // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
         setPlayerPosition({ x: 5, y: 5 });
+        // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
         setPlayerDirection('down');
       }
+      isInitialPlayerStateSet.current = true; // Mark as initialized
     }
   }, [scenarioData]);
   
@@ -152,41 +198,68 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
     const offsetX = (VIEWPORT_WIDTH / 2) - (playerPos.x * TILE_SIZE + TILE_SIZE / 2);
     const offsetY = (VIEWPORT_HEIGHT / 2) - (playerPos.y * TILE_SIZE + TILE_SIZE / 2);
 
+    let newCameraOffset = { x: offsetX, y: offsetY };
+
     // Clamp camera to map boundaries when valid layer data is available
     const layers = scenarioData?.map.layers;
     if (
       layers &&
-      layers.length > 0 &&
-      layers[0].tileMap.length > 0 &&
-      layers[0].tileMap[0].length > 0
+      layers.length > 0
     ) {
-      const mapWidth = layers[0].tileMap[0].length * TILE_SIZE;
-      const mapHeight = layers[0].tileMap.length * TILE_SIZE;
+      // Robustly calculate map dimensions by checking all layers and rows
+      const mapWidth = Math.max(0, ...layers.flatMap((layer: Layer) => layer.tileMap.map((row: number[]) => row.length))) * TILE_SIZE;
+      const mapHeight = Math.max(0, ...layers.map((layer: Layer) => layer.tileMap.length)) * TILE_SIZE;
 
-      const clampedX = Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
-      const clampedY = Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
+      let finalClampedX = offsetX;
+      let finalClampedY = offsetY;
 
-      setCameraOffset({ x: clampedX, y: clampedY });
-    } else {
-      // Fallback: no valid map data yet; still center camera on the player
-      setCameraOffset({ x: offsetX, y: offsetY });
+      // X-axis clamping
+      if (mapWidth < VIEWPORT_WIDTH) {
+        // Center map if smaller than viewport
+        finalClampedX = (VIEWPORT_WIDTH - mapWidth) / 2;
+      } else {
+        // Clamp camera to map edges if larger than viewport
+        finalClampedX = Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
+      }
+
+      // Y-axis clamping
+      if (mapHeight < VIEWPORT_HEIGHT) {
+        // Center map if smaller than viewport
+        finalClampedY = (VIEWPORT_HEIGHT - mapHeight) / 2;
+      } else {
+        // Clamp camera to map edges if larger than viewport
+        finalClampedY = Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
+      }
+      
+      newCameraOffset = { x: finalClampedX, y: finalClampedY };
     }
+
+    // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
+    setCameraOffset(prevOffset => {
+      if (prevOffset.x !== newCameraOffset.x || prevOffset.y !== newCameraOffset.y) {
+        return newCameraOffset;
+      }
+      return prevOffset;
+    });
   }, [playerPosition, scenarioData]);
 
-  // Keyboard handler for 'r' key to open records modal
+  // Keyboard handler for 'r' key to open records modal and 'c' key to open chat
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Only handle if no other modals are open and not in an input field
-      if (
-        event.key === 'r' &&
-        !chatModalOpen &&
-        !solveModalOpen &&
-        !recordsModalOpen &&
-        !(event.target instanceof HTMLInputElement) &&
-        !(event.target instanceof HTMLTextAreaElement) &&
-        !(event.target as HTMLElement).isContentEditable
-      ) {
-        setRecordsModalOpen(true);
+      const isTyping =
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement ||
+        (event.target as HTMLElement).isContentEditable;
+
+      if (!chatModalOpen && !solveModalOpen && !recordsModalOpen && !isTyping) {
+        if (event.key === 'r') {
+          setRecordsModalOpen(true);
+        } else if (event.key === 'c') {
+          setCurrentObjectId(null);
+          setCurrentObjectName('');
+          setChatModalOpen(true);
+        }
       }
     };
 
@@ -199,8 +272,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
   // Use custom hooks
   usePlayerControls(gameEngineRef);
 
-  const mapWidth = scenarioData ? scenarioData.map.layers[0].tileMap[0].length * TILE_SIZE : 0;
-  const mapHeight = scenarioData ? scenarioData.map.layers[0].tileMap.length * TILE_SIZE : 0;
+  const mapWidth = scenarioData ? Math.max(0, ...scenarioData.map.layers.flatMap((layer: Layer) => layer.tileMap.map((row: number[]) => row.length))) * TILE_SIZE : 0;
+  const mapHeight = scenarioData ? Math.max(0, ...scenarioData.map.layers.map((layer: Layer) => layer.tileMap.length)) * TILE_SIZE : 0;
 
   // Get current interaction state
   const interactionState = currentObjectId ? getInteractionState(currentObjectId) : undefined;
@@ -222,6 +295,15 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
   const handleSendMessage = async (message: string) => {
     if (scenarioData && currentObjectId) {
       await sendMessage(scenarioData.scenarioId, currentObjectId, message, addRecords);
+    }
+  };
+
+  // Handle switching to a different interactable object from the chat sidebar
+  const handleSwitchObject = async (objectId: string, objectName: string) => {
+    setCurrentObjectId(objectId);
+    setCurrentObjectName(objectName);
+    if (scenarioData && !getInteractionState(objectId)) {
+      await startInteraction(scenarioData.scenarioId, objectId, addRecords);
     }
   };
 
@@ -256,7 +338,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
   };
 
   // Get suspects from map objects (objects with id starting with "s:")
-  const suspects = scenarioData?.map.objects.filter(obj => obj.id.startsWith('s:')) || [];
+  const suspects = scenarioData?.map.objects.filter((obj: MapObject) => obj.id.startsWith('s:')) || [];
 
   // Show error state for map loading
   if (mapError && mapError instanceof HTTPError) {
@@ -301,7 +383,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
     <div className="game-screen">
       <div className="game-info">
         <h2>{scenarioData.scenarioName}</h2>
-        <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects. Press R to view records.</p>
+        <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects. Press R to view records. Press C to open chat.</p>
       </div>
       <div className="game-viewport" style={{ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT, position: 'relative', overflow: 'hidden' }}>
         <div 
@@ -330,6 +412,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
         records={records}
         onClose={() => setChatModalOpen(false)}
         onSendMessage={handleSendMessage}
+        playerPosition={playerPosition}
+        mapObjects={scenarioData.map.objects}
+        interactions={interactions}
+        currentObjectId={currentObjectId}
+        onSwitchObject={handleSwitchObject}
       />
 
       <SolveModal
