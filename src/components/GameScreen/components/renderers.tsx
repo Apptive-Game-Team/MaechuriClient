@@ -2,6 +2,7 @@ import type { Entity } from 'react-game-engine';
 import type { TileEntity, PlayerEntity } from '../types';
 import { getDirectionIndicatorStyle } from '../utils/gameUtils';
 import { getAssetImage } from '../../../utils/assetLoader';
+import { AssetRenderer } from './AssetRenderer';
 
 const TILE_SIZE_VALUE = 64;
 
@@ -13,22 +14,34 @@ const DIRECTION_TO_ASSET_MAP = {
   'right': 'right',
 } as const;
 
-export const Tile = (props: Entity) => {
-  const { position, tileId, layer, asset } = props as TileEntity;
+export const Tile = (props: TileEntity) => {
+  const { position, tileId, layer, asset, isObject, objectType } = props;
   
-  // Get image URL from asset if available
   const imageUrl = asset ? getAssetImage(asset) : undefined;
+
+  // Determine scaleMultiplier for objects
+  let scaleMultiplier = 1.3; // Default for most objects
+  if (objectType === 'CLUE') {
+    scaleMultiplier = 0.7;
+  }
+  // NPC (suspect, detective) is already 1.3, so no change needed for that case explicitly
+
+  // Use AssetRenderer for objects to maintain aspect ratio and custom scale,
+  // and the old method for background layers to fill the tile.
+  if (imageUrl && isObject) {
+    return <AssetRenderer imageUrl={imageUrl} size={TILE_SIZE_VALUE} position={position} scaleMultiplier={scaleMultiplier} />;
+  }
   
-  // Default background colors for when no image is available
+  // For floor, walls, and other layers, use the original full-tile rendering
   let backgroundColor = 'transparent';
   if (layer.name === 'wall' && tileId !== 0) {
     backgroundColor = '#8B4513';
   } else if (layer.name === 'floor' && tileId === 0) {
     backgroundColor = '#D2B48C';
-  } else if (layer.name === 'interactable-objects' && tileId !== 0) {
+  } else if (isObject && tileId !== 0) { // Fallback for objects without an image
     backgroundColor = '#FFD700';
-  } else if (!imageUrl) {
-    backgroundColor = '#FF00FF'; // Bright pink for missing assets
+  } else if (!imageUrl) { // Bright pink for missing layer assets
+    backgroundColor = '#FF00FF';
   }
 
   const style: React.CSSProperties = {
@@ -42,6 +55,7 @@ export const Tile = (props: Entity) => {
     backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
+    zIndex: layer.orderInLayer,
   };
 
   return (
@@ -51,8 +65,8 @@ export const Tile = (props: Entity) => {
   );
 };
 
-export const Player = (props: Entity) => {
-  const { position, direction, asset, interpolatedPosition } = props as PlayerEntity;
+export const Player = (props: PlayerEntity) => {
+  const { position, direction, asset, interpolatedPosition, objectType } = props;
 
   // Use interpolated position for smooth rendering
   const renderPosition = interpolatedPosition || position;
@@ -63,25 +77,29 @@ export const Player = (props: Entity) => {
   // Get image URL from asset if available
   const imageUrl = asset ? getAssetImage(asset, assetDirection) : undefined;
 
+  // Player is an object, so use AssetRenderer with its specific scale
+  const scaleMultiplier = (objectType === 'PLAYER') ? 1.3 : 1.3; // Explicitly 1.3 for player
+  
+  if (imageUrl) {
+    return <AssetRenderer imageUrl={imageUrl} size={TILE_SIZE_VALUE} position={renderPosition} scaleMultiplier={scaleMultiplier} />;
+  }
+
   const style: React.CSSProperties = {
     position: 'absolute',
     left: renderPosition.x * TILE_SIZE_VALUE,
     top: renderPosition.y * TILE_SIZE_VALUE,
     width: TILE_SIZE_VALUE,
     height: TILE_SIZE_VALUE,
-    backgroundColor: imageUrl ? 'transparent' : '#FF6B6B',
-    borderRadius: imageUrl ? '0' : '50%',
+    backgroundColor: '#FF6B6B',
+    borderRadius: '50%',
     zIndex: 1000,
-    backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
   };
 
   return (
     <div
       style={style}
     >
-      {!imageUrl && <div style={getDirectionIndicatorStyle(direction)} />}
+      <div style={getDirectionIndicatorStyle(direction)} />
     </div>
   );
 };

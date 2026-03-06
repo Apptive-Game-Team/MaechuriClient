@@ -5,6 +5,7 @@ import type { AssetsState } from './useAssetLoader';
 import type { ScenarioData } from '../../../types/map';
 import { Tile, Player } from '../components/renderers';
 import { FogOfWar } from '../components/FogOfWar';
+import { deriveRecordType } from '../../../types/record'; // Import deriveRecordType
 
 export const useGameEntities = (
   scenarioData: ScenarioData,
@@ -32,6 +33,7 @@ export const useGameEntities = (
             layer,
             asset,
             renderer: Tile,
+            isObject: false, // Explicitly mark as not an object
           };
         });
       });
@@ -41,6 +43,16 @@ export const useGameEntities = (
       if (object.id === PLAYER_ASSET_ID) {
         return; // Skip the player entity
       }
+      
+      let objectType: TileEntity['objectType'] = undefined;
+      const recordType = deriveRecordType(object.id);
+      if (recordType === 'CLUE') {
+        objectType = 'CLUE';
+      } else if (recordType === 'NPC') {
+        objectType = 'NPC'; // This covers 'suspect'
+      }
+      // Add other specific types if needed, e.g., 'DETECTIVE' if they have a distinct ID prefix
+
       const key = `${object.name}-${object.position.x}-${object.position.y}`;
       const assetId = object.id;
       const asset = assetsState.assets.get(assetId);
@@ -55,6 +67,8 @@ export const useGameEntities = (
         },
         asset,
         renderer: Tile,
+        isObject: true, // Mark this entity as an object
+        objectType: objectType,
       };
     });
 
@@ -68,6 +82,7 @@ export const useGameEntities = (
     speed: 0.2,
     asset: assetsState.assets.get(playerAssetId),
     renderer: Player,
+    objectType: 'PLAYER', // Add objectType for player
   };
 
   const mapWidth = scenarioData.map.layers[0]?.tileMap[0]?.length || 0;

@@ -1,6 +1,7 @@
 import type { ElementType } from 'react';
 import type { Entity } from 'react-game-engine';
 import type { Layer, DirectionalAsset, Direction, GameMap } from '../../../types/map';
+import type { RecordType } from '../../../types/record'; // Import RecordType
 
 export type { Direction };
 export interface Position {
@@ -22,6 +23,8 @@ export interface TileEntity extends Entity {
   tileId: number | string;
   layer: Layer;
   asset?: DirectionalAsset;
+  isObject?: boolean;
+  objectType?: RecordType | 'PLAYER' | 'SUSPECT' | 'DETECTIVE'; // Add objectType for granular scaling
 }
 
 export interface FogOfWarEntity extends Entity {
