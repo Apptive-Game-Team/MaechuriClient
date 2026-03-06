@@ -50,7 +50,7 @@ export const usePlayerControls = (gameEngineRef: React.RefObject<GameEngine | nu
       }
 
       if (events.length > 0) {
-        gameEngineRef.current.dispatch(events);
+        events.forEach((e) => gameEngineRef.current!.dispatch(e));
       }
 
       animationFrameId = requestAnimationFrame(gameLoop);
