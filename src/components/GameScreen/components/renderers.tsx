@@ -1,4 +1,3 @@
-import type { Entity } from 'react-game-engine';
 import type { TileEntity, PlayerEntity } from '../types';
 import { getDirectionIndicatorStyle } from '../utils/gameUtils';
 import { getAssetImage } from '../../../utils/assetLoader';
