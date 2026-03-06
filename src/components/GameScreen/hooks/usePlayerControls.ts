@@ -1,51 +1,67 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import type { GameEngine } from 'react-game-engine';
 
 export const usePlayerControls = (gameEngineRef: React.RefObject<GameEngine | null>) => {
+  const activeKeys = useRef(new Set<string>());
+  const interactionKeyPressed = useRef(false);
+
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!gameEngineRef.current) return;
+    const key = e.key.toLowerCase();
+    activeKeys.current.add(key);
 
-    let eventType: string | null = null;
-
-    // Determine event from key press
-    switch (e.key) {
-      case 'ArrowUp':
-      case 'w':
-      case 'W':
-        eventType = 'move-up';
-        break;
-      case 'ArrowDown':
-      case 's':
-      case 'S':
-        eventType = 'move-down';
-        break;
-      case 'ArrowLeft':
-      case 'a':
-      case 'A':
-        eventType = 'move-left';
-        break;
-      case 'ArrowRight':
-      case 'd':
-      case 'D':
-        eventType = 'move-right';
-        break;
-      case ' ':
-      case 'e':
-      case 'E':
-        eventType = 'interact';
-        break;
-    }
-
-    // Dispatch the event if one was determined
-    if (eventType) {
-      gameEngineRef.current.dispatch({ type: eventType });
+    if ((key === ' ' || key === 'e') && !interactionKeyPressed.current) {
+      interactionKeyPressed.current = true;
+      gameEngineRef.current?.dispatch({ type: 'interact' });
     }
   }, [gameEngineRef]);
 
+  const handleKeyUp = useCallback((e: KeyboardEvent) => {
+    const key = e.key.toLowerCase();
+    activeKeys.current.delete(key);
+    if (key === ' ' || key === 'e') {
+      interactionKeyPressed.current = false;
+    }
+  }, []);
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    let animationFrameId: number;
+
+    const gameLoop = () => {
+      if (!gameEngineRef.current) {
+        animationFrameId = requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      const events = [];
+      if (activeKeys.current.has('arrowup') || activeKeys.current.has('w')) {
+        events.push({ type: 'move-up' });
+      }
+      if (activeKeys.current.has('arrowdown') || activeKeys.current.has('s')) {
+        events.push({ type: 'move-down' });
+      }
+      if (activeKeys.current.has('arrowleft') || activeKeys.current.has('a')) {
+        events.push({ type: 'move-left' });
+      }
+      if (activeKeys.current.has('arrowright') || activeKeys.current.has('d')) {
+        events.push({ type: 'move-right' });
+      }
+
+      if (events.length > 0) {
+        gameEngineRef.current.dispatch(events);
+      }
+
+      animationFrameId = requestAnimationFrame(gameLoop);
+    };
+
+    animationFrameId = requestAnimationFrame(gameLoop);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      cancelAnimationFrame(animationFrameId);
     };
-  }, [handleKeyDown]);
+  }, [gameEngineRef, handleKeyDown, handleKeyUp]);
 };
