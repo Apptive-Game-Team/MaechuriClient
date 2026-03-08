@@ -1,0 +1,277 @@
+.scenario-select-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  gap: 1.5rem;
+}
+
+.scenario-select-screen h1 {
+  font-size: 3rem;
+  margin: 0;
+}
+
+.scenario-select-screen h2 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.scenario-select-status {
+  font-size: 1rem;
+  color: #888;
+}
+
+.scenario-select-error {
+  color: #e05252;
+}
+
+/* Calendar */
+.calendar {
+  background: #1e1e2e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: min(420px, 90vw);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #cdd6f4;
+}
+
+.month-nav-button {
+  background: none;
+  border: none;
+  color: #cdd6f4;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.4rem;
+  border-radius: 6px;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.month-nav-button:hover {
+  background: #313244;
+  color: #cba6f7;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day-label {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 0;
+  color: #a6adc8;
+}
+
+.calendar-day-label.sunday {
+  color: #f38ba8;
+}
+
+.calendar-day-label.saturday {
+  color: #89b4fa;
+}
+
+.calendar-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: default;
+  font-size: 0.95rem;
+  color: #cdd6f4;
+  padding: 0;
+  position: relative;
+}
+
+.calendar-cell.empty {
+  background: transparent;
+}
+
+.calendar-cell.no-scenario {
+  color: #45475a;
+}
+
+/* State: Inactive — greyed out, not clickable */
+.calendar-cell.state-inactive {
+  background: #1e1e2e;
+  color: #585b70;
+  cursor: not-allowed;
+}
+
+/* State: Ready — highlighted, playable, not yet started */
+.calendar-cell.state-ready {
+  background: #313244;
+  cursor: pointer;
+  color: #a6e3a1;
+  font-weight: 600;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.calendar-cell.state-ready:hover {
+  background: #3d4158;
+  transform: scale(1.08);
+}
+
+.calendar-cell.state-ready:active {
+  transform: scale(0.96);
+}
+
+/* State: Visited — in progress, playable */
+.calendar-cell.state-visited {
+  background: #2e2a1e;
+  cursor: pointer;
+  color: #f9e2af;
+  font-weight: 600;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.calendar-cell.state-visited:hover {
+  background: #3d3825;
+  transform: scale(1.08);
+}
+
+.calendar-cell.state-visited:active {
+  transform: scale(0.96);
+}
+
+/* State: Finished — playable again, distinct look */
+.calendar-cell.state-finished {
+  background: #2a2a3e;
+  cursor: pointer;
+  color: #89b4fa;
+  font-weight: 600;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.calendar-cell.state-finished:hover {
+  background: #3b3b56;
+  transform: scale(1.08);
+}
+
+.calendar-cell.state-finished:active {
+  transform: scale(0.96);
+}
+
+.calendar-cell.today {
+  outline: 2px solid #cba6f7;
+  outline-offset: -2px;
+}
+
+.calendar-cell.today.state-ready {
+  background: #6c5ce7;
+  color: #fff;
+}
+
+.calendar-cell.today.state-visited {
+  background: #b8860b;
+  color: #fff;
+}
+
+.calendar-cell.today.state-finished {
+  background: #3b6bb5;
+  color: #fff;
+}
+
+.calendar-day-number {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* State dot indicator */
+.calendar-state-dot {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.state-ready .calendar-state-dot {
+  background: #a6e3a1;
+}
+
+.state-visited .calendar-state-dot {
+  background: #f9e2af;
+}
+
+.state-finished .calendar-state-dot {
+  background: #89b4fa;
+}
+
+.state-inactive .calendar-state-dot {
+  background: #585b70;
+}
+
+/* Legend */
+.calendar-legend {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+  color: #a6adc8;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.state-inactive {
+  background: #585b70;
+}
+
+.legend-dot.state-ready {
+  background: #a6e3a1;
+}
+
+.legend-dot.state-visited {
+  background: #f9e2af;
+}
+
+.legend-dot.state-finished {
+  background: #89b4fa;
+}
+
+/* Back button */
+.back-button {
+  padding: 0.75rem 1.75rem;
+  font-size: 1rem;
+  background-color: #313244;
+  color: #cdd6f4;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #494969;
+}

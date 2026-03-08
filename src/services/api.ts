@@ -4,6 +4,26 @@ import type { ScenarioData } from '../types/map';
 import type { InteractionRequest, InteractionResponse } from '../types/interaction';
 import type { SolveRequest, SolveResponse } from '../types/solve';
 import type { RecordsData, RecordDetail } from '../types/record';
+import type { ScenarioListResponse } from '../types/scenarioList';
+
+/**
+ * Fetch the list of available scenarios for a given month.
+ * Defaults to the current month when year/month are omitted.
+ */
+export async function getScenarios(year?: number, month?: number): Promise<ScenarioListResponse> {
+  const response = await apiFetch(API_ENDPOINTS.getScenarios(year, month), {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch scenarios: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
+  }
+
+  return response.json();
+}
 
 /**
  * Fetch today's map data
@@ -17,7 +37,7 @@ export async function getTodayMap(): Promise<ScenarioData> {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch today's map: ${response.statusText}`);
+    throw new Error(`Failed to fetch today's map: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
@@ -35,7 +55,7 @@ export async function getScenarioMap(scenarioId: number): Promise<ScenarioData> 
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch scenario map: ${response.statusText}`);
+    throw new Error(`Failed to fetch scenario map: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
@@ -59,7 +79,7 @@ export async function sendInteraction(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to interact with object: ${response.statusText}`);
+    throw new Error(`Failed to interact with object: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
@@ -81,7 +101,7 @@ export async function submitSolve(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to submit solve: ${response.statusText}`);
+    throw new Error(`Failed to submit solve: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
@@ -99,7 +119,7 @@ export async function getRecords(scenarioId: number): Promise<RecordsData> {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch records: ${response.statusText}`);
+    throw new Error(`Failed to fetch records: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
@@ -120,7 +140,7 @@ export async function getRecord(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch record: ${response.statusText}`);
+    throw new Error(`Failed to fetch record: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();

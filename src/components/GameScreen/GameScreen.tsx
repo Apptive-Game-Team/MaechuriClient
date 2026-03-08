@@ -33,10 +33,11 @@ const EMPTY_SCENARIO = {
 };
 
 interface GameScreenProps {
+  scenarioId?: number;
   onShowResult: (result: SolveResponse) => void;
 }
 
-const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
+const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => {
   const gameEngineRef = useRef<GameEngine>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const [chatModalOpen, setChatModalOpen] = useState(false);
@@ -56,7 +57,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onShowResult }) => {
   }, []);
 
   const { records, addRecords } = useRecords();
-  const { data: originalScenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({});
+  const { data: originalScenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({ scenarioId });
   const [scenarioData, setScenarioData] = useState<ScenarioData | null>(null);
 
   useEffect(() => {
