@@ -21,16 +21,19 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
   onSelectScenario,
   onBack,
 }) => {
+  const now = new Date();
+  const [viewYear, setViewYear] = useState(now.getFullYear());
+  const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
   const [scenarios, setScenarios] = useState<ScenarioEntry[]>([]);
-  const [month, setMonth] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setIsLoading(true);
+    setError(null);
     const fetchScenarios = async () => {
       try {
-        const data = await getScenarios();
-        setMonth(data.month);
+        const data = await getScenarios(viewYear, viewMonth);
         setScenarios(data.scenarios);
       } catch (err) {
         setError(err instanceof Error ? err.message : '시나리오 목록을 불러오지 못했습니다.');
@@ -39,7 +42,25 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
       }
     };
     fetchScenarios();
-  }, []);
+  }, [viewYear, viewMonth]);
+
+  const handlePrevMonth = () => {
+    if (viewMonth === 1) {
+      setViewYear(y => y - 1);
+      setViewMonth(12);
+    } else {
+      setViewMonth(m => m - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (viewMonth === 12) {
+      setViewYear(y => y + 1);
+      setViewMonth(1);
+    } else {
+      setViewMonth(m => m + 1);
+    }
+  };
 
   const scenarioByDate = React.useMemo(() => {
     const map = new Map<string, ScenarioEntry>();
@@ -50,32 +71,29 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
   }, [scenarios]);
 
   const formatDateStr = React.useCallback((day: number): string => {
-    if (month === null) return '';
-    const year = new Date().getFullYear();
-    const mm = String(month).padStart(2, '0');
+    const mm = String(viewMonth).padStart(2, '0');
     const dd = String(day).padStart(2, '0');
-    return `${year}-${mm}-${dd}`;
-  }, [month]);
+    return `${viewYear}-${mm}-${dd}`;
+  }, [viewYear, viewMonth]);
 
   const calendarDays = React.useMemo(() => {
-    if (month === null) return [];
-
-    const year = new Date().getFullYear();
-    const firstDay = new Date(year, month - 1, 1).getDay(); // 0=Sun
-    const daysInMonth = new Date(year, month, 0).getDate();
+    const firstDay = new Date(viewYear, viewMonth - 1, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
 
     const cells: (number | null)[] = Array(firstDay).fill(null);
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
     // Pad to complete last week row
     while (cells.length % 7 !== 0) cells.push(null);
     return cells;
-  }, [month]);
+  }, [viewYear, viewMonth]);
 
-  const today = new Date();
-  const todayYear = today.getFullYear();
-  const todayMonth = String(today.getMonth() + 1).padStart(2, '0');
-  const todayDay = String(today.getDate()).padStart(2, '0');
-  const todayStr = `${todayYear}-${todayMonth}-${todayDay}`;
+  const todayStr = React.useMemo(() => {
+    const t = new Date();
+    const y = t.getFullYear();
+    const m = String(t.getMonth() + 1).padStart(2, '0');
+    const d = String(t.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }, []);
 
   return (
     <div className="scenario-select-screen">
@@ -85,10 +103,14 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
       {isLoading && <p className="scenario-select-status">불러오는 중...</p>}
       {error && <p className="scenario-select-status scenario-select-error">{error}</p>}
 
-      {!isLoading && !error && month !== null && (
+      {!isLoading && !error && (
         <>
           <div className="calendar">
-            <div className="calendar-header">{month}월</div>
+            <div className="calendar-header">
+              <button className="month-nav-button" onClick={handlePrevMonth} aria-label="이전 달">‹</button>
+              <span>{viewYear}년 {viewMonth}월</span>
+              <button className="month-nav-button" onClick={handleNextMonth} aria-label="다음 달">›</button>
+            </div>
             <div className="calendar-grid">
               {DAY_LABELS.map((label, i) => (
                 <div key={i} className={`calendar-day-label${i === 0 ? ' sunday' : i === 6 ? ' saturday' : ''}`}>

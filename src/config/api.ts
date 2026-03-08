@@ -6,7 +6,14 @@ export const API_BASE_URL = isDev
   : 'https://api.maechuri.com';
 
 export const API_ENDPOINTS = {
-  getScenarios: () => `${API_BASE_URL}/api/scenarios`,
+  getScenarios: (year?: number, month?: number) => {
+    const base = `${API_BASE_URL}/api/scenarios`;
+    const params = new URLSearchParams();
+    if (year !== undefined) params.set('year', String(year));
+    if (month !== undefined) params.set('month', String(month));
+    const qs = params.toString();
+    return qs ? `${base}?${qs}` : base;
+  },
   getTodayMap: () => `${API_BASE_URL}/api/scenarios/today/data/map`,
   getScenarioMap: (scenarioId: number) => `${API_BASE_URL}/api/scenarios/${scenarioId}/data/map`,
   interact: (scenarioId: number, objectId: string) => `${API_BASE_URL}/api/scenarios/${scenarioId}/interact/${objectId}`,

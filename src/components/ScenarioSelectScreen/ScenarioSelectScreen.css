@@ -37,11 +37,30 @@
 }
 
 .calendar-header {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-size: 1.3rem;
   font-weight: bold;
   margin-bottom: 1rem;
   color: #cdd6f4;
+}
+
+.month-nav-button {
+  background: none;
+  border: none;
+  color: #cdd6f4;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.4rem;
+  border-radius: 6px;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.month-nav-button:hover {
+  background: #313244;
+  color: #cba6f7;
 }
 
 .calendar-grid {

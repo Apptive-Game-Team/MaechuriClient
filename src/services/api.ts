@@ -7,10 +7,11 @@ import type { RecordsData, RecordDetail } from '../types/record';
 import type { ScenarioListResponse } from '../types/scenarioList';
 
 /**
- * Fetch the list of available scenarios for the current month
+ * Fetch the list of available scenarios for a given month.
+ * Defaults to the current month when year/month are omitted.
  */
-export async function getScenarios(): Promise<ScenarioListResponse> {
-  const response = await apiFetch(API_ENDPOINTS.getScenarios(), {
+export async function getScenarios(year?: number, month?: number): Promise<ScenarioListResponse> {
+  const response = await apiFetch(API_ENDPOINTS.getScenarios(year, month), {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -18,7 +19,7 @@ export async function getScenarios(): Promise<ScenarioListResponse> {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch scenarios: ${response.statusText}`);
+    throw new Error(`Failed to fetch scenarios: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
