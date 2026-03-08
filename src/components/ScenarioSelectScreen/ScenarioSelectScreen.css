@@ -78,6 +78,7 @@
   font-size: 0.95rem;
   color: #cdd6f4;
   padding: 0;
+  position: relative;
 }
 
 .calendar-cell.empty {
@@ -88,20 +89,46 @@
   color: #45475a;
 }
 
-.calendar-cell.has-scenario {
+/* State: Inactive — greyed out, not clickable */
+.calendar-cell.state-inactive {
+  background: #1e1e2e;
+  color: #585b70;
+  cursor: not-allowed;
+}
+
+/* State: Active — highlighted, playable */
+.calendar-cell.state-active {
   background: #313244;
   cursor: pointer;
-  color: #cba6f7;
+  color: #a6e3a1;
   font-weight: 600;
   transition: background-color 0.15s, transform 0.1s;
 }
 
-.calendar-cell.has-scenario:hover {
-  background: #494969;
+.calendar-cell.state-active:hover {
+  background: #3d4158;
   transform: scale(1.08);
 }
 
-.calendar-cell.has-scenario:active {
+.calendar-cell.state-active:active {
+  transform: scale(0.96);
+}
+
+/* State: Finished — playable again, distinct look */
+.calendar-cell.state-finished {
+  background: #2a2a3e;
+  cursor: pointer;
+  color: #89b4fa;
+  font-weight: 600;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.calendar-cell.state-finished:hover {
+  background: #3b3b56;
+  transform: scale(1.08);
+}
+
+.calendar-cell.state-finished:active {
   transform: scale(0.96);
 }
 
@@ -110,14 +137,77 @@
   outline-offset: -2px;
 }
 
-.calendar-cell.today.has-scenario {
+.calendar-cell.today.state-active {
   background: #6c5ce7;
+  color: #fff;
+}
+
+.calendar-cell.today.state-finished {
+  background: #3b6bb5;
   color: #fff;
 }
 
 .calendar-day-number {
   pointer-events: none;
   user-select: none;
+}
+
+/* State dot indicator */
+.calendar-state-dot {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.state-active .calendar-state-dot {
+  background: #a6e3a1;
+}
+
+.state-finished .calendar-state-dot {
+  background: #89b4fa;
+}
+
+.state-inactive .calendar-state-dot {
+  background: #585b70;
+}
+
+/* Legend */
+.calendar-legend {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+  color: #a6adc8;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.state-inactive {
+  background: #585b70;
+}
+
+.legend-dot.state-active {
+  background: #a6e3a1;
+}
+
+.legend-dot.state-finished {
+  background: #89b4fa;
 }
 
 /* Back button */

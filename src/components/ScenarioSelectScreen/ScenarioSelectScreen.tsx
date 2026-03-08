@@ -5,6 +5,12 @@ import './ScenarioSelectScreen.css';
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 
+const STATE_LABEL: Record<ScenarioEntry['state'], string> = {
+  Inactive: '비활성',
+  Active: '진행 중',
+  Finished: '완료',
+};
+
 interface ScenarioSelectScreenProps {
   onSelectScenario: (scenarioId: number) => void;
   onBack: () => void;
@@ -35,9 +41,9 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
   }, []);
 
   const scenarioByDate = React.useMemo(() => {
-    const map = new Map<string, number>();
+    const map = new Map<string, ScenarioEntry>();
     for (const entry of scenarios) {
-      map.set(entry.date, entry.scenarioId);
+      map.set(entry.date, entry);
     }
     return map;
   }, [scenarios]);
@@ -75,43 +81,54 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
       {error && <p className="scenario-select-status scenario-select-error">{error}</p>}
 
       {!isLoading && !error && month !== null && (
-        <div className="calendar">
-          <div className="calendar-header">{month}월</div>
-          <div className="calendar-grid">
-            {DAY_LABELS.map((label, i) => (
-              <div key={i} className={`calendar-day-label${i === 0 ? ' sunday' : i === 6 ? ' saturday' : ''}`}>
-                {label}
-              </div>
-            ))}
-            {calendarDays.map((day, idx) => {
-              if (day === null) {
-                return <div key={`empty-${idx}`} className="calendar-cell empty" />;
-              }
-              const dateStr = formatDateStr(day);
-              const scenarioId = scenarioByDate.get(dateStr);
-              const isToday = dateStr === todayStr;
-              const hasScenario = scenarioId !== undefined;
+        <>
+          <div className="calendar">
+            <div className="calendar-header">{month}월</div>
+            <div className="calendar-grid">
+              {DAY_LABELS.map((label, i) => (
+                <div key={i} className={`calendar-day-label${i === 0 ? ' sunday' : i === 6 ? ' saturday' : ''}`}>
+                  {label}
+                </div>
+              ))}
+              {calendarDays.map((day, idx) => {
+                if (day === null) {
+                  return <div key={`empty-${idx}`} className="calendar-cell empty" />;
+                }
+                const dateStr = formatDateStr(day);
+                const entry = scenarioByDate.get(dateStr);
+                const isToday = dateStr === todayStr;
+                const state = entry?.state;
+                const isPlayable = state === 'Active' || state === 'Finished';
 
-              return (
-                <button
-                  key={dateStr}
-                  className={[
-                    'calendar-cell',
-                    hasScenario ? 'has-scenario' : 'no-scenario',
-                    isToday ? 'today' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  disabled={!hasScenario}
-                  onClick={() => scenarioId !== undefined && onSelectScenario(scenarioId)}
-                  title={hasScenario ? `${dateStr} 시나리오 시작` : undefined}
-                >
-                  <span className="calendar-day-number">{day}</span>
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={dateStr}
+                    className={[
+                      'calendar-cell',
+                      entry ? `state-${state?.toLowerCase() ?? 'inactive'}` : 'no-scenario',
+                      isToday ? 'today' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    disabled={!isPlayable}
+                    onClick={() => isPlayable && entry && onSelectScenario(entry.scenarioId)}
+                    title={entry ? `${dateStr} — ${STATE_LABEL[entry.state]}` : undefined}
+                  >
+                    <span className="calendar-day-number">{day}</span>
+                    {entry && (
+                      <span className="calendar-state-dot" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+          <div className="calendar-legend">
+            <span className="legend-item"><span className="legend-dot state-inactive" />비활성</span>
+            <span className="legend-item"><span className="legend-dot state-active" />진행 중</span>
+            <span className="legend-item"><span className="legend-dot state-finished" />완료</span>
+          </div>
+        </>
       )}
 
       <button className="back-button" onClick={onBack}>
