@@ -7,7 +7,8 @@ const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 
 const STATE_LABEL: Record<ScenarioEntry['state'], string> = {
   Inactive: '비활성',
-  Active: '진행 중',
+  Ready: '시작 가능',
+  Visited: '진행 중',
   Finished: '완료',
 };
 
@@ -98,7 +99,7 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
                 const entry = scenarioByDate.get(dateStr);
                 const isToday = dateStr === todayStr;
                 const state = entry?.state;
-                const isPlayable = state === 'Active' || state === 'Finished';
+                const isPlayable = state === 'Ready' || state === 'Visited' || state === 'Finished';
 
                 return (
                   <button
@@ -125,7 +126,8 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
           </div>
           <div className="calendar-legend">
             <span className="legend-item"><span className="legend-dot state-inactive" />비활성</span>
-            <span className="legend-item"><span className="legend-dot state-active" />진행 중</span>
+            <span className="legend-item"><span className="legend-dot state-ready" />시작 가능</span>
+            <span className="legend-item"><span className="legend-dot state-visited" />진행 중</span>
             <span className="legend-item"><span className="legend-dot state-finished" />완료</span>
           </div>
         </>

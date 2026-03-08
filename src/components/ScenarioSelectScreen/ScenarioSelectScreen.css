@@ -96,8 +96,8 @@
   cursor: not-allowed;
 }
 
-/* State: Active — highlighted, playable */
-.calendar-cell.state-active {
+/* State: Ready — highlighted, playable, not yet started */
+.calendar-cell.state-ready {
   background: #313244;
   cursor: pointer;
   color: #a6e3a1;
@@ -105,12 +105,30 @@
   transition: background-color 0.15s, transform 0.1s;
 }
 
-.calendar-cell.state-active:hover {
+.calendar-cell.state-ready:hover {
   background: #3d4158;
   transform: scale(1.08);
 }
 
-.calendar-cell.state-active:active {
+.calendar-cell.state-ready:active {
+  transform: scale(0.96);
+}
+
+/* State: Visited — in progress, playable */
+.calendar-cell.state-visited {
+  background: #2e2a1e;
+  cursor: pointer;
+  color: #f9e2af;
+  font-weight: 600;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.calendar-cell.state-visited:hover {
+  background: #3d3825;
+  transform: scale(1.08);
+}
+
+.calendar-cell.state-visited:active {
   transform: scale(0.96);
 }
 
@@ -137,8 +155,13 @@
   outline-offset: -2px;
 }
 
-.calendar-cell.today.state-active {
+.calendar-cell.today.state-ready {
   background: #6c5ce7;
+  color: #fff;
+}
+
+.calendar-cell.today.state-visited {
+  background: #b8860b;
   color: #fff;
 }
 
@@ -165,8 +188,12 @@
   pointer-events: none;
 }
 
-.state-active .calendar-state-dot {
+.state-ready .calendar-state-dot {
   background: #a6e3a1;
+}
+
+.state-visited .calendar-state-dot {
+  background: #f9e2af;
 }
 
 .state-finished .calendar-state-dot {
@@ -202,8 +229,12 @@
   background: #585b70;
 }
 
-.legend-dot.state-active {
+.legend-dot.state-ready {
   background: #a6e3a1;
+}
+
+.legend-dot.state-visited {
+  background: #f9e2af;
 }
 
 .legend-dot.state-finished {

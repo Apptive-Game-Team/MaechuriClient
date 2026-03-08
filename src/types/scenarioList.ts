@@ -1,4 +1,4 @@
-export type ScenarioState = 'Inactive' | 'Active' | 'Finished';
+export type ScenarioState = 'Inactive' | 'Ready' | 'Visited' | 'Finished';
 
 export interface ScenarioEntry {
   date: string;      // e.g. "2026-03-01"
