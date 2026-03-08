@@ -37,7 +37,7 @@ export async function getTodayMap(): Promise<ScenarioData> {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch today's map: ${response.statusText}`);
+    throw new Error(`Failed to fetch today's map: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
@@ -55,7 +55,7 @@ export async function getScenarioMap(scenarioId: number): Promise<ScenarioData> 
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch scenario map: ${response.statusText}`);
+    throw new Error(`Failed to fetch scenario map: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
@@ -79,7 +79,7 @@ export async function sendInteraction(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to interact with object: ${response.statusText}`);
+    throw new Error(`Failed to interact with object: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
@@ -101,7 +101,7 @@ export async function submitSolve(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to submit solve: ${response.statusText}`);
+    throw new Error(`Failed to submit solve: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
@@ -119,7 +119,7 @@ export async function getRecords(scenarioId: number): Promise<RecordsData> {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch records: ${response.statusText}`);
+    throw new Error(`Failed to fetch records: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
@@ -140,7 +140,7 @@ export async function getRecord(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch record: ${response.statusText}`);
+    throw new Error(`Failed to fetch record: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
   return response.json();
