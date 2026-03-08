@@ -1,0 +1,137 @@
+.scenario-select-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  gap: 1.5rem;
+}
+
+.scenario-select-screen h1 {
+  font-size: 3rem;
+  margin: 0;
+}
+
+.scenario-select-screen h2 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.scenario-select-status {
+  font-size: 1rem;
+  color: #888;
+}
+
+.scenario-select-error {
+  color: #e05252;
+}
+
+/* Calendar */
+.calendar {
+  background: #1e1e2e;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: min(420px, 90vw);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.calendar-header {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #cdd6f4;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day-label {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 0;
+  color: #a6adc8;
+}
+
+.calendar-day-label.sunday {
+  color: #f38ba8;
+}
+
+.calendar-day-label.saturday {
+  color: #89b4fa;
+}
+
+.calendar-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: default;
+  font-size: 0.95rem;
+  color: #cdd6f4;
+  padding: 0;
+}
+
+.calendar-cell.empty {
+  background: transparent;
+}
+
+.calendar-cell.no-scenario {
+  color: #45475a;
+}
+
+.calendar-cell.has-scenario {
+  background: #313244;
+  cursor: pointer;
+  color: #cba6f7;
+  font-weight: 600;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.calendar-cell.has-scenario:hover {
+  background: #494969;
+  transform: scale(1.08);
+}
+
+.calendar-cell.has-scenario:active {
+  transform: scale(0.96);
+}
+
+.calendar-cell.today {
+  outline: 2px solid #cba6f7;
+  outline-offset: -2px;
+}
+
+.calendar-cell.today.has-scenario {
+  background: #6c5ce7;
+  color: #fff;
+}
+
+.calendar-day-number {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Back button */
+.back-button {
+  padding: 0.75rem 1.75rem;
+  font-size: 1rem;
+  background-color: #313244;
+  color: #cdd6f4;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.back-button:hover {
+  background-color: #494969;
+}

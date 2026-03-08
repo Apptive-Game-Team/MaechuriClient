@@ -4,6 +4,25 @@ import type { ScenarioData } from '../types/map';
 import type { InteractionRequest, InteractionResponse } from '../types/interaction';
 import type { SolveRequest, SolveResponse } from '../types/solve';
 import type { RecordsData, RecordDetail } from '../types/record';
+import type { ScenarioListResponse } from '../types/scenarioList';
+
+/**
+ * Fetch the list of available scenarios for the current month
+ */
+export async function getScenarios(): Promise<ScenarioListResponse> {
+  const response = await apiFetch(API_ENDPOINTS.getScenarios(), {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch scenarios: ${response.statusText}`);
+  }
+
+  return response.json();
+}
 
 /**
  * Fetch today's map data

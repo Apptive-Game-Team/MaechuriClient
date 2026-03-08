@@ -3,9 +3,10 @@ import './MainScreen.css';
 
 interface MainScreenProps {
   onStartGame: () => void;
+  onOpenScenarioSelect: () => void;
 }
 
-const MainScreen: React.FC<MainScreenProps> = ({ onStartGame }) => {
+const MainScreen: React.FC<MainScreenProps> = ({ onStartGame, onOpenScenarioSelect }) => {
   return (
     <div className="main-screen">
       <h1>매추리</h1>
@@ -14,6 +15,9 @@ const MainScreen: React.FC<MainScreenProps> = ({ onStartGame }) => {
         
         <button className="start-game-button" onClick={onStartGame}>
           오늘의 게임 시작
+        </button>
+        <button className="scenario-select-button" onClick={onOpenScenarioSelect}>
+          시나리오 선택
         </button>
       </div>
     </div>
