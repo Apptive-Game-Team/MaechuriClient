@@ -38,3 +38,18 @@
 .start-game-button:hover {
   background-color: #535bf2;
 }
+
+.scenario-select-button {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background-color: #313244;
+  color: #cdd6f4;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.scenario-select-button:hover {
+  background-color: #494969;
+}
