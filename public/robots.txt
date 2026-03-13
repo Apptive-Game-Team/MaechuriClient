@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://apptive-game-team.github.io/MaechuriClient/sitemap.xml
+Sitemap: https://maechuri.com/sitemap.xml
