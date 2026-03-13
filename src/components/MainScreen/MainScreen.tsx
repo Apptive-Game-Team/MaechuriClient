@@ -1,5 +1,6 @@
 import React from 'react';
 import './MainScreen.css';
+import Footer from '../common/Footer/Footer';
 
 interface MainScreenProps {
   onStartGame: () => void;
@@ -20,6 +21,7 @@ const MainScreen: React.FC<MainScreenProps> = ({ onStartGame, onOpenScenarioSele
           시나리오 선택
         </button>
       </div>
+      <Footer />
     </div>
   );
 };
