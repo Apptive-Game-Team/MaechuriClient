@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 interface PressureIndicatorProps {
   pressure?: number | null;
@@ -45,7 +45,7 @@ export function PressureIndicator({ pressure, texts }: PressureIndicatorProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const resolvedTexts = resolveTexts(texts);
+  const resolvedTexts = useMemo(() => resolveTexts(texts), [texts]);
   const baseText = getPressureBaseText(pressure, resolvedTexts);
   const dots = '.'.repeat(dotCount);
 
