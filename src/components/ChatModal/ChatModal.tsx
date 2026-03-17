@@ -20,6 +20,7 @@ interface ChatModalProps {
   interactions?: Map<string, ObjectInteractionState>;
   currentObjectId?: string | null;
   onSwitchObject?: (objectId: string, objectName: string) => void;
+  currentObjectImageUrl?: string;
 }
 
 const ChatModal: React.FC<ChatModalProps> = ({
@@ -35,9 +36,18 @@ const ChatModal: React.FC<ChatModalProps> = ({
   interactions,
   currentObjectId,
   onSwitchObject,
+  currentObjectImageUrl,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
+
+  // Derive object type from ID prefix for avatar rendering
+  const objectType = useMemo(() => {
+    if (!currentObjectId) return null;
+    if (currentObjectId.startsWith('c:')) return 'CLUE' as const;
+    if (currentObjectId.startsWith('s:')) return 'NPC' as const;
+    return null;
+  }, [currentObjectId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -108,7 +118,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
         <div className="chat-modal-right">
           <div className="chat-modal-messages">
             {messages.map((msg, index) => (
-              <Message key={index} message={msg} records={records} />
+              <Message key={index} message={msg} records={records} objectImageUrl={currentObjectImageUrl} objectType={objectType} />
             ))}
             <div ref={messagesEndRef} />
           </div>
