@@ -10,6 +10,7 @@ import { useMapData } from '../../hooks/useMapData';
 import { useInteraction } from '../../hooks/useInteraction';
 import { useRecords } from '../../contexts/RecordsContext';
 import { setCurrentMapData } from './utils/gameUtils';
+import { getAssetImage } from '../../utils/assetLoader';
 import { submitSolve } from '../../services/api';
 import playerControlSystem from './systems/playerControlSystem';
 import interactionSystem from './systems/interactionSystem';
@@ -229,6 +230,15 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
 
   const suspects = scenarioData?.map.objects.filter((obj: MapObject) => obj.id.startsWith('s:')) || [];
 
+  const currentObjectImageUrl = useMemo(() => {
+    if (!currentObjectId || !scenarioData) return undefined;
+    const mapObject = scenarioData.map.objects.find((o: MapObject) => o.id === currentObjectId);
+    if (!mapObject) return undefined;
+    const directionalAsset = assetsState.assets.get(currentObjectId);
+    if (!directionalAsset) return undefined;
+    return getAssetImage(directionalAsset, mapObject.direction as 'left' | 'right' | 'front' | 'back');
+  }, [currentObjectId, scenarioData, assetsState.assets]);
+
   if (mapError && mapError instanceof HTTPError) return <ErrorScreen statusCode={mapError.status} message={mapError.message} />;
   if (isLoadingMap || !scenarioData || !playerDirection) return <div className="game-screen"><h2>Loading map data...</h2></div>;
   if (assetsState.isLoading) return <div className="game-screen"><h2>Loading assets...</h2></div>;
@@ -268,6 +278,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         interactions={interactions}
         currentObjectId={currentObjectId}
         onSwitchObject={handleSwitchObject}
+        currentObjectImageUrl={currentObjectImageUrl}
       />
       <SolveModal
         isOpen={solveModalOpen}

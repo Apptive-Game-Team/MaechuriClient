@@ -5,6 +5,8 @@ import type { ChatMessage } from '../../../types/interaction';
 interface MessageProps {
   message: ChatMessage;
   records: Record[];
+  objectImageUrl?: string;
+  objectType?: 'CLUE' | 'NPC' | null;
 }
 
 interface Reference {
@@ -40,12 +42,46 @@ const parseMessageWithReferences = (content: string, records: Record[]): (string
   return parts.length > 0 ? parts : [content];
 };
 
-export const Message: React.FC<MessageProps> = ({ message, records }) => {
-  return (
-    <div className={`chat-message ${message.sender}`}>
-      {message.name && message.sender === 'npc' && (
-        <div className="chat-message-name">{message.name}</div>
+const MessageContent: React.FC<{ message: ChatMessage; records: Record[] }> = ({ message, records }) => (
+  <>
+    {message.name && message.sender === 'npc' && (
+      <div className="chat-message-name">{message.name}</div>
+    )}
+    <div className="chat-message-bubble">
+      {parseMessageWithReferences(message.content, records).map((part, i) =>
+        typeof part === 'string' ? (
+          <span key={i}>{part}</span>
+        ) : (
+          <span key={i} className="reference-tag-display">
+            {part.name}
+          </span>
+        )
       )}
+    </div>
+  </>
+);
+
+export const Message: React.FC<MessageProps> = ({ message, records, objectImageUrl, objectType }) => {
+  if (message.sender === 'npc') {
+    return (
+      <div className="chat-message npc">
+        <div className="chat-message-npc-row">
+          {objectImageUrl && (
+            <div
+              className={`chat-message-avatar chat-message-avatar-${objectType?.toLowerCase()}`}
+              style={{ backgroundImage: `url(${objectImageUrl})` }}
+            />
+          )}
+          <div className="chat-message-npc-content">
+            <MessageContent message={message} records={records} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="chat-message player">
       <div className="chat-message-bubble">
         {parseMessageWithReferences(message.content, records).map((part, i) =>
           typeof part === 'string' ? (
