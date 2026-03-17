@@ -145,8 +145,13 @@ export function useInteraction(): UseInteractionResult {
           clientId: pendingClientId,
         };
 
-        updateInteractionState(objectId, {
-          messages: [...currentState.messages, playerMessage, pendingMessage],
+        updateInteractionState(objectId, (prevState) => {
+          if (!prevState || prevState.type !== 'two-way') {
+            return prevState as any;
+          }
+          return {
+            messages: [...prevState.messages, playerMessage, pendingMessage],
+          };
         });
 
         // Send message with history
