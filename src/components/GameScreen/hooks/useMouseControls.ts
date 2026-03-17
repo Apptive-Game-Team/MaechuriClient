@@ -1,4 +1,5 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 import type { GameEngine } from 'react-game-engine';
 import { checkCollision, getObjectInfo, checkInteraction, setHoveredInteractable } from '../utils/gameUtils';
 import { TILE_SIZE } from '../types';
@@ -42,13 +43,12 @@ const toTileCoords = (
 export const useMouseControls = (
   gameEngineRef: React.RefObject<GameEngine | null>,
   gameContainerRef: React.RefObject<HTMLDivElement | null>,
-  viewportRef: React.RefObject<HTMLDivElement | null>,
 ) => {
   const handleClick = useCallback(
-    (e: MouseEvent) => {
-      const viewport = viewportRef.current;
+    (e: ReactMouseEvent<HTMLDivElement>) => {
+      const viewport = e.currentTarget;
       const container = gameContainerRef.current;
-      if (!viewport || !container || !gameEngineRef.current) return;
+      if (!container || !gameEngineRef.current) return;
 
       const { tileX, tileY } = toTileCoords(e.clientX, e.clientY, viewport, container);
 
@@ -66,14 +66,14 @@ export const useMouseControls = (
         gameEngineRef.current.dispatch({ type: 'navigate-to', target: { x: tileX, y: tileY } });
       }
     },
-    [gameEngineRef, gameContainerRef, viewportRef],
+    [gameEngineRef, gameContainerRef],
   );
 
   const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      const viewport = viewportRef.current;
+    (e: ReactMouseEvent<HTMLDivElement>) => {
+      const viewport = e.currentTarget;
       const container = gameContainerRef.current;
-      if (!viewport || !container) return;
+      if (!container) return;
 
       const { tileX, tileY } = toTileCoords(e.clientX, e.clientY, viewport, container);
 
@@ -86,29 +86,17 @@ export const useMouseControls = (
         viewport.style.cursor = 'default';
       }
     },
-    [gameContainerRef, viewportRef],
+    [gameContainerRef],
   );
 
-  const handleMouseLeave = useCallback(() => {
+  const handleMouseLeave = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
     setHoveredInteractable(null);
-    if (viewportRef.current) {
-      viewportRef.current.style.cursor = 'default';
-    }
-  }, [viewportRef]);
+    e.currentTarget.style.cursor = 'default';
+  }, []);
 
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-
-    viewport.addEventListener('click', handleClick);
-    viewport.addEventListener('mousemove', handleMouseMove);
-    viewport.addEventListener('mouseleave', handleMouseLeave);
-
-    return () => {
-      viewport.removeEventListener('click', handleClick);
-      viewport.removeEventListener('mousemove', handleMouseMove);
-      viewport.removeEventListener('mouseleave', handleMouseLeave);
-      setHoveredInteractable(null);
-    };
-  }, [viewportRef, handleClick, handleMouseMove, handleMouseLeave]);
+  return {
+    handleClick,
+    handleMouseMove,
+    handleMouseLeave,
+  };
 };
