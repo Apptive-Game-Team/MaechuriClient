@@ -1,12 +1,14 @@
 import React from 'react';
 import type { Record } from '../../../types/record';
 import type { ChatMessage } from '../../../types/interaction';
+import { PressureIndicator } from './PressureIndicator';
 
 interface MessageProps {
   message: ChatMessage;
   records: Record[];
   objectImageUrl?: string;
   objectType?: 'CLUE' | 'NPC' | null;
+  pressure?: number | null;
 }
 
 interface Reference {
@@ -42,26 +44,32 @@ const parseMessageWithReferences = (content: string, records: Record[]): (string
   return parts.length > 0 ? parts : [content];
 };
 
-const MessageContent: React.FC<{ message: ChatMessage; records: Record[] }> = ({ message, records }) => (
+const MessageContent: React.FC<{ message: ChatMessage; records: Record[]; pressure?: number | null }> = ({ message, records, pressure }) => (
   <>
     {message.name && message.sender === 'npc' && (
       <div className="chat-message-name">{message.name}</div>
     )}
-    <div className="chat-message-bubble">
-      {parseMessageWithReferences(message.content, records).map((part, i) =>
-        typeof part === 'string' ? (
-          <span key={i}>{part}</span>
-        ) : (
-          <span key={i} className="reference-tag-display">
-            {part.name}
-          </span>
-        )
-      )}
-    </div>
+    {message.isPending ? (
+      <div className="chat-message-bubble pending">
+        <PressureIndicator pressure={pressure} />
+      </div>
+    ) : (
+      <div className="chat-message-bubble">
+        {parseMessageWithReferences(message.content, records).map((part, i) =>
+          typeof part === 'string' ? (
+            <span key={i}>{part}</span>
+          ) : (
+            <span key={i} className="reference-tag-display">
+              {part.name}
+            </span>
+          )
+        )}
+      </div>
+    )}
   </>
 );
 
-export const Message: React.FC<MessageProps> = ({ message, records, objectImageUrl, objectType }) => {
+export const Message: React.FC<MessageProps> = ({ message, records, objectImageUrl, objectType, pressure }) => {
   if (message.sender === 'npc') {
     return (
       <div className="chat-message npc">
@@ -73,7 +81,7 @@ export const Message: React.FC<MessageProps> = ({ message, records, objectImageU
             />
           )}
           <div className="chat-message-npc-content">
-            <MessageContent message={message} records={records} />
+            <MessageContent message={message} records={records} pressure={pressure} />
           </div>
         </div>
       </div>

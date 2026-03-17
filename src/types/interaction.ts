@@ -32,6 +32,7 @@ export interface ChatMessage {
   sender: 'player' | 'npc';
   name?: string; // Optional name for NPC messages
   timestamp: number;
+  isPending?: boolean;
 }
 
 // Object-specific interaction state

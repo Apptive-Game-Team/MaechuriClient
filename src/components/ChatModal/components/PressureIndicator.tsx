@@ -5,9 +5,9 @@ interface PressureIndicatorProps {
 }
 
 function getPressureBaseText(pressure?: number | null): string {
-  if (pressure == null || pressure < 30) return '생각하는 중';
-  if (pressure < 60) return '긴장하며 고민하는 중';
-  if (pressure < 90) return '당황해서 말을 더듬는 중';
+  if (pressure == null || pressure <= 30) return '생각하는 중';
+  if (pressure <= 60) return '긴장하며 고민하는 중';
+  if (pressure <= 90) return '당황해서 말을 더듬는 중';
   return '공포에 질려 떨고 있는 중';
 }
 

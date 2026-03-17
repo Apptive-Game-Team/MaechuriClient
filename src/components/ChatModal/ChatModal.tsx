@@ -5,7 +5,6 @@ import type { MapObject } from '../../types/map';
 import './ChatModal.css';
 import { Message } from './components/Message';
 import { ChatInput } from './components/ChatInput';
-import { PressureIndicator } from './components/PressureIndicator';
 import { Modal } from '../common/Modal/Modal';
 
 interface ChatModalProps {
@@ -125,16 +124,20 @@ const ChatModal: React.FC<ChatModalProps> = ({
         <div className="chat-modal-right">
           <div className="chat-modal-messages">
             {messages.map((msg, index) => (
-              <Message key={index} message={msg} records={records} objectImageUrl={currentObjectImageUrl} objectType={objectType} />
+              <Message
+                key={index}
+                message={msg}
+                records={records}
+                objectImageUrl={currentObjectImageUrl}
+                objectType={objectType}
+                pressure={currentPressure}
+              />
             ))}
             <div ref={messagesEndRef} />
           </div>
           <div className={`chat-modal-input-area ${interactionType === 'simple' ? 'disabled' : ''}`}>
             {interactionType === 'two-way' ? (
-              <>
-                <ChatInput ref={inputRef} records={records} onSendMessage={onSendMessage} isNearObject={isNearObject} />
-                <PressureIndicator pressure={currentPressure} />
-              </>
+              <ChatInput ref={inputRef} records={records} onSendMessage={onSendMessage} isNearObject={isNearObject} />
             ) : (
               <div className="chat-modal-disabled-notice">
                 {interactionType === 'simple' ? 'This is a read-only interaction' : 'Initializing...'}

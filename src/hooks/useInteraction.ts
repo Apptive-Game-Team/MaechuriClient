@@ -121,8 +121,15 @@ export function useInteraction(): UseInteractionResult {
           timestamp: Date.now(),
         };
 
+        const pendingMessage: ChatMessage = {
+          content: '',
+          sender: 'npc',
+          timestamp: Date.now(),
+          isPending: true,
+        };
+
         updateInteractionState(objectId, {
-          messages: [...currentState.messages, playerMessage],
+          messages: [...currentState.messages, playerMessage, pendingMessage],
         });
 
         // Send message with history
@@ -135,7 +142,7 @@ export function useInteraction(): UseInteractionResult {
           throw new Error('Expected two-way response');
         }
 
-        // Add NPC response to history
+        // Add NPC response to history (replace pending bubble)
         const npcMessage: ChatMessage = {
           content: response.message,
           sender: 'npc',
@@ -145,7 +152,17 @@ export function useInteraction(): UseInteractionResult {
         // Use functional update to append the NPC message to the latest state
         updateInteractionState(objectId, (prevState) => ({
           jwtHistory: response.history,
-          messages: [...prevState.messages, npcMessage],
+          messages: (() => {
+            const nextMessages = [...prevState.messages];
+            for (let i = nextMessages.length - 1; i >= 0; i -= 1) {
+              if (nextMessages[i].isPending) {
+                nextMessages.splice(i, 1);
+                break;
+              }
+            }
+            nextMessages.push(npcMessage);
+            return nextMessages;
+          })(),
           pressure: response.pressure,
         }));
 
@@ -157,6 +174,9 @@ export function useInteraction(): UseInteractionResult {
         const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
         console.error('Error sending message:', errorMessage);
         setError(errorMessage);
+        updateInteractionState(objectId, (prevState) => ({
+          messages: prevState.messages.filter((msg) => !msg.isPending),
+        }));
       } finally {
         setIsLoading(false);
       }
