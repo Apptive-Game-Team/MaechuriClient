@@ -125,7 +125,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
           <div className="chat-modal-messages">
             {messages.map((msg, index) => (
               <Message
-                key={index}
+                key={msg.clientId ?? `${msg.sender}-${msg.timestamp}-${index}`}
                 message={msg}
                 records={records}
                 objectImageUrl={currentObjectImageUrl}

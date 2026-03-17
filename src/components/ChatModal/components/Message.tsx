@@ -44,28 +44,33 @@ const parseMessageWithReferences = (content: string, records: Record[]): (string
   return parts.length > 0 ? parts : [content];
 };
 
-const MessageContent: React.FC<{ message: ChatMessage; records: Record[]; pressure?: number | null }> = ({ message, records, pressure }) => (
+const MessageContent: React.FC<{ message: ChatMessage; records: Record[] }> = ({ message, records }) => (
   <>
     {message.name && message.sender === 'npc' && (
       <div className="chat-message-name">{message.name}</div>
     )}
-    {message.isPending ? (
-      <div className="chat-message-bubble pending">
-        <PressureIndicator pressure={pressure} />
-      </div>
-    ) : (
-      <div className="chat-message-bubble">
-        {parseMessageWithReferences(message.content, records).map((part, i) =>
-          typeof part === 'string' ? (
-            <span key={i}>{part}</span>
-          ) : (
-            <span key={i} className="reference-tag-display">
-              {part.name}
-            </span>
-          )
-        )}
-      </div>
+    <div className="chat-message-bubble">
+      {parseMessageWithReferences(message.content, records).map((part, i) =>
+        typeof part === 'string' ? (
+          <span key={i}>{part}</span>
+        ) : (
+          <span key={i} className="reference-tag-display">
+            {part.name}
+          </span>
+        )
+      )}
+    </div>
+  </>
+);
+
+const PendingMessageContent: React.FC<{ message: ChatMessage; pressure?: number | null }> = ({ message, pressure }) => (
+  <>
+    {message.name && message.sender === 'npc' && (
+      <div className="chat-message-name">{message.name}</div>
     )}
+    <div className="chat-message-bubble pending">
+      <PressureIndicator pressure={pressure} />
+    </div>
   </>
 );
 
@@ -81,7 +86,11 @@ export const Message: React.FC<MessageProps> = ({ message, records, objectImageU
             />
           )}
           <div className="chat-message-npc-content">
-            <MessageContent message={message} records={records} pressure={pressure} />
+            {message.isPending ? (
+              <PendingMessageContent message={message} pressure={pressure} />
+            ) : (
+              <MessageContent message={message} records={records} />
+            )}
           </div>
         </div>
       </div>

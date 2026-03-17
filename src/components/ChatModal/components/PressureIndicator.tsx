@@ -4,10 +4,14 @@ interface PressureIndicatorProps {
   pressure?: number | null;
 }
 
+const PRESSURE_TENSE_MIN_INCLUSIVE = 30;
+const PRESSURE_STUTTER_MIN_INCLUSIVE = 60;
+const PRESSURE_FEAR_MIN_INCLUSIVE = 90;
+
 function getPressureBaseText(pressure?: number | null): string {
-  if (pressure == null || pressure <= 30) return '생각하는 중';
-  if (pressure <= 60) return '긴장하며 고민하는 중';
-  if (pressure <= 90) return '당황해서 말을 더듬는 중';
+  if (pressure == null || pressure < PRESSURE_TENSE_MIN_INCLUSIVE) return '생각하는 중';
+  if (pressure < PRESSURE_STUTTER_MIN_INCLUSIVE) return '긴장하며 고민하는 중';
+  if (pressure < PRESSURE_FEAR_MIN_INCLUSIVE) return '당황해서 말을 더듬는 중';
   return '공포에 질려 떨고 있는 중';
 }
 

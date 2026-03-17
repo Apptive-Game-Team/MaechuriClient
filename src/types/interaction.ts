@@ -33,6 +33,7 @@ export interface ChatMessage {
   name?: string; // Optional name for NPC messages
   timestamp: number;
   isPending?: boolean;
+  clientId?: string;
 }
 
 // Object-specific interaction state
