@@ -5,6 +5,7 @@ import type { MapObject } from '../../types/map';
 import './ChatModal.css';
 import { Message } from './components/Message';
 import { ChatInput } from './components/ChatInput';
+import { PressureIndicator } from './components/PressureIndicator';
 import { Modal } from '../common/Modal/Modal';
 
 interface ChatModalProps {
@@ -88,6 +89,12 @@ const ChatModal: React.FC<ChatModalProps> = ({
     return dx * dx + dy * dy <= 25;
   }, [playerPosition, currentObjectId, mapObjects]);
 
+  // Get current pressure for the active object
+  const currentPressure = useMemo(() => {
+    if (!currentObjectId || !interactions) return undefined;
+    return interactions.get(currentObjectId)?.pressure;
+  }, [currentObjectId, interactions]);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -124,7 +131,10 @@ const ChatModal: React.FC<ChatModalProps> = ({
           </div>
           <div className={`chat-modal-input-area ${interactionType === 'simple' ? 'disabled' : ''}`}>
             {interactionType === 'two-way' ? (
-              <ChatInput ref={inputRef} records={records} onSendMessage={onSendMessage} isNearObject={isNearObject} />
+              <>
+                <ChatInput ref={inputRef} records={records} onSendMessage={onSendMessage} isNearObject={isNearObject} />
+                <PressureIndicator pressure={currentPressure} />
+              </>
             ) : (
               <div className="chat-modal-disabled-notice">
                 {interactionType === 'simple' ? 'This is a read-only interaction' : 'Initializing...'}

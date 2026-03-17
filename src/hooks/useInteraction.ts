@@ -81,6 +81,7 @@ export function useInteraction(): UseInteractionResult {
           type: response.type,
           jwtHistory: response.type === 'two-way' ? response.history : undefined,
           messages,
+          pressure: response.type === 'two-way' ? response.pressure : undefined,
         });
 
         // Handle new records if present
@@ -145,6 +146,7 @@ export function useInteraction(): UseInteractionResult {
         updateInteractionState(objectId, (prevState) => ({
           jwtHistory: response.history,
           messages: [...prevState.messages, npcMessage],
+          pressure: response.pressure,
         }));
 
         // Handle new records if present
