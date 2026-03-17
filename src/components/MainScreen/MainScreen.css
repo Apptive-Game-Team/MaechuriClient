@@ -10,12 +10,12 @@
 .main-screen h1 {
   font-size: 3rem;
   margin-bottom: 0.5rem;
-  color: #cdd6f4;
+  color: var(--text);
 }
 
 .main-screen h2 {
   font-size: 1.1rem;
-  color: #a6adc8;
+  color: var(--text-muted);
   margin-bottom: 2rem;
   font-weight: 400;
 }
@@ -30,7 +30,7 @@
 .start-game-button {
   padding: 1rem 2rem;
   font-size: 1.2rem;
-  background-color: #6c5ce7;
+  background-color: var(--accent-strong);
   color: white;
   border: none;
   border-radius: 8px;
@@ -39,14 +39,14 @@
 }
 
 .start-game-button:hover {
-  background-color: #5549c0;
+  background-color: var(--accent-strong-hover);
 }
 
 .scenario-select-button {
   padding: 1rem 2rem;
   font-size: 1.2rem;
-  background-color: #313244;
-  color: #cdd6f4;
+  background-color: var(--surface);
+  color: var(--text);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -54,5 +54,5 @@
 }
 
 .scenario-select-button:hover {
-  background-color: #45475a;
+  background-color: var(--surface-alt);
 }

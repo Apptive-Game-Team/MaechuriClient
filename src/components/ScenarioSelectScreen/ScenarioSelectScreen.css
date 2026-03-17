@@ -11,25 +11,27 @@
 .scenario-select-screen h1 {
   font-size: 3rem;
   margin: 0;
+  color: var(--text);
 }
 
 .scenario-select-screen h2 {
   font-size: 1.5rem;
   margin: 0;
+  color: var(--text);
 }
 
 .scenario-select-status {
   font-size: 1rem;
-  color: #888;
+  color: var(--text-muted);
 }
 
 .scenario-select-error {
-  color: #e05252;
+  color: var(--danger);
 }
 
 /* Calendar */
 .calendar {
-  background: #1e1e2e;
+  background: var(--bg-alt);
   border-radius: 12px;
   padding: 1.5rem;
   width: min(420px, 90vw);
@@ -43,13 +45,13 @@
   font-size: 1.3rem;
   font-weight: bold;
   margin-bottom: 1rem;
-  color: #cdd6f4;
+  color: var(--text);
 }
 
 .month-nav-button {
   background: none;
   border: none;
-  color: #cdd6f4;
+  color: var(--text);
   font-size: 1.6rem;
   line-height: 1;
   cursor: pointer;
@@ -59,8 +61,8 @@
 }
 
 .month-nav-button:hover {
-  background: #313244;
-  color: #cba6f7;
+  background: var(--surface);
+  color: var(--accent);
 }
 
 .calendar-grid {
@@ -74,7 +76,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   padding: 4px 0;
-  color: #a6adc8;
+  color: var(--text-muted);
 }
 
 .calendar-day-label.sunday {
@@ -95,7 +97,7 @@
   background: transparent;
   cursor: default;
   font-size: 0.95rem;
-  color: #cdd6f4;
+  color: var(--text);
   padding: 0;
   position: relative;
 }
@@ -105,19 +107,19 @@
 }
 
 .calendar-cell.no-scenario {
-  color: #45475a;
+  color: var(--text-subtle);
 }
 
 /* State: Inactive — greyed out, not clickable */
 .calendar-cell.state-inactive {
-  background: #1e1e2e;
-  color: #585b70;
+  background: var(--bg-alt);
+  color: var(--text-subtle);
   cursor: not-allowed;
 }
 
 /* State: Ready — highlighted, playable, not yet started */
 .calendar-cell.state-ready {
-  background: #313244;
+  background: var(--surface);
   cursor: pointer;
   color: #a6e3a1;
   font-weight: 600;
@@ -125,7 +127,7 @@
 }
 
 .calendar-cell.state-ready:hover {
-  background: #3d4158;
+  background: var(--surface-alt);
   transform: scale(1.08);
 }
 
@@ -153,7 +155,7 @@
 
 /* State: Finished — playable again, distinct look */
 .calendar-cell.state-finished {
-  background: #2a2a3e;
+  background: var(--surface-alt);
   cursor: pointer;
   color: #89b4fa;
   font-weight: 600;
@@ -161,7 +163,7 @@
 }
 
 .calendar-cell.state-finished:hover {
-  background: #3b3b56;
+  background: var(--surface);
   transform: scale(1.08);
 }
 
@@ -170,12 +172,12 @@
 }
 
 .calendar-cell.today {
-  outline: 2px solid #cba6f7;
+  outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
 
 .calendar-cell.today.state-ready {
-  background: #6c5ce7;
+  background: var(--accent-strong);
   color: #fff;
 }
 
@@ -228,7 +230,7 @@
   display: flex;
   gap: 1.5rem;
   font-size: 0.8rem;
-  color: #a6adc8;
+  color: var(--text-muted);
 }
 
 .legend-item {
@@ -264,8 +266,8 @@
 .back-button {
   padding: 0.75rem 1.75rem;
   font-size: 1rem;
-  background-color: #313244;
-  color: #cdd6f4;
+  background-color: var(--surface);
+  color: var(--text);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -273,5 +275,5 @@
 }
 
 .back-button:hover {
-  background-color: #494969;
+  background-color: var(--surface-alt);
 }

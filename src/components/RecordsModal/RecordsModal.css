@@ -10,7 +10,7 @@
   position: relative;
   width: 2000px;
   height: 1500px;
-  background-color: #181825;
+  background-color: var(--bg-alt);
   background-image: 
     linear-gradient(rgba(203, 166, 247, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(203, 166, 247, 0.05) 1px, transparent 1px);
@@ -27,7 +27,7 @@
   align-items: center;
   justify-content: center;
   height: 400px;
-  color: #a6adc8;
+  color: var(--text-muted);
   font-size: 16px;
 }
 
@@ -37,7 +37,7 @@
   align-items: center;
   justify-content: center;
   height: 400px;
-  color: #585b70;
+  color: var(--text-subtle);
   font-size: 16px;
   text-align: center;
   padding: 40px;
@@ -50,7 +50,7 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #585b70;
+  color: var(--text-subtle);
   text-align: center;
   padding: 40px;
 }
@@ -68,5 +68,5 @@
 .records-empty-state-hint {
   font-size: 14px;
   margin: 8px 0 0 0;
-  color: #45475a;
+  color: var(--text-subtle);
 }

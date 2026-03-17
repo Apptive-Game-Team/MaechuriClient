@@ -13,14 +13,14 @@
   gap: 20px;
   min-height: 200px;
   max-height: 300px;
-  background-color: #181825;
-  border-bottom: 1px solid #313244;
+  background-color: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
 }
 
 .solve-conversation-empty {
   display: block;
   text-align: center;
-  color: #585b70;
+  color: var(--text-subtle);
   padding: 40px 20px;
   font-style: italic;
 }
@@ -52,14 +52,14 @@
 }
 
 .solve-message.user .solve-message-bubble {
-  background-color: #6c5ce7;
-  color: #f5f5ff;
+  background-color: var(--accent-strong);
+  color: #fff;
   border-bottom-right-radius: 4px;
 }
 
 .solve-message.npc .solve-message-bubble {
-  background-color: #313244;
-  color: #cdd6f4;
+  background-color: var(--surface);
+  color: var(--text);
   border-bottom-left-radius: 4px;
 }
 
@@ -83,17 +83,17 @@
 }
 
 .solve-status[data-status="correct"] {
-  background-color: #a6e3a1;
-  color: #1e3a1e;
+  background-color: var(--success);
+  color: #1f2a1f;
 }
 
 .solve-status[data-status="partial"] {
-  background-color: #f9e2af;
+  background-color: var(--warning);
   color: #3a2e0e;
 }
 
 .solve-status[data-status="incorrect"] {
-  background-color: #f38ba8;
+  background-color: var(--danger);
   color: #3a0e18;
 }
 
@@ -105,14 +105,14 @@
 .solve-detailed-feedback {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #313244;
+  border-top: 1px solid var(--border);
   font-size: 14px;
 }
 
 .solve-hints {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #313244;
+  border-top: 1px solid var(--border);
   font-size: 14px;
 }
 
@@ -130,14 +130,14 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background-color: #1e1e2e;
+  background-color: var(--bg);
 }
 
 .solve-label {
   display: block;
   font-weight: 600;
   margin-bottom: 8px;
-  color: #cdd6f4;
+  color: var(--text);
   font-size: 14px;
 }
 
@@ -157,30 +157,30 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background-color: #313244;
-  border: 2px solid #45475a;
+  background-color: var(--surface);
+  border: 2px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
   user-select: none;
-  color: #cdd6f4;
+  color: var(--text);
 }
 
 .solve-suspect-item:hover {
-  background-color: #3d3f55;
-  border-color: #585b70;
+  background-color: var(--surface-alt);
+  border-color: var(--accent);
 }
 
 .solve-suspect-item input[type="checkbox"] {
   cursor: pointer;
   width: 18px;
   height: 18px;
-  accent-color: #cba6f7;
+  accent-color: var(--accent);
 }
 
 .solve-suspect-item input[type="checkbox"]:checked + span {
   font-weight: 600;
-  color: #cba6f7;
+  color: var(--accent);
 }
 
 .solve-reasoning-section {
@@ -191,28 +191,28 @@
 .solve-reasoning-input {
   width: 100%;
   padding: 12px;
-  border: 1px solid #45475a;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
   outline: none;
-  background-color: #313244;
-  color: #cdd6f4;
+  background-color: var(--surface);
+  color: var(--text);
   box-sizing: border-box;
 }
 
 .solve-reasoning-input:focus {
-  border-color: #cba6f7;
+  border-color: var(--accent);
 }
 
 .solve-reasoning-input::placeholder {
-  color: #585b70;
+  color: var(--text-subtle);
 }
 
 .solve-submit-button {
   padding: 10px 24px;
-  background-color: #6c5ce7;
+  background-color: var(--accent-strong);
   color: white;
   border: none;
   border-radius: 20px;
@@ -224,11 +224,11 @@
 }
 
 .solve-submit-button:hover:not(:disabled) {
-  background-color: #5549c0;
+  background-color: var(--accent-strong-hover);
 }
 
 .solve-submit-button:disabled {
-  background-color: #45475a;
+  background-color: var(--border);
   cursor: not-allowed;
-  color: #6c7086;
+  color: var(--text-subtle);
 }

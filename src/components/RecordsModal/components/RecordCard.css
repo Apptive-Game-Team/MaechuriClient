@@ -2,10 +2,10 @@
   position: relative;
   width: 150px;
   height: 150px;
-  background: #1e1d2e;
+  background: var(--card-bg);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  border: 1px solid #313244;
+  border: 1px solid var(--border);
   overflow: visible;
   transition: box-shadow 0.2s, border-color 0.2s;
   user-select: none;
@@ -13,7 +13,7 @@
 
 .record-card:hover {
   box-shadow: 0 4px 16px rgba(203, 166, 247, 0.2);
-  border-color: #45475a;
+  border-color: var(--border);
 }
 
 /* Simplified view */
@@ -34,21 +34,21 @@
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: #313244;
+  background-color: var(--surface);
   border-radius: 4px;
   margin-bottom: 8px;
   flex-shrink: 0;
 }
 
 .record-card-image-empty {
-  background-color: #313244;
-  border: 2px dashed #45475a;
+  background-color: var(--surface);
+  border: 2px dashed var(--border);
 }
 
 .record-card-memo-icon {
   width: 100%;
   height: 80px;
-  background: linear-gradient(135deg, #2e2a1e 0%, #3a3420 100%);
+  background: linear-gradient(135deg, var(--warning) 0%, #b88a2a 100%);
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -57,13 +57,13 @@
   margin-bottom: 8px;
   flex-shrink: 0;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
-  border: 1px solid #5a4e2a;
+  border: 1px solid #b88a2a;
 }
 
 .record-card-simple-name {
   font-size: 14px;
   font-weight: 600;
-  color: #cdd6f4;
+  color: var(--text);
   text-align: center;
   word-break: break-word;
   overflow: hidden;
@@ -80,8 +80,8 @@
   left: 50%;
   transform: translateX(-50%);
   margin-top: 8px;
-  background: #181825;
-  border: 1px solid #313244;
+  background: var(--tooltip-bg);
+  border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
   padding: 12px;
@@ -110,7 +110,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: 8px solid transparent;
-  border-bottom-color: #181825;
+  border-bottom-color: var(--tooltip-bg);
 }
 
 .record-card-tooltip-header {
@@ -128,7 +128,7 @@
 }
 
 .record-card-clue .record-card-tooltip-type {
-  background-color: #a6e3a1;
+  background-color: var(--success);
 }
 
 .record-card-npc .record-card-tooltip-type {
@@ -136,21 +136,21 @@
 }
 
 .record-card-fact .record-card-tooltip-type {
-  background-color: #f9e2af;
+  background-color: var(--warning);
 }
 
 .record-card-tooltip-name {
   margin: 6px 0 0 0;
   font-size: 16px;
   font-weight: 600;
-  color: #cdd6f4;
+  color: var(--text);
   word-break: break-word;
 }
 
 .record-card-tooltip-content {
   margin: 0;
   font-size: 13px;
-  color: #a6adc8;
+  color: var(--text-muted);
   line-height: 1.5;
   word-break: break-word;
 }
