@@ -19,7 +19,7 @@ function App() {
     if (storedTheme === 'light' || storedTheme === 'dark') {
       return storedTheme
     }
-    const prefersLight = window.matchMedia?.('(prefers-color-scheme: light)').matches
+    const prefersLight = window.matchMedia?.('(prefers-color-scheme: light)')?.matches ?? false
     return prefersLight ? 'light' : 'dark'
   })
 

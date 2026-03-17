@@ -22,6 +22,7 @@
   --tooltip-bg: #181825;
   --success: #a6e3a1;
   --warning: #f9e2af;
+  --warning-strong: #b88a2a;
   --danger: #f38ba8;
 
   color: var(--text);
@@ -51,6 +52,7 @@
   --tooltip-bg: #ffffff;
   --success: #3fa05a;
   --warning: #b58113;
+  --warning-strong: #d6a342;
   --danger: #c94762;
 }
 
