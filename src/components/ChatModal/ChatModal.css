@@ -159,7 +159,7 @@
   color: #999;
 }
 
-.chat-message-bubble.pending {
+.chat-message.npc .chat-message-bubble.pending {
   color: #999;
 }
 
