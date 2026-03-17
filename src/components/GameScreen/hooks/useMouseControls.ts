@@ -95,8 +95,8 @@ export const useMouseControls = (
   }, []);
 
   return {
-    handleClick,
-    handleMouseMove,
-    handleMouseLeave,
+    onClick: handleClick,
+    onMouseMove: handleMouseMove,
+    onMouseLeave: handleMouseLeave,
   };
 };

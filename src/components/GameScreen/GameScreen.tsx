@@ -195,7 +195,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   }, [chatModalOpen, solveModalOpen, recordsModalOpen]);
 
   usePlayerControls(gameEngineRef);
-  const { handleClick, handleMouseMove, handleMouseLeave } = useMouseControls(gameEngineRef, gameContainerRef);
+  const { onClick, onMouseMove, onMouseLeave } = useMouseControls(gameEngineRef, gameContainerRef);
 
   const mapWidth = scenarioData ? Math.max(0, ...scenarioData.map.layers.flatMap((layer: Layer) => layer.tileMap.map((row: number[]) => row.length))) * TILE_SIZE : 0;
   const mapHeight = scenarioData ? Math.max(0, ...scenarioData.map.layers.map((layer: Layer) => layer.tileMap.length)) * TILE_SIZE : 0;
@@ -255,9 +255,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       <div
         className="game-viewport"
         style={{ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT, position: 'relative', overflow: 'hidden' }}
-        onClick={handleClick}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        onClick={onClick}
+        onMouseMove={onMouseMove}
+        onMouseLeave={onMouseLeave}
       >
         <div 
           ref={gameContainerRef}
