@@ -147,7 +147,7 @@ export function useInteraction(): UseInteractionResult {
 
         updateInteractionState(objectId, (prevState) => {
           if (!prevState || prevState.type !== 'two-way') {
-            return prevState as any;
+            return {};
           }
           return {
             messages: [...prevState.messages, playerMessage, pendingMessage],
