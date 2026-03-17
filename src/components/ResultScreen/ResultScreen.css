@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a1030 0%, #0e0e1c 100%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,12 +12,13 @@
 }
 
 .result-container {
-  background-color: white;
+  background-color: #1e1e2e;
+  border: 1px solid #313244;
   border-radius: 20px;
   padding: 40px;
   max-width: 600px;
   width: 90%;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(203, 166, 247, 0.1);
   text-align: center;
 }
 
@@ -27,7 +28,7 @@
 
 .result-header h1 {
   font-size: 36px;
-  color: #333;
+  color: #cdd6f4;
   margin: 0 0 10px 0;
 }
 
@@ -38,8 +39,8 @@
   font-weight: 600;
   font-size: 14px;
   text-transform: uppercase;
-  background-color: #4caf50;
-  color: white;
+  background-color: #a6e3a1;
+  color: #1e3a1e;
 }
 
 .result-scores {
@@ -50,7 +51,7 @@
 }
 
 .score-item {
-  background-color: #f8f9fa;
+  background-color: #313244;
   border-radius: 12px;
   padding: 20px;
   flex: 1;
@@ -58,33 +59,33 @@
 }
 
 .score-item.total {
-  background-color: #667eea;
-  color: white;
+  background-color: #2a2440;
+  border: 1px solid #4a3f6d;
 }
 
 .score-label {
   font-size: 14px;
-  color: #666;
+  color: #a6adc8;
   margin-bottom: 8px;
   font-weight: 500;
 }
 
 .score-item.total .score-label {
-  color: #fff;
+  color: #cba6f7;
 }
 
 .score-value {
   font-size: 32px;
   font-weight: 700;
-  color: #333;
+  color: #cdd6f4;
 }
 
 .score-item.total .score-value {
-  color: #fff;
+  color: #f5c2e7;
 }
 
 .result-message {
-  background-color: #f8f9fa;
+  background-color: #313244;
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 30px;
@@ -94,18 +95,18 @@
 .result-message h3 {
   margin: 0 0 12px 0;
   font-size: 18px;
-  color: #333;
+  color: #cdd6f4;
 }
 
 .result-message p {
   margin: 0;
   line-height: 1.6;
-  color: #555;
+  color: #a6adc8;
 }
 
 .home-button {
   padding: 14px 40px;
-  background-color: #667eea;
+  background-color: #6c5ce7;
   color: white;
   border: none;
   border-radius: 25px;
@@ -113,13 +114,13 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
 }
 
 .home-button:hover {
-  background-color: #5568d3;
+  background-color: #5549c0;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 6px 16px rgba(108, 92, 231, 0.5);
 }
 
 .home-button:active {

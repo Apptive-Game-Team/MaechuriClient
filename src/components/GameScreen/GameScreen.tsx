@@ -49,14 +49,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   const [solveAttempts, setSolveAttempts] = useState<SolveAttempt[]>([]);
   const isInitialPlayerStateSet = useRef(false);
 
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, []);
-
   const { records, addRecords } = useRecords();
   const { data: originalScenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({ scenarioId });
   const [scenarioData, setScenarioData] = useState<ScenarioData | null>(null);
@@ -248,7 +240,27 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
     <div className="game-screen">
       <div className="game-info">
         <h2>{scenarioData.scenarioName}</h2>
-        <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects. Press R to view records. Press C to open chat.</p>
+        <p>방향키 또는 WASD로 이동 · E 또는 Space로 상호작용</p>
+        <div className="game-shortcuts">
+          <button
+            className="game-shortcut-button"
+            onClick={() => setRecordsModalOpen(true)}
+            title="수사 기록 열기 [R]"
+          >
+            📋 수사 기록 <kbd>R</kbd>
+          </button>
+          <button
+            className="game-shortcut-button"
+            onClick={() => {
+              setCurrentObjectId(null);
+              setCurrentObjectName('');
+              setChatModalOpen(true);
+            }}
+            title="대화 목록 열기 [C]"
+          >
+            💬 대화 목록 <kbd>C</kbd>
+          </button>
+        </div>
       </div>
       <div className="game-viewport" style={{ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT, position: 'relative', overflow: 'hidden' }}>
         <div 

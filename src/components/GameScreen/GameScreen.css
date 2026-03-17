@@ -12,40 +12,66 @@
 }
 
 .game-info h2 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.5rem 0;
+  color: #cdd6f4;
 }
 
 .game-info p {
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
-  color: #888;
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+  color: #a6adc8;
+}
+
+.game-shortcuts {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.game-shortcut-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  background-color: #1e1d2e;
+  color: #cba6f7;
+  border: 1px solid #45475a;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.game-shortcut-button:hover {
+  background-color: #313244;
+  border-color: #cba6f7;
+  color: #f5c2e7;
+}
+
+.game-shortcut-button kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  background-color: #313244;
+  border: 1px solid #585b70;
+  border-radius: 4px;
+  color: #a6adc8;
+  line-height: 1.4;
 }
 
 .game-viewport {
   position: relative;
-  border: 2px solid #646cff;
-  background-color: #1a1a1a;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  border: 2px solid #c8a96e;
+  background-color: #11111b;
+  box-shadow: 0 4px 24px rgba(200, 169, 110, 0.25), 0 2px 8px rgba(0, 0, 0, 0.6);
   overflow: hidden;
 }
 
 .game-container {
   position: relative;
-  background-color: #1a1a1a;
+  background-color: #11111b;
   transition: transform 0.2s ease-out;
-}
-
-@media (prefers-color-scheme: light) {
-  .game-viewport {
-    background-color: #f5f5f5;
-    border-color: #535bf2;
-  }
-  
-  .game-container {
-    background-color: #f5f5f5;
-  }
-  
-  .game-info p {
-    color: #666;
-  }
 }
