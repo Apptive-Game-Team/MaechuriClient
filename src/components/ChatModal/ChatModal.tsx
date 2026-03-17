@@ -88,6 +88,12 @@ const ChatModal: React.FC<ChatModalProps> = ({
     return dx * dx + dy * dy <= 25;
   }, [playerPosition, currentObjectId, mapObjects]);
 
+  // Get current pressure for the active object
+  const currentPressure = useMemo(() => {
+    if (!currentObjectId || !interactions) return undefined;
+    return interactions.get(currentObjectId)?.pressure;
+  }, [currentObjectId, interactions]);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -118,7 +124,14 @@ const ChatModal: React.FC<ChatModalProps> = ({
         <div className="chat-modal-right">
           <div className="chat-modal-messages">
             {messages.map((msg, index) => (
-              <Message key={index} message={msg} records={records} objectImageUrl={currentObjectImageUrl} objectType={objectType} />
+              <Message
+                key={msg.clientId ?? `${msg.sender}-${msg.timestamp}-${index}`}
+                message={msg}
+                records={records}
+                objectImageUrl={currentObjectImageUrl}
+                objectType={objectType}
+                pressure={currentPressure}
+              />
             ))}
             <div ref={messagesEndRef} />
           </div>

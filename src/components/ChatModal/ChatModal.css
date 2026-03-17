@@ -145,12 +145,22 @@
   padding: 16px 20px;
   width: 100%;
   display: flex;
+  flex-direction: column;
   gap: 8px;
   position: relative;
 }
 
 .chat-modal-input-area.disabled {
   background-color: #f9f9f9;
+}
+
+.pressure-indicator {
+  font-size: 13px;
+  color: #999;
+}
+
+.chat-message.npc .chat-message-bubble.pending {
+  color: #999;
 }
 
 .chat-input-wrapper {
