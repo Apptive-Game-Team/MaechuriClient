@@ -8,6 +8,21 @@ export const setCurrentMapData = (mapData: GameMap) => {
   currentMapData = mapData;
 };
 
+// Track highlighted interactable object IDs (from mouse hover or player facing)
+let hoveredInteractableId: string | null = null;
+let facingInteractableId: string | null = null;
+
+export const setHoveredInteractable = (id: string | null): void => {
+  hoveredInteractableId = id;
+};
+
+export const setFacingInteractable = (id: string | null): void => {
+  facingInteractableId = id;
+};
+
+export const isInteractableHighlighted = (id: string): boolean =>
+  id === hoveredInteractableId || id === facingInteractableId;
+
 export const checkCollision = (x: number, y: number): boolean => {
   if (!currentMapData) return false;
   const { layers, objects } = currentMapData;
