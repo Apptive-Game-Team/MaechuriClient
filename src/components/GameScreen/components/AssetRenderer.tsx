@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
+// Visual highlight constants for interactable-object feedback
+const HIGHLIGHT_SCALE = 1.12;
+const HIGHLIGHT_FILTER =
+  'drop-shadow(0 0 4px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 2px rgba(255, 215, 0, 0.6))';
+
 interface AssetRendererProps {
   imageUrl: string;
   size: number;
   position: { x: number; y: number };
   scaleMultiplier?: number; // New prop for dynamic scaling
+  outlined?: boolean;       // Highlight the object with an outline + slight scale-up
 }
 
-export const AssetRenderer: React.FC<AssetRendererProps> = ({ imageUrl, size, position, scaleMultiplier = 1.3 }) => {
+export const AssetRenderer: React.FC<AssetRendererProps> = ({ imageUrl, size, position, scaleMultiplier = 1.3, outlined = false }) => {
   const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
 
   useEffect(() => {
@@ -55,6 +61,9 @@ export const AssetRenderer: React.FC<AssetRendererProps> = ({ imageUrl, size, po
     backgroundPosition: 'center',
     imageRendering: 'pixelated',
     zIndex: Math.floor(position.y * size + size), // Basic z-indexing
+    transform: outlined ? `scale(${HIGHLIGHT_SCALE})` : undefined,
+    transformOrigin: outlined ? 'center bottom' : undefined,
+    filter: outlined ? HIGHLIGHT_FILTER : undefined,
   };
 
   return <div style={style} />;

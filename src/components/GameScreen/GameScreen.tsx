@@ -4,6 +4,7 @@ import type { Position, Direction, ScenarioData, Layer, MapObject } from '../../
 import type { SolveResponse, SolveAttempt } from '../../types/solve';
 import { TILE_SIZE } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
+import { useMouseControls } from './hooks/useMouseControls';
 import { useGameEntities } from './hooks/useGameEntities';
 import { useAssetLoader } from './hooks/useAssetLoader';
 import { useMapData } from '../../hooks/useMapData';
@@ -194,6 +195,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   }, [chatModalOpen, solveModalOpen, recordsModalOpen]);
 
   usePlayerControls(gameEngineRef);
+  const { onClick, onMouseMove, onMouseLeave } = useMouseControls(gameEngineRef, gameContainerRef);
 
   const mapWidth = scenarioData ? Math.max(0, ...scenarioData.map.layers.flatMap((layer: Layer) => layer.tileMap.map((row: number[]) => row.length))) * TILE_SIZE : 0;
   const mapHeight = scenarioData ? Math.max(0, ...scenarioData.map.layers.map((layer: Layer) => layer.tileMap.length)) * TILE_SIZE : 0;
@@ -248,9 +250,15 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
     <div className="game-screen">
       <div className="game-info">
         <h2>{scenarioData.scenarioName}</h2>
-        <p>Use Arrow Keys or WASD to move. Press E or Space to interact with objects. Press R to view records. Press C to open chat.</p>
+        <p>Use Arrow Keys or WASD to move. Press E or Space to interact. Click the floor to navigate. Click objects to interact. Press R for records. Press C for chat.</p>
       </div>
-      <div className="game-viewport" style={{ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT, position: 'relative', overflow: 'hidden' }}>
+      <div
+        className="game-viewport"
+        style={{ width: VIEWPORT_WIDTH, height: VIEWPORT_HEIGHT, position: 'relative', overflow: 'hidden' }}
+        onClick={onClick}
+        onMouseMove={onMouseMove}
+        onMouseLeave={onMouseLeave}
+      >
         <div 
           ref={gameContainerRef}
           className="game-container" 
