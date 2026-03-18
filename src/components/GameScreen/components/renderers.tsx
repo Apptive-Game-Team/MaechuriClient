@@ -1,5 +1,5 @@
 import type { TileEntity, PlayerEntity } from '../types';
-import { getDirectionIndicatorStyle } from '../utils/gameUtils';
+import { getDirectionIndicatorStyle, isInteractableHighlighted } from '../utils/gameUtils';
 import { getAssetImage } from '../../../utils/assetLoader';
 import { AssetRenderer } from './AssetRenderer';
 
@@ -25,10 +25,13 @@ export const Tile = (props: TileEntity) => {
   }
   // NPC (suspect, detective) is already 1.3, so no change needed for that case explicitly
 
+  // Check if this interactable object should be visually highlighted
+  const outlined = isObject === true && typeof tileId === 'string' && isInteractableHighlighted(tileId);
+
   // Use AssetRenderer for objects to maintain aspect ratio and custom scale,
   // and the old method for background layers to fill the tile.
   if (imageUrl && isObject) {
-    return <AssetRenderer imageUrl={imageUrl} size={TILE_SIZE_VALUE} position={position} scaleMultiplier={scaleMultiplier} />;
+    return <AssetRenderer imageUrl={imageUrl} size={TILE_SIZE_VALUE} position={position} scaleMultiplier={scaleMultiplier} outlined={outlined} />;
   }
   
   // For floor, walls, and other layers, use the original full-tile rendering

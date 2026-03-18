@@ -1,12 +1,14 @@
 import React from 'react';
 import type { Record } from '../../../types/record';
 import type { ChatMessage } from '../../../types/interaction';
+import { PressureIndicator } from './PressureIndicator';
 
 interface MessageProps {
   message: ChatMessage;
   records: Record[];
   objectImageUrl?: string;
   objectType?: 'CLUE' | 'NPC' | null;
+  pressure?: number | null;
 }
 
 interface Reference {
@@ -61,7 +63,18 @@ const MessageContent: React.FC<{ message: ChatMessage; records: Record[] }> = ({
   </>
 );
 
-export const Message: React.FC<MessageProps> = ({ message, records, objectImageUrl, objectType }) => {
+const PendingMessageContent: React.FC<{ message: ChatMessage; pressure?: number | null }> = ({ message, pressure }) => (
+  <>
+    {message.name && message.sender === 'npc' && (
+      <div className="chat-message-name">{message.name}</div>
+    )}
+    <div className="chat-message-bubble pending">
+      <PressureIndicator pressure={pressure} />
+    </div>
+  </>
+);
+
+export const Message: React.FC<MessageProps> = ({ message, records, objectImageUrl, objectType, pressure }) => {
   if (message.sender === 'npc') {
     return (
       <div className="chat-message npc">
@@ -73,7 +86,11 @@ export const Message: React.FC<MessageProps> = ({ message, records, objectImageU
             />
           )}
           <div className="chat-message-npc-content">
-            <MessageContent message={message} records={records} />
+            {message.isPending ? (
+              <PendingMessageContent message={message} pressure={pressure} />
+            ) : (
+              <MessageContent message={message} records={records} />
+            )}
           </div>
         </div>
       </div>

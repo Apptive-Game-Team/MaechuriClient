@@ -20,6 +20,8 @@ export interface TwoWayInteractionResponse {
   message: string;
   history: string; // Updated JWT encoded history string
   newRecords?: ApiRecord[]; // Changed type to ApiRecord[]
+  pressure?: number | null;
+  pressureDelta?: number | null;
 }
 
 export type InteractionResponse = SimpleInteractionResponse | TwoWayInteractionResponse;
@@ -30,6 +32,8 @@ export interface ChatMessage {
   sender: 'player' | 'npc';
   name?: string; // Optional name for NPC messages
   timestamp: number;
+  isPending?: boolean;
+  clientId?: string;
 }
 
 // Object-specific interaction state
@@ -38,4 +42,5 @@ export interface ObjectInteractionState {
   type?: InteractionType;
   jwtHistory?: string; // JWT encoded history
   messages: ChatMessage[]; // Plaintext history for display
+  pressure?: number | null; // Current pressure level for this object
 }

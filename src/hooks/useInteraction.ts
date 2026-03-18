@@ -6,6 +6,17 @@ import type {
 } from '../types/interaction';
 import type { ApiRecord } from '../types/record';
 
+const removePendingMessage = (messages: ChatMessage[], pendingClientId: string) =>
+  messages.filter((msg) => !(msg.isPending && msg.clientId === pendingClientId));
+
+const randomSuffixLength = 6;
+const createRandomSuffix = () =>
+  Math.random()
+    .toString(36)
+    .substring(2, 2 + randomSuffixLength)
+    .padEnd(randomSuffixLength, '0');
+const createMessageClientId = (prefix: string) => `${prefix}-${Date.now()}-${createRandomSuffix()}`;
+
 interface UseInteractionResult {
   interactions: Map<string, ObjectInteractionState>;
   startInteraction: (scenarioId: number, objectId: string, onNewRecords?: (records: ApiRecord[]) => void) => Promise<void>;
@@ -71,6 +82,7 @@ export function useInteraction(): UseInteractionResult {
           sender: 'npc',
           name: response.type === 'simple' ? response.name : undefined,
           timestamp: Date.now(),
+          clientId: createMessageClientId('npc'),
         };
 
         const existingState = interactions.get(objectId);
@@ -81,6 +93,7 @@ export function useInteraction(): UseInteractionResult {
           type: response.type,
           jwtHistory: response.type === 'two-way' ? response.history : undefined,
           messages,
+          pressure: response.type === 'two-way' ? response.pressure : undefined,
         });
 
         // Handle new records if present
@@ -112,16 +125,33 @@ export function useInteraction(): UseInteractionResult {
       setIsLoading(true);
       setError(null);
 
+      const messageTimestamp = Date.now();
+      const pendingClientId = createMessageClientId('pending');
+
       try {
         // Add player message to history first for immediate UI feedback
         const playerMessage: ChatMessage = {
           content: message,
           sender: 'player',
-          timestamp: Date.now(),
+          timestamp: messageTimestamp,
+          clientId: createMessageClientId('player'),
         };
 
-        updateInteractionState(objectId, {
-          messages: [...currentState.messages, playerMessage],
+        const pendingMessage: ChatMessage = {
+          content: '',
+          sender: 'npc',
+          timestamp: messageTimestamp,
+          isPending: true,
+          clientId: pendingClientId,
+        };
+
+        updateInteractionState(objectId, (prevState) => {
+          if (!prevState || prevState.type !== 'two-way') {
+            return prevState;
+          }
+          return {
+            messages: [...prevState.messages, playerMessage, pendingMessage],
+          };
         });
 
         // Send message with history
@@ -134,17 +164,19 @@ export function useInteraction(): UseInteractionResult {
           throw new Error('Expected two-way response');
         }
 
-        // Add NPC response to history
+        // Add NPC response to history (replace pending bubble)
         const npcMessage: ChatMessage = {
           content: response.message,
           sender: 'npc',
           timestamp: Date.now(),
+          clientId: createMessageClientId('npc'),
         };
 
         // Use functional update to append the NPC message to the latest state
         updateInteractionState(objectId, (prevState) => ({
           jwtHistory: response.history,
-          messages: [...prevState.messages, npcMessage],
+          messages: [...removePendingMessage(prevState.messages, pendingClientId), npcMessage],
+          pressure: response.pressure,
         }));
 
         // Handle new records if present
@@ -155,6 +187,9 @@ export function useInteraction(): UseInteractionResult {
         const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
         console.error('Error sending message:', errorMessage);
         setError(errorMessage);
+        updateInteractionState(objectId, (prevState) => ({
+          messages: removePendingMessage(prevState.messages, pendingClientId),
+        }));
       } finally {
         setIsLoading(false);
       }
