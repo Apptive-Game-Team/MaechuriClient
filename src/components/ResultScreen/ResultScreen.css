@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--bg) 0%, var(--bg-alt) 100%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,12 +12,13 @@
 }
 
 .result-container {
-  background-color: white;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: 40px;
   max-width: 600px;
   width: 90%;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(203, 166, 247, 0.1);
   text-align: center;
 }
 
@@ -27,7 +28,7 @@
 
 .result-header h1 {
   font-size: 36px;
-  color: #333;
+  color: var(--text);
   margin: 0 0 10px 0;
 }
 
@@ -38,8 +39,8 @@
   font-weight: 600;
   font-size: 14px;
   text-transform: uppercase;
-  background-color: #4caf50;
-  color: white;
+  background-color: var(--success);
+  color: #1f2a1f;
 }
 
 .result-scores {
@@ -50,7 +51,7 @@
 }
 
 .score-item {
-  background-color: #f8f9fa;
+  background-color: var(--surface);
   border-radius: 12px;
   padding: 20px;
   flex: 1;
@@ -58,33 +59,33 @@
 }
 
 .score-item.total {
-  background-color: #667eea;
-  color: white;
+  background-color: var(--surface-alt);
+  border: 1px solid var(--border);
 }
 
 .score-label {
   font-size: 14px;
-  color: #666;
+  color: var(--text-muted);
   margin-bottom: 8px;
   font-weight: 500;
 }
 
 .score-item.total .score-label {
-  color: #fff;
+  color: var(--accent);
 }
 
 .score-value {
   font-size: 32px;
   font-weight: 700;
-  color: #333;
+  color: var(--text);
 }
 
 .score-item.total .score-value {
-  color: #fff;
+  color: var(--accent-soft);
 }
 
 .result-message {
-  background-color: #f8f9fa;
+  background-color: var(--surface);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 30px;
@@ -94,18 +95,18 @@
 .result-message h3 {
   margin: 0 0 12px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--text);
 }
 
 .result-message p {
   margin: 0;
   line-height: 1.6;
-  color: #555;
+  color: var(--text-muted);
 }
 
 .home-button {
   padding: 14px 40px;
-  background-color: #667eea;
+  background-color: var(--accent-strong);
   color: white;
   border: none;
   border-radius: 25px;
@@ -113,13 +114,13 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
 }
 
 .home-button:hover {
-  background-color: #5568d3;
+  background-color: var(--accent-strong-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 6px 16px rgba(108, 92, 231, 0.5);
 }
 
 .home-button:active {

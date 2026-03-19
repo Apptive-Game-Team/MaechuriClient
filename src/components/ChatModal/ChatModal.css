@@ -7,12 +7,13 @@
 .chat-modal-sidebar {
   width: 150px;
   flex-shrink: 0;
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid var(--border);
   overflow-y: auto;
   padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  background-color: var(--bg-alt);
 }
 
 .chat-sidebar-item {
@@ -23,18 +24,19 @@
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
-  color: #333;
+  color: var(--text-muted);
   transition: background-color 0.15s;
   word-break: break-word;
 }
 
 .chat-sidebar-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--surface);
+  color: var(--text);
 }
 
 .chat-sidebar-item.selected {
-  background-color: #e3f2fd;
-  color: #1976d2;
+  background-color: var(--surface-alt);
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -51,6 +53,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background-color: var(--bg);
 }
 
 .chat-modal-messages {
@@ -99,8 +102,8 @@
   border-radius: 6px;
   flex-shrink: 0;
   background-repeat: no-repeat;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
 }
 
 /* Clue: show full image */
@@ -117,7 +120,7 @@
 
 .chat-message-name {
   font-size: 12px;
-  color: #666;
+  color: var(--text-muted);
   margin-bottom: 4px;
   padding: 0 12px;
 }
@@ -130,14 +133,14 @@
 }
 
 .chat-message.player .chat-message-bubble {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--accent-strong);
+  color: #fff;
   border-bottom-right-radius: 4px;
 }
 
 .chat-message.npc .chat-message-bubble {
-  background-color: #f1f1f1;
-  color: #333;
+  background-color: var(--surface);
+  color: var(--text);
   border-bottom-left-radius: 4px;
 }
 
@@ -148,10 +151,21 @@
   flex-direction: column;
   gap: 8px;
   position: relative;
+  background-color: var(--bg-alt);
+  border-top: 1px solid var(--border);
 }
 
 .chat-modal-input-area.disabled {
-  background-color: #f9f9f9;
+  background-color: var(--bg);
+}
+
+.pressure-indicator {
+  font-size: 13px;
+  color: #999;
+}
+
+.chat-message.npc .chat-message-bubble.pending {
+  color: #999;
 }
 
 .pressure-indicator {
@@ -173,7 +187,7 @@
 .chat-modal-input-editable {
   flex: 1;
   padding: 10px 16px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 20px;
   font-size: 14px;
   outline: none;
@@ -182,22 +196,24 @@
   overflow-y: auto;
   line-height: 1.4;
   word-wrap: break-word;
+  background-color: var(--surface);
+  color: var(--text);
 }
 
 .chat-modal-input-editable:focus {
-  border-color: #007bff;
+  border-color: var(--accent);
 }
 
 .chat-modal-input-editable:empty:before {
   content: attr(data-placeholder);
-  color: #999;
+  color: var(--text-subtle);
 }
 
 .chat-modal-input-editable .reference-tag {
   display: inline-block;
-  background-color: #e3f2fd;
-  color: #1976d2;
-  border: 1px solid #90caf9;
+  background-color: var(--surface-alt);
+  color: var(--accent);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 2px 8px;
   margin: 0 2px;
@@ -209,9 +225,9 @@
 
 .reference-tag-display {
   display: inline-block;
-  background-color: #e3f2fd;
-  color: #1976d2;
-  border: 1px solid #90caf9;
+  background-color: var(--surface-alt);
+  color: var(--accent);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 2px 8px;
   margin: 0 2px;
@@ -224,10 +240,10 @@
   bottom: 100%;
   left: 0;
   right: 80px;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
@@ -241,16 +257,17 @@
   align-items: center;
   gap: 8px;
   transition: background-color 0.15s;
+  color: var(--text);
 }
 
 .autocomplete-item:hover,
 .autocomplete-item.selected {
-  background-color: #f5f5f5;
+  background-color: var(--surface);
 }
 
 .autocomplete-type {
-  background-color: #f0f0f0;
-  color: #666;
+  background-color: var(--surface);
+  color: var(--text-muted);
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 11px;
@@ -262,30 +279,33 @@
 
 .autocomplete-name {
   font-size: 14px;
-  color: #333;
+  color: var(--text);
 }
 
 .chat-modal-input {
   flex: 1;
   padding: 10px 16px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 20px;
   font-size: 14px;
   outline: none;
+  background-color: var(--surface);
+  color: var(--text);
 }
 
 .chat-modal-input:focus {
-  border-color: #007bff;
+  border-color: var(--accent);
 }
 
 .chat-modal-input:disabled {
-  background-color: #f5f5f5;
+  background-color: var(--bg-alt);
   cursor: not-allowed;
+  color: var(--text-subtle);
 }
 
 .chat-modal-send-button {
   padding: 10px 24px;
-  background-color: #007bff;
+  background-color: var(--accent-strong);
   color: white;
   border: none;
   border-radius: 20px;
@@ -296,18 +316,19 @@
 }
 
 .chat-modal-send-button:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: var(--accent-strong-hover);
 }
 
 .chat-modal-send-button:disabled {
-  background-color: #ccc;
+  background-color: var(--border);
   cursor: not-allowed;
+  color: var(--text-subtle);
 }
 
 .chat-modal-disabled-notice {
   width: 100%;
   text-align: center;
-  color: #666;
+  color: var(--text-subtle);
   font-size: 13px;
   padding: 8px;
 }

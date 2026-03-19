@@ -1,20 +1,20 @@
 .records-modal-content {
-  min-height: 500px;
-  max-height: 70vh;
-  overflow: hidden;
+  min-height: 400px;
+  max-height: 68vh;
+  overflow: auto;
   position: relative;
+  resize: both;
 }
 
 .records-canvas {
   position: relative;
-  width: 100%;
-  height: 600px;
-  background-color: #fafafa;
+  width: 2000px;
+  height: 1500px;
+  background-color: var(--bg-alt);
   background-image: 
-    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(203, 166, 247, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(203, 166, 247, 0.05) 1px, transparent 1px);
   background-size: 20px 20px;
-  overflow: auto;
 }
 
 .record-item-wrapper {
@@ -26,8 +26,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 500px;
-  color: #666;
+  height: 400px;
+  color: var(--text-muted);
   font-size: 16px;
 }
 
@@ -36,8 +36,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 500px;
-  color: #999;
+  height: 400px;
+  color: var(--text-subtle);
   font-size: 16px;
   text-align: center;
   padding: 40px;
@@ -50,7 +50,7 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #999;
+  color: var(--text-subtle);
   text-align: center;
   padding: 40px;
 }
@@ -68,5 +68,5 @@
 .records-empty-state-hint {
   font-size: 14px;
   margin: 8px 0 0 0;
-  color: #bbb;
+  color: var(--text-subtle);
 }

@@ -2,12 +2,12 @@
   width: 100%;
   text-align: center;
   padding: 1rem;
-  color: #585b70;
+  color: var(--text-subtle);
   font-size: 0.85rem;
 }
 
 .footer a {
-  color: #646cff;
+  color: var(--accent);
   text-decoration: none;
 }
 
