@@ -22,6 +22,7 @@ import SolveModal from '../SolveModal/SolveModal';
 import RecordsModal from '../RecordsModal/RecordsModal';
 import ErrorScreen from '../ErrorScreen/ErrorScreen';
 import { HTTPError } from '../../utils/httpError';
+import { playWalkSound, playModalSound, playMessageSentSound } from '../../utils/soundManager';
 import './GameScreen.css';
 
 const VIEWPORT_WIDTH = 800;
@@ -97,11 +98,13 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       const customEvent = event as CustomEvent<{ objectId: string; objectName: string }>;
       const { objectId, objectName } = customEvent.detail;
       if (objectId === 'd:1') {
+        playModalSound();
         setSolveModalOpen(true);
         return;
       }
       setCurrentObjectId(objectId);
       setCurrentObjectName(objectName);
+      playModalSound();
       setChatModalOpen(true);
       if (scenarioData && !getInteractionState(objectId)) {
         await startInteraction(scenarioData.scenarioId, objectId, addRecords);
@@ -137,6 +140,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
 
   const handleGameEvent = (event: Record<string, unknown>) => {
     if (event.type === 'player-moved-tile') {
+      playWalkSound();
       const position = event.position as Position | undefined;
       if (position && typeof position.x === 'number' && typeof position.y === 'number') {
         setPlayerPosition(position);
@@ -175,10 +179,12 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       if (!chatModalOpen && !solveModalOpen && !recordsModalOpen && !isTyping) {
         if (event.key === 'r') {
           setHighlightedRecordId(null);
+          playModalSound();
           setRecordsModalOpen(true);
         } else if (event.key === 'c') {
           setCurrentObjectId(null);
           setCurrentObjectName('');
+          playModalSound();
           setChatModalOpen(true);
         }
       }
@@ -198,6 +204,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
 
   const handleSendMessage = async (message: string) => {
     if (scenarioData && currentObjectId) {
+      playMessageSentSound();
       await sendMessage(scenarioData.scenarioId, currentObjectId, message, addRecords);
     }
   };
@@ -211,11 +218,13 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   };
 
   const handleRecordClick = (recordId: string) => {
+    playModalSound();
     setHighlightedRecordId(recordId);
     setRecordsModalOpen(true);
   };
 
   const handleRecordsModalClose = () => {
+    playModalSound();
     setRecordsModalOpen(false);
     setHighlightedRecordId(null);
   };
@@ -227,6 +236,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       const attempt: SolveAttempt = { message, suspectIds, response, timestamp: Date.now() };
       setSolveAttempts(prev => [...prev, attempt]);
       if (response.success) {
+        playModalSound();
         setSolveModalOpen(false);
         onShowResult(response);
       }
@@ -259,7 +269,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         <div className="game-shortcuts">
           <button
             className="game-shortcut-button"
-            onClick={() => { setHighlightedRecordId(null); setRecordsModalOpen(true); }}
+            onClick={() => { setHighlightedRecordId(null); playModalSound(); setRecordsModalOpen(true); }}
             title="수사 기록 열기 [R]"
           >
             📋 수사 기록 <kbd>R</kbd>
@@ -269,6 +279,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
             onClick={() => {
               setCurrentObjectId(null);
               setCurrentObjectName('');
+              playModalSound();
               setChatModalOpen(true);
             }}
             title="대화 목록 열기 [C]"
@@ -304,7 +315,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         messages={interactionState?.messages || []}
         interactionType={interactionState?.type}
         records={records}
-        onClose={() => setChatModalOpen(false)}
+        onClose={() => { playModalSound(); setChatModalOpen(false); }}
         onSendMessage={handleSendMessage}
         onRecordClick={handleRecordClick}
         playerPosition={playerPosition}
@@ -318,7 +329,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         isOpen={solveModalOpen}
         suspects={suspects}
         attempts={solveAttempts}
-        onClose={() => setSolveModalOpen(false)}
+        onClose={() => { playModalSound(); setSolveModalOpen(false); }}
         onSubmit={handleSolveSubmit}
       />
       <RecordsModal

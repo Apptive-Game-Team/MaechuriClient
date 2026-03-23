@@ -6,6 +6,7 @@ import type {
   ChatMessage
 } from '../types/interaction';
 import type { ApiRecord } from '../types/record';
+import { playMessageReceivedSound } from '../utils/soundManager';
 
 const removePendingMessage = (messages: ChatMessage[], pendingClientId: string) =>
   messages.filter((msg) => !(msg.isPending && msg.clientId === pendingClientId));
@@ -125,6 +126,8 @@ export function useInteraction(): UseInteractionResult {
           pressure: response.type === 'two-way' ? response.pressure : undefined,
         });
 
+        playMessageReceivedSound();
+
         // Handle new records if present
         if (response.newRecords && response.newRecords.length > 0) {
           addRecords(response.newRecords);
@@ -210,6 +213,8 @@ export function useInteraction(): UseInteractionResult {
           messages: [...removePendingMessage(prevState.messages, pendingClientId), npcMessage],
           pressure: response.pressure,
         }));
+
+        playMessageReceivedSound();
 
         // Handle new records if present
         if (response.newRecords && response.newRecords.length > 0) {
