@@ -3,7 +3,7 @@ import { apiFetch } from '../utils/apiFetch';
 import type { ScenarioData } from '../types/map';
 import type { InteractionRequest, InteractionResponse } from '../types/interaction';
 import type { SolveRequest, SolveResponse } from '../types/solve';
-import type { RecordsData, RecordDetail } from '../types/record';
+import type { RecordsData, RecordDetail, ApiRecord } from '../types/record';
 import type { ScenarioListResponse } from '../types/scenarioList';
 
 /**
@@ -131,7 +131,7 @@ export async function getRecords(scenarioId: number): Promise<RecordsData> {
 export async function getRecord(
   scenarioId: number,
   recordId: string
-): Promise<RecordDetail> {
+): Promise<ApiRecord> {
   const response = await apiFetch(API_ENDPOINTS.getRecord(scenarioId, recordId), {
     method: 'GET',
     headers: {
@@ -143,5 +143,9 @@ export async function getRecord(
     throw new Error(`Failed to fetch record: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`);
   }
 
-  return response.json();
+  const recordData = await response.json();
+  if (!recordData.id) {
+    recordData.id = recordId;
+  }
+  return recordData;
 }

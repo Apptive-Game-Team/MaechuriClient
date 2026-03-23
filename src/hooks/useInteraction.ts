@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { sendInteraction } from '../services/api';
+import { getRecord, sendInteraction } from '../services/api';
+import { useRecords } from '../contexts/RecordsContext';
 import type { 
   ObjectInteractionState, 
   ChatMessage
@@ -19,8 +20,8 @@ const createMessageClientId = (prefix: string) => `${prefix}-${Date.now()}-${cre
 
 interface UseInteractionResult {
   interactions: Map<string, ObjectInteractionState>;
-  startInteraction: (scenarioId: number, objectId: string, onNewRecords?: (records: ApiRecord[]) => void) => Promise<void>;
-  sendMessage: (scenarioId: number, objectId: string, message: string, onNewRecords?: (records: ApiRecord[]) => void) => Promise<void>;
+  startInteraction: (scenarioId: number, objectId: string) => Promise<void>;
+  sendMessage: (scenarioId: number, objectId: string, message: string) => Promise<void>;
   getInteractionState: (objectId: string) => ObjectInteractionState | undefined;
   isLoading: boolean;
   error: string | null;
@@ -36,6 +37,8 @@ export function useInteraction(): UseInteractionResult {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { records, addRecords } = useRecords();
 
   const getInteractionState = useCallback(
     (objectId: string) => interactions.get(objectId),
@@ -65,17 +68,42 @@ export function useInteraction(): UseInteractionResult {
     []
   );
 
+  const fetchNewRecords = useCallback(async (scenarioId: number, revealedIds?: string[]) => {
+    if (!revealedIds || revealedIds.length === 0) {
+      return;
+    }
+
+    const existingRecordIds = new Set(records.map(r => r.id));
+    const newRecordIds = revealedIds.filter(id => !existingRecordIds.has(id));
+
+    if (newRecordIds.length === 0) {
+      return;
+    }
+
+    try {
+      const fetchedRecords = await Promise.all(
+        newRecordIds.map(id => getRecord(scenarioId, id))
+      );
+      addRecords(fetchedRecords.filter((r): r is ApiRecord => r !== null));
+    } catch (err) {
+      console.error('Failed to fetch newly revealed records:', err);
+      // Optionally set an error state here
+    }
+  }, [records, addRecords]);
+
   /**
    * Start interaction with an object (initial request with empty body)
    */
   const startInteraction = useCallback(
-    async (scenarioId: number, objectId: string, onNewRecords?: (records: ApiRecord[]) => void) => {
+    async (scenarioId: number, objectId: string) => {
       setIsLoading(true);
       setError(null);
 
       try {
         // Send empty request to get interaction type
         const response = await sendInteraction(scenarioId, objectId, {});
+
+        await fetchNewRecords(scenarioId, response.revealedRecordIds);
 
         const newMessage: ChatMessage = {
           content: response.message,
@@ -98,8 +126,8 @@ export function useInteraction(): UseInteractionResult {
         });
 
         // Handle new records if present
-        if (response.newRecords && response.newRecords.length > 0 && onNewRecords) {
-          onNewRecords(response.newRecords);
+        if (response.newRecords && response.newRecords.length > 0) {
+          addRecords(response.newRecords);
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to start interaction';
@@ -109,14 +137,14 @@ export function useInteraction(): UseInteractionResult {
         setIsLoading(false);
       }
     },
-    [interactions, updateInteractionState]
+    [updateInteractionState, fetchNewRecords, addRecords]
   );
 
   /**
    * Send a message in a two-way interaction
    */
   const sendMessage = useCallback(
-    async (scenarioId: number, objectId: string, message: string, onNewRecords?: (records: ApiRecord[]) => void) => {
+    async (scenarioId: number, objectId: string, message: string) => {
       const currentState = interactions.get(objectId);
       if (!currentState || currentState.type !== 'two-way') {
         console.error('Cannot send message: not a two-way interaction');
@@ -164,6 +192,8 @@ export function useInteraction(): UseInteractionResult {
         if (response.type !== 'two-way') {
           throw new Error('Expected two-way response');
         }
+        
+        await fetchNewRecords(scenarioId, response.revealedRecordIds);
 
         // Add NPC response to history (replace pending bubble)
         const npcMessage: ChatMessage = {
@@ -182,8 +212,8 @@ export function useInteraction(): UseInteractionResult {
         }));
 
         // Handle new records if present
-        if (response.newRecords && response.newRecords.length > 0 && onNewRecords) {
-          onNewRecords(response.newRecords);
+        if (response.newRecords && response.newRecords.length > 0) {
+          addRecords(response.newRecords);
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
@@ -196,7 +226,7 @@ export function useInteraction(): UseInteractionResult {
         setIsLoading(false);
       }
     },
-    [interactions, updateInteractionState]
+    [interactions, updateInteractionState, fetchNewRecords, addRecords]
   );
 
   return {
