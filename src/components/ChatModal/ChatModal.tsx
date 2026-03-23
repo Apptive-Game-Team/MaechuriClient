@@ -15,6 +15,7 @@ interface ChatModalProps {
   records: Record[];
   onClose: () => void;
   onSendMessage: (message: string) => void;
+  onRecordClick: (recordId: string) => void;
   playerPosition?: { x: number; y: number };
   mapObjects?: MapObject[];
   interactions?: Map<string, ObjectInteractionState>;
@@ -31,6 +32,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
   records,
   onClose,
   onSendMessage,
+  onRecordClick,
   playerPosition,
   mapObjects,
   interactions,
@@ -131,6 +133,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
                 objectImageUrl={currentObjectImageUrl}
                 objectType={objectType}
                 pressure={currentPressure}
+                onRecordClick={onRecordClick}
               />
             ))}
             <div ref={messagesEndRef} />

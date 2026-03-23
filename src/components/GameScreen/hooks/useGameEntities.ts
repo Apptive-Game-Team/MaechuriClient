@@ -5,7 +5,7 @@ import type { AssetsState } from './useAssetLoader';
 import type { ScenarioData } from '../../../types/map';
 import { Tile, Player } from '../components/renderers';
 import { FogOfWar } from '../components/FogOfWar';
-import { deriveRecordType } from '../../../types/record'; // Import deriveRecordType
+import { deriveRecordType, RecordType } from '../../../types/record'; // Import deriveRecordType
 
 export const useGameEntities = (
   scenarioData: ScenarioData,
@@ -46,10 +46,10 @@ export const useGameEntities = (
       
       let objectType: TileEntity['objectType'] = undefined;
       const recordType = deriveRecordType(object.id);
-      if (recordType === 'CLUE') {
-        objectType = 'CLUE';
-      } else if (recordType === 'NPC') {
-        objectType = 'NPC'; // This covers 'suspect'
+      if (recordType === RecordType.CLUE) {
+        objectType = RecordType.CLUE;
+      } else if (recordType === RecordType.NPC) {
+        objectType = RecordType.NPC; // This covers 'suspect'
       }
       // Add other specific types if needed, e.g., 'DETECTIVE' if they have a distinct ID prefix
 

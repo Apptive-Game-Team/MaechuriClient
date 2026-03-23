@@ -1,5 +1,10 @@
 // Record types for reference feature in chat
-export type RecordType = 'CLUE' | 'NPC' | 'FACT';
+export const RecordType = {
+  CLUE: 'CLUE',
+  NPC: 'NPC',
+  FACT: 'FACT',
+} as const;
+export type RecordType = (typeof RecordType)[keyof typeof RecordType];
 
 export interface Position {
   x: number;
@@ -41,19 +46,19 @@ export interface RecordDetail {
 export const deriveRecordType = (id: string): RecordType => {
   if (typeof id !== 'string' || !id) {
     console.warn(`Invalid or missing record ID for type derivation:`, id);
-    return 'FACT'; // Default to a safe type
+    return RecordType.FACT; // Default to a safe type
   }
   const prefix = id.split(':')[0];
   switch (prefix) {
     case 'c':
-      return 'CLUE';
+      return RecordType.CLUE;
     case 's':
-      return 'NPC'; // 's' for suspect, which maps to NPC
+      return RecordType.NPC; // 's' for suspect, which maps to NPC
     case 'f':
-      return 'FACT';
+      return RecordType.FACT;
     default:
       console.warn(`Unknown record type prefix: ${prefix} for ID: ${id}`);
-      return 'FACT'; // Default to FACT or handle error
+      return RecordType.FACT; // Default to FACT or handle error
   }
 };
 

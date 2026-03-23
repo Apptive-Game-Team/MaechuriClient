@@ -1,0 +1,96 @@
+/* Hover tooltip */
+.record-card-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  background: var(--tooltip-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  padding: 12px;
+  width: 250px;
+  max-width: 300px;
+  z-index: 1000;
+  pointer-events: none;
+  animation: tooltipFadeIn 0.2s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.record-card-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-bottom-color: var(--tooltip-bg);
+}
+
+.record-card-tooltip-header {
+  margin-bottom: 8px;
+}
+
+.record-card-tooltip-type {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #11111b;
+  margin-bottom: 6px;
+}
+
+.record-card-clue .record-card-tooltip-type {
+  background-color: var(--success);
+}
+
+.record-card-npc .record-card-tooltip-type {
+  background-color: #89b4fa;
+}
+
+.record-card-fact .record-card-tooltip-type {
+  background-color: var(--warning);
+}
+
+.record-card-tooltip-name {
+  margin: 6px 0 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.record-card-tooltip-content {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* Tooltip positioned above the element */
+.record-card-tooltip-above {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.record-card-tooltip-above::before {
+  bottom: auto;
+  top: 100%;
+  border-bottom-color: transparent;
+  border-top-color: var(--tooltip-bg);
+}

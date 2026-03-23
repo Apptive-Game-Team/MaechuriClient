@@ -2,6 +2,7 @@ import React from 'react';
 import type { Record } from '../../../types/record';
 import type { ChatMessage } from '../../../types/interaction';
 import { PressureIndicator } from './PressureIndicator';
+import { RevealedRecords } from './RevealedRecords';
 
 interface MessageProps {
   message: ChatMessage;
@@ -9,6 +10,7 @@ interface MessageProps {
   objectImageUrl?: string;
   objectType?: 'CLUE' | 'NPC' | null;
   pressure?: number | null;
+  onRecordClick: (recordId: string) => void;
 }
 
 interface Reference {
@@ -74,7 +76,7 @@ const PendingMessageContent: React.FC<{ message: ChatMessage; pressure?: number 
   </>
 );
 
-export const Message: React.FC<MessageProps> = ({ message, records, objectImageUrl, objectType, pressure }) => {
+export const Message: React.FC<MessageProps> = ({ message, records, objectImageUrl, objectType, pressure, onRecordClick }) => {
   if (message.sender === 'npc') {
     return (
       <div className="chat-message npc">
@@ -90,6 +92,13 @@ export const Message: React.FC<MessageProps> = ({ message, records, objectImageU
               <PendingMessageContent message={message} pressure={pressure} />
             ) : (
               <MessageContent message={message} records={records} />
+            )}
+            {!message.isPending && message.revealedRecordIds && message.revealedRecordIds.length > 0 && (
+              <RevealedRecords
+                recordIds={message.revealedRecordIds}
+                records={records}
+                onRecordClick={onRecordClick}
+              />
             )}
           </div>
         </div>

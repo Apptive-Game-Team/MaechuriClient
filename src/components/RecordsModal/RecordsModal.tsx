@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DndContext, DragOverlay } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import type { Record } from '../../types/record';
@@ -15,6 +15,7 @@ interface RecordsModalProps {
   isOpen: boolean;
   onClose: () => void;
   scenarioData: ScenarioData | null;
+  highlightedRecordId?: string | null;
 }
 
 interface RecordPosition {
@@ -24,6 +25,7 @@ interface RecordPosition {
 }
 
 const STORAGE_KEY = 'maechuri-record-positions';
+const RECORD_CARD_SIZE = 150;
 
 // Load positions from localStorage
 const loadPositions = (): Map<string, { x: number; y: number }> => {
@@ -57,12 +59,13 @@ const savePositions = (positions: Map<string, { x: number; y: number }>) => {
   }
 };
 
-const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioData }) => {
+const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioData, highlightedRecordId }) => {
   const { records, updateRecordPosition, setRecords } = useRecords();
   const [positions, setPositions] = useState<Map<string, { x: number; y: number }>>(new Map());
   const [activeRecord, setActiveRecord] = useState<Record | null>(null);
   const [enrichedRecords, setEnrichedRecords] = useState<Record[]>([]);
   const [isLoadingRecords, setIsLoadingRecords] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // Load positions on mount
   useEffect(() => {
@@ -176,6 +179,26 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
     });
   }, [enrichedRecords, isOpen]);
 
+  // Scroll to highlighted record when modal opens with a highlighted record
+  useEffect(() => {
+    if (!isOpen || !highlightedRecordId) return;
+
+    const timer = setTimeout(() => {
+      const pos = positions.get(highlightedRecordId);
+      if (pos && contentRef.current) {
+        const visibleWidth = contentRef.current.clientWidth;
+        const visibleHeight = contentRef.current.clientHeight;
+        contentRef.current.scrollTo({
+          left: Math.max(0, pos.x - visibleWidth / 2 + RECORD_CARD_SIZE / 2),
+          top: Math.max(0, pos.y - visibleHeight / 2 + RECORD_CARD_SIZE / 2),
+          behavior: 'smooth',
+        });
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [isOpen, highlightedRecordId, positions]);
+
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const record = enrichedRecords.find(r => r.id === event.active.id);
     setActiveRecord(record || null);
@@ -215,7 +238,7 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
       title="Records"
       maxWidth="1000px"
     >
-      <div className="records-modal-content">
+      <div className="records-modal-content" ref={contentRef}>
         {isLoadingRecords ? (
           <div className="records-loading">
             <p>Loading records...</p>
@@ -241,7 +264,7 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
                       top: position.y,
                     }}
                   >
-                    <RecordCard record={record} />
+                    <RecordCard record={record} isHighlighted={record.id === highlightedRecordId} />
                   </div>
                 );
               })}
