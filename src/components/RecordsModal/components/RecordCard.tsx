@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import type { Record } from '../../../types/record';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
+import { RecordTooltip } from './RecordTooltip';
 import './RecordCard.css';
 
 interface RecordCardProps {
   record: Record;
+  isHighlighted?: boolean;
 }
 
-export const RecordCard: React.FC<RecordCardProps> = ({ record }) => {
+export const RecordCard: React.FC<RecordCardProps> = ({ record, isHighlighted }) => {
   const [isHovered, setIsHovered] = useState(false);
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: record.id,
@@ -21,24 +23,11 @@ export const RecordCard: React.FC<RecordCardProps> = ({ record }) => {
     cursor: isDragging ? 'grabbing' : 'grab',
   };
 
-  const getTypeLabel = () => {
-    switch (record.type) {
-      case 'CLUE':
-        return '단서';
-      case 'NPC':
-        return '용의자';
-      case 'FACT':
-        return '사실';
-      default:
-        return record.type;
-    }
-  };
-
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`record-card record-card-${record.type.toLowerCase()}`}
+      className={`record-card record-card-${record.type.toLowerCase()}${isHighlighted ? ' record-card-highlighted' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       {...listeners}
@@ -62,17 +51,7 @@ export const RecordCard: React.FC<RecordCardProps> = ({ record }) => {
       </div>
 
       {/* Hover tooltip */}
-      {isHovered && (
-        <div className="record-card-tooltip">
-          <div className="record-card-tooltip-header">
-            <span className="record-card-tooltip-type">{getTypeLabel()}</span>
-            <h4 className="record-card-tooltip-name">{record.name}</h4>
-          </div>
-          {record.content && (
-            <p className="record-card-tooltip-content">{record.content}</p>
-          )}
-        </div>
-      )}
+      {isHovered && <RecordTooltip record={record} />}
     </div>
   );
 };

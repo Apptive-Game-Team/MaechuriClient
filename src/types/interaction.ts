@@ -13,6 +13,7 @@ export interface SimpleInteractionResponse {
   message: string;
   name?: string; // Optional name field for simple interactions
   newRecords?: ApiRecord[]; // Changed type to ApiRecord[]
+  revealedRecordIds?: string[];
 }
 
 export interface TwoWayInteractionResponse {
@@ -22,6 +23,7 @@ export interface TwoWayInteractionResponse {
   newRecords?: ApiRecord[]; // Changed type to ApiRecord[]
   pressure?: number | null;
   pressureDelta?: number | null;
+  revealedRecordIds?: string[];
 }
 
 export type InteractionResponse = SimpleInteractionResponse | TwoWayInteractionResponse;
@@ -34,6 +36,7 @@ export interface ChatMessage {
   timestamp: number;
   isPending?: boolean;
   clientId?: string;
+  revealedRecordIds?: string[];
 }
 
 // Object-specific interaction state

@@ -45,6 +45,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [solveModalOpen, setSolveModalOpen] = useState(false);
   const [recordsModalOpen, setRecordsModalOpen] = useState(false);
+  const [highlightedRecordId, setHighlightedRecordId] = useState<string | null>(null);
   const [currentObjectId, setCurrentObjectId] = useState<string | null>(null);
   const [currentObjectName, setCurrentObjectName] = useState<string>('');
   const [solveAttempts, setSolveAttempts] = useState<SolveAttempt[]>([]);
@@ -172,8 +173,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
     const handleKeyDown = (event: KeyboardEvent) => {
       const isTyping = event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || (event.target as HTMLElement).isContentEditable;
       if (!chatModalOpen && !solveModalOpen && !recordsModalOpen && !isTyping) {
-        if (event.key === 'r') setRecordsModalOpen(true);
-        else if (event.key === 'c') {
+        if (event.key === 'r') {
+          setHighlightedRecordId(null);
+          setRecordsModalOpen(true);
+        } else if (event.key === 'c') {
           setCurrentObjectId(null);
           setCurrentObjectName('');
           setChatModalOpen(true);
@@ -205,6 +208,16 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
     if (scenarioData && !getInteractionState(objectId)) {
       await startInteraction(scenarioData.scenarioId, objectId, addRecords);
     }
+  };
+
+  const handleRecordClick = (recordId: string) => {
+    setHighlightedRecordId(recordId);
+    setRecordsModalOpen(true);
+  };
+
+  const handleRecordsModalClose = () => {
+    setRecordsModalOpen(false);
+    setHighlightedRecordId(null);
   };
 
   const handleSolveSubmit = async (message: string, suspectIds: string[]) => {
@@ -246,7 +259,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         <div className="game-shortcuts">
           <button
             className="game-shortcut-button"
-            onClick={() => setRecordsModalOpen(true)}
+            onClick={() => { setHighlightedRecordId(null); setRecordsModalOpen(true); }}
             title="수사 기록 열기 [R]"
           >
             📋 수사 기록 <kbd>R</kbd>
@@ -293,6 +306,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         records={records}
         onClose={() => setChatModalOpen(false)}
         onSendMessage={handleSendMessage}
+        onRecordClick={handleRecordClick}
         playerPosition={playerPosition}
         mapObjects={scenarioData.map.objects}
         interactions={interactions}
@@ -309,8 +323,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       />
       <RecordsModal
         isOpen={recordsModalOpen}
-        onClose={() => setRecordsModalOpen(false)}
+        onClose={handleRecordsModalClose}
         scenarioData={scenarioData}
+        highlightedRecordId={highlightedRecordId}
       />
     </div>
   );

@@ -83,6 +83,7 @@ export function useInteraction(): UseInteractionResult {
           name: response.type === 'simple' ? response.name : undefined,
           timestamp: Date.now(),
           clientId: createMessageClientId('npc'),
+          revealedRecordIds: response.revealedRecordIds,
         };
 
         const existingState = interactions.get(objectId);
@@ -170,6 +171,7 @@ export function useInteraction(): UseInteractionResult {
           sender: 'npc',
           timestamp: Date.now(),
           clientId: createMessageClientId('npc'),
+          revealedRecordIds: response.revealedRecordIds,
         };
 
         // Use functional update to append the NPC message to the latest state
