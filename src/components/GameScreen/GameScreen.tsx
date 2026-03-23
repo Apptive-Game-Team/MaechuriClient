@@ -107,7 +107,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       playModalSound();
       setChatModalOpen(true);
       if (scenarioData && !getInteractionState(objectId)) {
-        await startInteraction(scenarioData.scenarioId, objectId, addRecords);
+        await startInteraction(scenarioData.scenarioId, objectId);
       }
     };
     window.addEventListener('gameInteraction', handleInteraction);
@@ -205,7 +205,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   const handleSendMessage = async (message: string) => {
     if (scenarioData && currentObjectId) {
       playMessageSentSound();
-      await sendMessage(scenarioData.scenarioId, currentObjectId, message, addRecords);
+      await sendMessage(scenarioData.scenarioId, currentObjectId, message);
     }
   };
 
@@ -213,7 +213,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
     setCurrentObjectId(objectId);
     setCurrentObjectName(objectName);
     if (scenarioData && !getInteractionState(objectId)) {
-      await startInteraction(scenarioData.scenarioId, objectId, addRecords);
+      await startInteraction(scenarioData.scenarioId, objectId);
     }
   };
 

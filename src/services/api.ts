@@ -3,7 +3,7 @@ import { apiFetch } from '../utils/apiFetch';
 import type { ScenarioData } from '../types/map';
 import type { InteractionRequest, InteractionResponse } from '../types/interaction';
 import type { SolveRequest, SolveResponse } from '../types/solve';
-import type { RecordsData, RecordDetail, ApiRecord } from '../types/record';
+import type { RecordsData, ApiRecord } from '../types/record';
 import type { ScenarioListResponse } from '../types/scenarioList';
 
 /**
