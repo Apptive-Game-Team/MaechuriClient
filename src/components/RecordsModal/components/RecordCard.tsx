@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { RecordType } from '../../../types/record';
 import type { Record } from '../../../types/record';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
@@ -35,7 +36,7 @@ export const RecordCard: React.FC<RecordCardProps> = ({ record, isHighlighted })
     >
       {/* Simplified view */}
       <div className="record-card-simple">
-        {record.type === 'FACT' ? (
+        {record.type === RecordType.FACT ? (
           <div className="record-card-memo-icon">
             📝
           </div>

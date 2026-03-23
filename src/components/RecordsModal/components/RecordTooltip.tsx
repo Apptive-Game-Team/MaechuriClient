@@ -1,4 +1,5 @@
 import React from 'react';
+import { RecordType } from '../../../types/record';
 import type { Record } from '../../../types/record';
 import './RecordTooltip.css';
 
@@ -9,11 +10,11 @@ interface RecordTooltipProps {
 
 const getTypeLabel = (type: Record['type']): string => {
   switch (type) {
-    case 'CLUE':
+    case RecordType.CLUE:
       return '단서';
-    case 'NPC':
+    case RecordType.NPC:
       return '용의자';
-    case 'FACT':
+    case RecordType.FACT:
       return '사실';
     default:
       return type;

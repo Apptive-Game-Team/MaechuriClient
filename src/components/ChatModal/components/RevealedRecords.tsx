@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { RecordType } from '../../../types/record';
 import type { Record } from '../../../types/record';
 import { RecordTooltip } from '../../RecordsModal/components/RecordTooltip';
 import './RevealedRecords.css';
@@ -11,9 +12,9 @@ interface RevealedRecordsProps {
 
 const getRecordEmoji = (type: Record['type']): string => {
   switch (type) {
-    case 'CLUE': return '🔍';
-    case 'NPC': return '👤';
-    case 'FACT': return '📝';
+    case RecordType.CLUE: return '🔍';
+    case RecordType.NPC: return '👤';
+    case RecordType.FACT: return '📝';
     default: return '📄';
   }
 };
