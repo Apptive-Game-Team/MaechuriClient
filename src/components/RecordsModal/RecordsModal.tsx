@@ -26,6 +26,14 @@ interface RecordPosition {
 
 const STORAGE_KEY = 'maechuri-record-positions';
 const RECORD_CARD_SIZE = 150;
+const CANVAS_WIDTH = 2000;
+const CANVAS_HEIGHT = 1500;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 2.0;
+const ZOOM_STEP = 0.1;
+
+const clampZoom = (value: number) =>
+  Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, parseFloat(value.toFixed(1))));
 
 // Load positions from localStorage
 const loadPositions = (): Map<string, { x: number; y: number }> => {
@@ -65,6 +73,7 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
   const [activeRecord, setActiveRecord] = useState<Record | null>(null);
   const [enrichedRecords, setEnrichedRecords] = useState<Record[]>([]);
   const [isLoadingRecords, setIsLoadingRecords] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1.0);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Load positions on mount
@@ -189,15 +198,44 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
         const visibleWidth = contentRef.current.clientWidth;
         const visibleHeight = contentRef.current.clientHeight;
         contentRef.current.scrollTo({
-          left: Math.max(0, pos.x - visibleWidth / 2 + RECORD_CARD_SIZE / 2),
-          top: Math.max(0, pos.y - visibleHeight / 2 + RECORD_CARD_SIZE / 2),
+          left: Math.max(0, pos.x * zoomLevel - visibleWidth / 2 + (RECORD_CARD_SIZE * zoomLevel) / 2),
+          top: Math.max(0, pos.y * zoomLevel - visibleHeight / 2 + (RECORD_CARD_SIZE * zoomLevel) / 2),
           behavior: 'smooth',
         });
       }
     }, 150);
 
     return () => clearTimeout(timer);
-  }, [isOpen, highlightedRecordId, positions]);
+  }, [isOpen, highlightedRecordId, positions, zoomLevel]);
+
+  // Ctrl+Wheel zoom (non-passive listener to allow preventDefault)
+  useEffect(() => {
+    if (!isOpen) return;
+    const el = contentRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        setZoomLevel(prev => clampZoom(prev + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP)));
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [isOpen]);
+
+  const handleZoomIn = useCallback(() => {
+    setZoomLevel(prev => clampZoom(prev + ZOOM_STEP));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoomLevel(prev => clampZoom(prev - ZOOM_STEP));
+  }, []);
+
+  const handleZoomReset = useCallback(() => {
+    setZoomLevel(1.0);
+  }, []);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const record = enrichedRecords.find(r => r.id === event.active.id);
@@ -215,8 +253,8 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
       const currentPos = newPositions.get(recordId) || { x: 0, y: 0 };
       
       const newPos = {
-        x: currentPos.x + delta.x,
-        y: currentPos.y + delta.y,
+        x: currentPos.x + delta.x / zoomLevel,
+        y: currentPos.y + delta.y / zoomLevel,
       };
 
       newPositions.set(recordId, newPos);
@@ -229,7 +267,7 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
 
       return newPositions;
     });
-  }, [updateRecordPosition]);
+  }, [updateRecordPosition, zoomLevel]);
 
   return (
     <Modal
@@ -238,6 +276,11 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
       title="Records"
       maxWidth="1000px"
     >
+      <div className="records-toolbar">
+        <button className="records-zoom-btn" onClick={handleZoomOut} disabled={zoomLevel <= MIN_ZOOM} title="축소 (Ctrl+Scroll)">－</button>
+        <button className="records-zoom-level" onClick={handleZoomReset} title="배율 초기화">{Math.round(zoomLevel * 100)}%</button>
+        <button className="records-zoom-btn" onClick={handleZoomIn} disabled={zoomLevel >= MAX_ZOOM} title="확대 (Ctrl+Scroll)">＋</button>
+      </div>
       <div className="records-modal-content" ref={contentRef}>
         {isLoadingRecords ? (
           <div className="records-loading">
@@ -249,25 +292,33 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
           </div>
         ) : (
           <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-            <div className="records-canvas">
-              {enrichedRecords.map(record => {
-                const recordId = record.id;
-                const position = positions.get(recordId) || { x: 0, y: 0 };
-                
-                return (
-                  <div
-                    key={recordId}
-                    className="record-item-wrapper"
-                    style={{
-                      position: 'absolute',
-                      left: position.x,
-                      top: position.y,
-                    }}
-                  >
-                    <RecordCard record={record} isHighlighted={record.id === highlightedRecordId} />
-                  </div>
-                );
-              })}
+            <div
+              className="records-canvas-footprint"
+              style={{ width: CANVAS_WIDTH * zoomLevel, height: CANVAS_HEIGHT * zoomLevel }}
+            >
+              <div
+                className="records-canvas"
+                style={{ transform: `scale(${zoomLevel})`, transformOrigin: '0 0' }}
+              >
+                {enrichedRecords.map(record => {
+                  const recordId = record.id;
+                  const position = positions.get(recordId) || { x: 0, y: 0 };
+                  
+                  return (
+                    <div
+                      key={recordId}
+                      className="record-item-wrapper"
+                      style={{
+                        position: 'absolute',
+                        left: position.x,
+                        top: position.y,
+                      }}
+                    >
+                      <RecordCard record={record} isHighlighted={record.id === highlightedRecordId} />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
             <DragOverlay>
               {activeRecord ? <RecordCard record={activeRecord} /> : null}
