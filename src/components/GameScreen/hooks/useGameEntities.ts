@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
-import type { Position, Direction, TileEntity, FogOfWarEntity } from '../types';
+import type { Position, Direction, TileEntity } from '../types';
 import { PLAYER_ASSET_ID } from '../types';
 import type { AssetsState } from './useAssetLoader';
 import type { ScenarioData } from '../../../types/map';
 import { Tile, Player } from '../components/renderers';
-import { FogOfWar } from '../components/FogOfWar';
 import { deriveRecordType, RecordType } from '../../../types/record'; // Import deriveRecordType
 
 export const useGameEntities = (
@@ -85,21 +84,8 @@ export const useGameEntities = (
     objectType: 'PLAYER', // Add objectType for player
   };
 
-  const mapWidth = scenarioData.map.layers[0]?.tileMap[0]?.length || 0;
-  const mapHeight = scenarioData.map.layers[0]?.tileMap?.length || 0;
-
-  const fogOfWarEntity: FogOfWarEntity = {
-    map: scenarioData.map,
-    visibleTiles: new Map<string, number>(),
-    playerPosition: playerPosition,
-    mapWidth: mapWidth,
-    mapHeight: mapHeight,
-    renderer: FogOfWar,
-  };
-
   return {
     ...tileEntities,
     player: playerEntity,
-    fogOfWar: fogOfWarEntity,
   };
 };
