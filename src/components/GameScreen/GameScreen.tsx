@@ -16,7 +16,6 @@ import { submitSolve } from '../../services/api';
 import playerControlSystem from './systems/playerControlSystem';
 import interactionSystem from './systems/interactionSystem';
 import interpolationSystem from './systems/interpolationSystem';
-import fogOfWarSystem from './systems/fogOfWarSystem';
 import ChatModal from '../ChatModal/ChatModal';
 import SolveModal from '../SolveModal/SolveModal';
 import RecordsModal from '../RecordsModal/RecordsModal';
@@ -303,7 +302,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
           <GameEngine
             ref={gameEngineRef}
             style={{ width: mapWidth, height: mapHeight }}
-            systems={[playerControlSystem, interactionSystem, interpolationSystem, fogOfWarSystem]}
+            systems={[playerControlSystem, interactionSystem, interpolationSystem]}
             entities={entities}
             onEvent={handleGameEvent}
           />
