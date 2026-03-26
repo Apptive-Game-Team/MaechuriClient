@@ -141,11 +141,11 @@ const ChatModal: React.FC<ChatModalProps> = ({
           <div className={`chat-modal-input-area ${interactionType === 'simple' ? 'disabled' : ''}`}>
             {interactionType === 'two-way' ? (
               <ChatInput ref={inputRef} records={records} onSendMessage={onSendMessage} isNearObject={isNearObject} />
-            ) : (
+            ) : interactionType === 'simple' ? (
               <div className="chat-modal-disabled-notice">
-                {interactionType === 'simple' ? 'This is a read-only interaction' : 'Initializing...'}
+                This is a read-only interaction
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

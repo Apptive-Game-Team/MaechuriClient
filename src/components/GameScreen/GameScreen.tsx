@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { GameEngine } from 'react-game-engine';
 import type { Position, Direction, ScenarioData, Layer, MapObject } from '../../types/map';
 import type { SolveResponse, SolveAttempt } from '../../types/solve';
@@ -137,7 +137,20 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
 
   const entities = useGameEntities(scenarioData || EMPTY_SCENARIO, playerPosition, playerDirection, assetsState);
 
-  const handleGameEvent = (event: Record<string, unknown>) => {
+  // Memoize map pixel dimensions to avoid redundant flatMap/map on every render and
+  // inside the high-frequency 'interpolated-position-changed' game event handler.
+  const mapDimensions = useMemo(() => {
+    if (!scenarioData) return { width: 0, height: 0 };
+    const width = Math.max(0, ...scenarioData.map.layers.flatMap((l: Layer) => l.tileMap.map((row: number[]) => row.length))) * TILE_SIZE;
+    const height = Math.max(0, ...scenarioData.map.layers.map((l: Layer) => l.tileMap.length)) * TILE_SIZE;
+    return { width, height };
+  }, [scenarioData]);
+
+  // Keep a ref so the stable handleGameEvent callback can always read current dimensions.
+  const mapDimensionsRef = useRef(mapDimensions);
+  mapDimensionsRef.current = mapDimensions;
+
+  const handleGameEvent = useCallback((event: Record<string, unknown>) => {
     if (event.type === 'player-moved-tile') {
       playWalkSound();
       const position = event.position as Position | undefined;
@@ -146,12 +159,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       }
     } else if (event.type === 'interpolated-position-changed') {
       const position = event.position as Position | undefined;
-      if (position && typeof position.x === 'number' && typeof position.y === 'number' && gameContainerRef.current && scenarioData) {
+      const { width: mapWidth, height: mapHeight } = mapDimensionsRef.current;
+      if (position && typeof position.x === 'number' && typeof position.y === 'number' && gameContainerRef.current) {
         const offsetX = (VIEWPORT_WIDTH / 2) - (position.x * TILE_SIZE + TILE_SIZE / 2);
         const offsetY = (VIEWPORT_HEIGHT / 2) - (position.y * TILE_SIZE + TILE_SIZE / 2);
-        
-        const mapWidth = Math.max(0, ...scenarioData.map.layers.flatMap((layer: Layer) => layer.tileMap.map((row: number[]) => row.length))) * TILE_SIZE;
-        const mapHeight = Math.max(0, ...scenarioData.map.layers.map((layer: Layer) => layer.tileMap.length)) * TILE_SIZE;
 
         let finalClampedX = offsetX;
         if (mapWidth < VIEWPORT_WIDTH) {
@@ -166,11 +177,15 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         } else {
           finalClampedY = Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
         }
-        
+
         gameContainerRef.current.style.transform = `translate(${finalClampedX}px, ${finalClampedY}px)`;
       }
     }
-  };
+  }, []);
+  // The empty deps array is intentional: mapDimensions is read through mapDimensionsRef,
+  // which is updated synchronously during render (line above), so the callback always
+  // sees the current dimensions without needing to be recreated on every render.
+  // This prevents GameEngine from receiving a new onEvent reference on every movement tick.
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -197,8 +212,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   usePlayerControls(gameEngineRef);
   const { onClick, onMouseMove, onMouseLeave } = useMouseControls(gameEngineRef, gameContainerRef);
 
-  const mapWidth = scenarioData ? Math.max(0, ...scenarioData.map.layers.flatMap((layer: Layer) => layer.tileMap.map((row: number[]) => row.length))) * TILE_SIZE : 0;
-  const mapHeight = scenarioData ? Math.max(0, ...scenarioData.map.layers.map((layer: Layer) => layer.tileMap.length)) * TILE_SIZE : 0;
+  const { width: mapWidth, height: mapHeight } = mapDimensions;
   const interactionState = currentObjectId ? getInteractionState(currentObjectId) : undefined;
 
   const handleSendMessage = async (message: string) => {
