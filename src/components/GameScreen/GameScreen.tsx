@@ -41,6 +41,7 @@ interface GameScreenProps {
 const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => {
   const gameEngineRef = useRef<GameEngine>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
+  const willChangeResetRef = useRef<number | null>(null);
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [solveModalOpen, setSolveModalOpen] = useState(false);
   const [recordsModalOpen, setRecordsModalOpen] = useState(false);
@@ -148,8 +149,26 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         let finalClampedY = mapHeight < VIEWPORT_HEIGHT ? (VIEWPORT_HEIGHT - mapHeight) / 2 : Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
 
         gameContainerRef.current.style.transform = `translate3d(${finalClampedX}px, ${finalClampedY}px, 0)`;
+        gameContainerRef.current.style.willChange = 'transform';
+
+        if (willChangeResetRef.current) {
+          window.clearTimeout(willChangeResetRef.current);
+        }
+        willChangeResetRef.current = window.setTimeout(() => {
+          if (gameContainerRef.current) {
+            gameContainerRef.current.style.willChange = 'auto';
+          }
+        }, 150);
       }
     }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (willChangeResetRef.current) {
+        window.clearTimeout(willChangeResetRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -212,7 +231,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         <div 
           ref={gameContainerRef}
           className="game-container" 
-          style={{ width: mapDimensions.width, height: mapDimensions.height, willChange: 'transform', transform: 'translate3d(0px, 0px, 0)' }}
+          style={{ width: mapDimensions.width, height: mapDimensions.height, transform: 'translate3d(0px, 0px, 0)' }}
         >
           <GameEngine
             ref={gameEngineRef}
