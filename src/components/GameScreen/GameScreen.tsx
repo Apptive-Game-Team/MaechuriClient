@@ -25,6 +25,7 @@ import './GameScreen.css';
 
 const VIEWPORT_WIDTH = 800;
 const VIEWPORT_HEIGHT = 600;
+const WILL_CHANGE_RESET_DELAY = 150;
 
 const EMPTY_SCENARIO = {
   createdDate: '',
@@ -158,7 +159,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
           if (gameContainerRef.current) {
             gameContainerRef.current.style.willChange = 'auto';
           }
-        }, 150);
+        }, WILL_CHANGE_RESET_DELAY);
       }
     }
   }, []);
