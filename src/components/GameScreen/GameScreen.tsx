@@ -147,7 +147,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         let finalClampedX = mapWidth < VIEWPORT_WIDTH ? (VIEWPORT_WIDTH - mapWidth) / 2 : Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
         let finalClampedY = mapHeight < VIEWPORT_HEIGHT ? (VIEWPORT_HEIGHT - mapHeight) / 2 : Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
 
-        gameContainerRef.current.style.transform = `translate(${finalClampedX}px, ${finalClampedY}px)`;
+        gameContainerRef.current.style.transform = `translate3d(${finalClampedX}px, ${finalClampedY}px, 0)`;
       }
     }
   }, []);
@@ -212,7 +212,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         <div 
           ref={gameContainerRef}
           className="game-container" 
-          style={{ width: mapDimensions.width, height: mapDimensions.height }}
+          style={{ width: mapDimensions.width, height: mapDimensions.height, willChange: 'transform', transform: 'translate3d(0px, 0px, 0)' }}
         >
           <GameEngine
             ref={gameEngineRef}
