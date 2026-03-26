@@ -13,7 +13,6 @@ export interface PlayerEntity extends Entity {
   direction: Direction;
   speed: number;
   asset: DirectionalAsset | null;
-  interpolatedPosition?: Position; // Smoothly interpolated position for rendering
   lastTilePosition?: Position;
   pathQueue?: Position[];          // A* waypoints for mouse-driven navigation
   pendingInteraction?: boolean;    // Trigger interaction on path completion
