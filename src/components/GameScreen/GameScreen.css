@@ -73,5 +73,5 @@
 .game-container {
   position: relative;
   background-color: var(--bg);
-  transition: transform 0.2s ease-out;
+  /* transition: transform 0.2s ease-out; -- REMOVED: Conflicts with manual frame-by-frame game engine updates */
 }
