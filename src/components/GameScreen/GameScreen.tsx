@@ -143,6 +143,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   mapDimensionsRef.current = mapDimensions;
 
   const lastPlayerTileRef = useRef<Position | null>(null);
+  const reactPlayerPositionRef = useRef(reactPlayerPosition);
   const handlePlayWalkSound = useCallback(() => {
     playWalkSound();
   }, []);
@@ -151,7 +152,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   }, []);
 
   useEffect(() => {
-    let animationFrameId: number | null = null;
+    let animationFrameId: number | undefined;
     let isActive = true;
 
     const updateMovementFrame = () => {
@@ -183,7 +184,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         const hasMovedTile = !lastTile || tileX !== lastTile.x || tileY !== lastTile.y;
         if (hasMovedTile) {
           lastPlayerTileRef.current = { x: tileX, y: tileY };
-          if (lastTile) {
+          const previousPosition = reactPlayerPositionRef.current;
+          const shouldPlaySound = Boolean(lastTile) || tileX !== previousPosition.x || tileY !== previousPosition.y;
+          if (shouldPlaySound) {
             handlePlayWalkSound();
           }
           setReactPlayerPosition({ x: tileX, y: tileY });
@@ -199,11 +202,15 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
 
     return () => {
       isActive = false;
-      if (animationFrameId !== null) {
+      if (animationFrameId !== undefined) {
         cancelAnimationFrame(animationFrameId);
       }
     };
   }, [handlePlayWalkSound, clampViewportOffset]);
+
+  useEffect(() => {
+    reactPlayerPositionRef.current = reactPlayerPosition;
+  }, [reactPlayerPosition]);
 
   useEffect(() => {
     return () => {
