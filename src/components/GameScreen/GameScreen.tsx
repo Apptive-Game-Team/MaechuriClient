@@ -53,6 +53,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   const gameEngineRef = useRef<(GameEngine & EngineState) | null>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const willChangeResetRef = useRef<number | null>(null);
+  const lastPlayerTileRef = useRef<Position | null>(null);
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [solveModalOpen, setSolveModalOpen] = useState(false);
   const [recordsModalOpen, setRecordsModalOpen] = useState(false);
@@ -77,7 +78,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       
       // Auto-initialize player position in React state
       const playerObj = newScenarioData.map.objects.find((o: any) => o.id === 'p:1');
-      if (playerObj) setReactPlayerPosition(playerObj.position);
+      if (playerObj) {
+        setReactPlayerPosition(playerObj.position);
+        lastPlayerTileRef.current = { x: Math.round(playerObj.position.x), y: Math.round(playerObj.position.y) };
+      }
 
       let borderLayer = newScenarioData.map.layers.find((l: Layer) => l.name === "Borders");
       if (!borderLayer) {
@@ -142,8 +146,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   const mapDimensionsRef = useRef(mapDimensions);
   mapDimensionsRef.current = mapDimensions;
 
-  const lastPlayerTileRef = useRef<Position | null>(null);
-  const reactPlayerPositionRef = useRef(reactPlayerPosition);
   const handlePlayWalkSound = useCallback(() => {
     playWalkSound();
   }, []);
@@ -184,9 +186,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         const hasMovedTile = !lastTile || tileX !== lastTile.x || tileY !== lastTile.y;
         if (hasMovedTile) {
           lastPlayerTileRef.current = { x: tileX, y: tileY };
-          const previousPosition = reactPlayerPositionRef.current;
-          const shouldPlaySound = lastTile !== null && (tileX !== previousPosition.x || tileY !== previousPosition.y);
-          if (shouldPlaySound) {
+          if (lastTile !== null) {
             handlePlayWalkSound();
           }
           setReactPlayerPosition({ x: tileX, y: tileY });
@@ -207,10 +207,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       }
     };
   }, [handlePlayWalkSound, clampViewportOffset]);
-
-  useEffect(() => {
-    reactPlayerPositionRef.current = reactPlayerPosition;
-  }, [reactPlayerPosition]);
 
   useEffect(() => {
     return () => {
