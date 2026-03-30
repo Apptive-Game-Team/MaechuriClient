@@ -10,6 +10,7 @@ export interface Position {
 
 export interface PlayerEntity extends Entity {
   position: Position;
+  interpolatedPosition?: Position;
   direction: Direction;
   speed: number;
   asset: DirectionalAsset | null;

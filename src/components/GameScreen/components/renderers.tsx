@@ -82,19 +82,20 @@ export const Tile = React.memo((props: TileEntity) => {
 
 // Memoized Player
 export const Player = React.memo((props: PlayerEntity) => {
-  const { position, direction, asset } = props;
+  const { position, interpolatedPosition, direction, asset } = props;
+  const renderPosition = interpolatedPosition ?? position;
 
   const assetDirection = DIRECTION_TO_ASSET_MAP[direction];
   const imageUrl = asset ? getAssetImage(asset, assetDirection) : undefined;
 
   if (imageUrl) {
-    return <AssetRenderer imageUrl={imageUrl} size={TILE_SIZE_VALUE} position={position} scaleMultiplier={1.3} />;
+    return <AssetRenderer imageUrl={imageUrl} size={TILE_SIZE_VALUE} position={renderPosition} scaleMultiplier={1.3} />;
   }
 
   const style: React.CSSProperties = {
     position: 'absolute',
-    left: position.x * TILE_SIZE_VALUE,
-    top: position.y * TILE_SIZE_VALUE,
+    left: renderPosition.x * TILE_SIZE_VALUE,
+    top: renderPosition.y * TILE_SIZE_VALUE,
     width: TILE_SIZE_VALUE,
     height: TILE_SIZE_VALUE,
     backgroundColor: '#FF6B6B',

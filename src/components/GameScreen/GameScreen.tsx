@@ -14,6 +14,7 @@ import { setCurrentMapData } from './utils/gameUtils';
 import { getAssetImage } from '../../utils/assetLoader';
 import { submitSolve } from '../../services/api';
 import playerControlSystem from './systems/playerControlSystem';
+import interpolationSystem from './systems/interpolationSystem';
 import interactionSystem from './systems/interactionSystem';
 import ChatModal from '../ChatModal/ChatModal';
 import SolveModal from '../SolveModal/SolveModal';
@@ -137,7 +138,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       playWalkSound();
       // Sync React state only when tile changes (infrequent)
       if (event.position) setReactPlayerPosition(event.position as Position);
-    } else if (event.type === 'player-moved') {
+    } else if (event.type === 'player-moved' || event.type === 'interpolated-position-changed') {
       // 60FPS Camera Sync - Directly manipulate DOM to avoid React re-render lag
       const position = event.position as Position | undefined;
       const { width: mapWidth, height: mapHeight } = mapDimensionsRef.current;
@@ -237,7 +238,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
           <GameEngine
             ref={gameEngineRef}
             style={{ width: mapDimensions.width, height: mapDimensions.height }}
-            systems={[playerControlSystem, interactionSystem]}
+            systems={[playerControlSystem, interpolationSystem, interactionSystem]}
             entities={entities}
             onEvent={handleGameEvent}
           />
