@@ -1,11 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { getRecord, sendInteraction } from '../services/api';
 import { useRecords } from '../contexts/RecordsContext';
 import type { 
   ObjectInteractionState, 
   ChatMessage
 } from '../types/interaction';
-import type { ApiRecord } from '../types/record';
+import type { ApiRecord, Record } from '../types/record';
 import { playMessageReceivedSound } from '../utils/soundManager';
 
 const removePendingMessage = (messages: ChatMessage[], pendingClientId: string) =>
@@ -41,6 +41,16 @@ export function useInteraction(): UseInteractionResult {
 
   const { records, addRecords } = useRecords();
 
+  // Keep a ref to records so fetchNewRecords doesn't need records in its dep array,
+  // preventing startInteraction/sendMessage from being recreated on every record update.
+  const recordsRef = useRef<Record[]>(records);
+  recordsRef.current = records;
+
+  // Keep a ref to interactions so sendMessage doesn't need it in its dep array,
+  // preventing recreation of sendMessage on every interaction state update.
+  const interactionsRef = useRef<Map<string, ObjectInteractionState>>(interactions);
+  interactionsRef.current = interactions;
+
   const getInteractionState = useCallback(
     (objectId: string) => interactions.get(objectId),
     [interactions]
@@ -74,7 +84,7 @@ export function useInteraction(): UseInteractionResult {
       return;
     }
 
-    const existingRecordIds = new Set(records.map(r => r.id));
+    const existingRecordIds = new Set(recordsRef.current.map(r => r.id));
     const newRecordIds = revealedIds.filter(id => !existingRecordIds.has(id));
 
     if (newRecordIds.length === 0) {
@@ -90,7 +100,7 @@ export function useInteraction(): UseInteractionResult {
       console.error('Failed to fetch newly revealed records:', err);
       // Optionally set an error state here
     }
-  }, [records, addRecords]);
+  }, [addRecords]);
 
   /**
    * Start interaction with an object (initial request with empty body)
@@ -99,6 +109,20 @@ export function useInteraction(): UseInteractionResult {
     async (scenarioId: number, objectId: string) => {
       setIsLoading(true);
       setError(null);
+
+      // Show a pending placeholder immediately so the chat messages area displays
+      // a loading indicator instead of appearing empty while the API call is in flight.
+      const pendingClientId = createMessageClientId('pending');
+      const pendingMessage: ChatMessage = {
+        content: '',
+        sender: 'npc',
+        timestamp: Date.now(),
+        isPending: true,
+        clientId: pendingClientId,
+      };
+      updateInteractionState(objectId, (prevState) => ({
+        messages: [...prevState.messages, pendingMessage],
+      }));
 
       try {
         // Send empty request to get interaction type
@@ -115,16 +139,14 @@ export function useInteraction(): UseInteractionResult {
           revealedRecordIds: response.revealedRecordIds,
         };
 
-        const existingState = interactions.get(objectId);
-        const messages = existingState ? [...existingState.messages, newMessage] : [newMessage];
-
-        updateInteractionState(objectId, {
+        // Replace the pending placeholder with the actual NPC message and set the type
+        updateInteractionState(objectId, (prevState) => ({
           objectId,
           type: response.type,
           jwtHistory: response.type === 'two-way' ? response.history : undefined,
-          messages,
+          messages: [...removePendingMessage(prevState.messages, pendingClientId), newMessage],
           pressure: response.type === 'two-way' ? response.pressure : undefined,
-        });
+        }));
 
         playMessageReceivedSound();
 
@@ -136,6 +158,10 @@ export function useInteraction(): UseInteractionResult {
         const errorMessage = err instanceof Error ? err.message : 'Failed to start interaction';
         console.error('Error starting interaction:', errorMessage);
         setError(errorMessage);
+        // Remove pending placeholder on error
+        updateInteractionState(objectId, (prevState) => ({
+          messages: removePendingMessage(prevState.messages, pendingClientId),
+        }));
       } finally {
         setIsLoading(false);
       }
@@ -148,7 +174,7 @@ export function useInteraction(): UseInteractionResult {
    */
   const sendMessage = useCallback(
     async (scenarioId: number, objectId: string, message: string) => {
-      const currentState = interactions.get(objectId);
+      const currentState = interactionsRef.current.get(objectId);
       if (!currentState || currentState.type !== 'two-way') {
         console.error('Cannot send message: not a two-way interaction');
         return;
@@ -231,7 +257,7 @@ export function useInteraction(): UseInteractionResult {
         setIsLoading(false);
       }
     },
-    [interactions, updateInteractionState, fetchNewRecords, addRecords]
+    [updateInteractionState, fetchNewRecords, addRecords]
   );
 
   return {

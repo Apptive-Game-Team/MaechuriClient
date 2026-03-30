@@ -10,7 +10,12 @@ const lerp = (start: number, end: number, t: number) => {
   return start * (1 - t) + end * t;
 };
 
-const interpolationSystem: System = (entities, { dispatch }) => {
+// Frame-rate independent lerp
+const damp = (current: number, target: number, lambda: number, dt: number) => {
+  return lerp(current, target, 1 - Math.exp(-lambda * dt));
+};
+
+const interpolationSystem: System = (entities, { time, dispatch }) => {
   const player = entities.player as PlayerEntity;
 
   if (player) {
@@ -18,19 +23,34 @@ const interpolationSystem: System = (entities, { dispatch }) => {
       player.interpolatedPosition = { ...player.position };
     }
 
-    player.interpolatedPosition.x = lerp(player.interpolatedPosition.x, player.position.x, 0.5);
-    player.interpolatedPosition.y = lerp(player.interpolatedPosition.y, player.position.y, 0.5);
+    const dt = time.delta / 1000;
+    // Lower lambda (18 -> 10) for a "softer", more fluid follow feel.
+    const lambda = 10; 
 
-    // To avoid floating point inaccuracies, snap to target when very close
-    if (Math.abs(player.interpolatedPosition.x - player.position.x) < 0.01 &&
-        Math.abs(player.interpolatedPosition.y - player.position.y) < 0.01) {
-      player.interpolatedPosition = { ...player.position };
+    const prevX = player.interpolatedPosition.x;
+    const prevY = player.interpolatedPosition.y;
+
+    player.interpolatedPosition.x = damp(player.interpolatedPosition.x, player.position.x, lambda, dt);
+    player.interpolatedPosition.y = damp(player.interpolatedPosition.y, player.position.y, lambda, dt);
+
+    // Snap to target when extremely close to prevent sub-pixel jitter
+    const distSq = 
+      Math.pow(player.interpolatedPosition.x - player.position.x, 2) + 
+      Math.pow(player.interpolatedPosition.y - player.position.y, 2);
+
+    if (distSq < 0.000001) {
+      player.interpolatedPosition.x = player.position.x;
+      player.interpolatedPosition.y = player.position.y;
     }
 
-    (dispatch as (event: InterpolatedPositionChangedEvent) => void)({
-      type: 'interpolated-position-changed',
-      position: player.interpolatedPosition,
-    });
+    // Always dispatch when there is any movement to ensure the camera (transform) 
+    // updates in perfect sync with the renderer at 60fps.
+    if (player.interpolatedPosition.x !== prevX || player.interpolatedPosition.y !== prevY) {
+      (dispatch as (event: InterpolatedPositionChangedEvent) => void)({
+        type: 'interpolated-position-changed',
+        position: player.interpolatedPosition,
+      });
+    }
   }
 
   return entities;

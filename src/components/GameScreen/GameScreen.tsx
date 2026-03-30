@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { GameEngine } from 'react-game-engine';
-import type { Position, Direction, ScenarioData, Layer, MapObject } from '../../types/map';
+import type { Position, ScenarioData, Layer, MapObject } from '../../types/map';
 import type { SolveResponse, SolveAttempt } from '../../types/solve';
 import { TILE_SIZE } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
@@ -15,7 +15,6 @@ import { getAssetImage } from '../../utils/assetLoader';
 import { submitSolve } from '../../services/api';
 import playerControlSystem from './systems/playerControlSystem';
 import interactionSystem from './systems/interactionSystem';
-import interpolationSystem from './systems/interpolationSystem';
 import ChatModal from '../ChatModal/ChatModal';
 import SolveModal from '../SolveModal/SolveModal';
 import RecordsModal from '../RecordsModal/RecordsModal';
@@ -26,6 +25,17 @@ import './GameScreen.css';
 
 const VIEWPORT_WIDTH = 800;
 const VIEWPORT_HEIGHT = 600;
+const WILL_CHANGE_RESET_DELAY = 150;
+
+type EngineState = {
+  state: {
+    entities: {
+      player?: {
+        position?: Position;
+      };
+    };
+  };
+};
 
 const EMPTY_SCENARIO = {
   createdDate: '',
@@ -40,8 +50,12 @@ interface GameScreenProps {
 }
 
 const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => {
-  const gameEngineRef = useRef<GameEngine>(null);
+  const gameEngineRef = useRef<(GameEngine & EngineState) | null>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
+  const willChangeResetRef = useRef<number | null>(null);
+  const lastPlayerTileRef = useRef<Position | null>(null);
+  const lastPlayerPositionRef = useRef<Position | null>(null);
+  const hasInitializedPlayerTileRef = useRef(false);
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [solveModalOpen, setSolveModalOpen] = useState(false);
   const [recordsModalOpen, setRecordsModalOpen] = useState(false);
@@ -49,7 +63,14 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   const [currentObjectId, setCurrentObjectId] = useState<string | null>(null);
   const [currentObjectName, setCurrentObjectName] = useState<string>('');
   const [solveAttempts, setSolveAttempts] = useState<SolveAttempt[]>([]);
-  const isInitialPlayerStateSet = useRef(false);
+
+  // Important: React state for player position is only for "static" UI like modals.
+  // The actual movement rendering happens inside GameEngine via DOM and engine loop.
+  const [reactPlayerPosition, setReactPlayerPosition] = useState<Position>({ x: 5, y: 5 });
+
+  const toTilePosition = useCallback((position: Position) => {
+    return { x: Math.round(position.x), y: Math.round(position.y) };
+  }, []);
 
   const { records, addRecords } = useRecords();
   const { data: originalScenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({ scenarioId });
@@ -60,6 +81,15 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       const newScenarioData = JSON.parse(JSON.stringify(originalScenarioData));
       const mapWidthInTiles = Math.max(0, ...newScenarioData.map.layers.flatMap((l: Layer) => l.tileMap.map((row: number[]) => row.length)));
       const mapHeightInTiles = Math.max(0, ...newScenarioData.map.layers.map((l: Layer) => l.tileMap.length));
+      
+      // Auto-initialize player position in React state
+      const playerObj = newScenarioData.map.objects.find((o: any) => o.id === 'p:1');
+      if (playerObj) {
+        setReactPlayerPosition(playerObj.position);
+        lastPlayerTileRef.current = toTilePosition(playerObj.position);
+        hasInitializedPlayerTileRef.current = true;
+      }
+
       let borderLayer = newScenarioData.map.layers.find((l: Layer) => l.name === "Borders");
       if (!borderLayer) {
         borderLayer = {
@@ -71,25 +101,19 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         newScenarioData.map.layers.push(borderLayer);
       }
       for (let y = 0; y < mapHeightInTiles; y++) {
-        if (!borderLayer.tileMap[y]) {
-          borderLayer.tileMap[y] = Array(mapWidthInTiles).fill(0);
-        }
+        if (!borderLayer.tileMap[y]) borderLayer.tileMap[y] = Array(mapWidthInTiles).fill(0);
         for (let x = 0; x < mapWidthInTiles; x++) {
-          if (x === 0 || x === mapWidthInTiles - 1 || y === 0 || y === mapHeightInTiles - 1) {
-            borderLayer.tileMap[y][x] = 1;
-          }
+          if (x === 0 || x === mapWidthInTiles - 1 || y === 0 || y === mapHeightInTiles - 1) borderLayer.tileMap[y][x] = 1;
         }
       }
       setScenarioData(newScenarioData);
     }
-  }, [originalScenarioData]);
+  }, [originalScenarioData, toTilePosition]);
 
   const { interactions, startInteraction, sendMessage, getInteractionState } = useInteraction();
 
   useEffect(() => {
-    if (scenarioData) {
-      setCurrentMapData(scenarioData.map);
-    }
+    if (scenarioData) setCurrentMapData(scenarioData.map);
   }, [scenarioData]);
 
   useEffect(() => {
@@ -110,67 +134,106 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       }
     };
     window.addEventListener('gameInteraction', handleInteraction);
-    return () => {
-      window.removeEventListener('gameInteraction', handleInteraction);
-    };
+    return () => window.removeEventListener('gameInteraction', handleInteraction);
   }, [scenarioData, getInteractionState, startInteraction, addRecords]);
 
   const assetsToLoad = useMemo(() => scenarioData?.map.assets || [], [scenarioData]);
   const assetsState = useAssetLoader(assetsToLoad);
 
-  const [playerPosition, setPlayerPosition] = useState<Position>({ x: 5, y: 5 });
-  const [playerDirection, setPlayerDirection] = useState<Direction>('down');
+  // Entities are now STABLE and do not depend on parent state changing
+  const entities = useGameEntities(scenarioData || EMPTY_SCENARIO, assetsState);
 
-  useEffect(() => {
-    if (scenarioData && !isInitialPlayerStateSet.current) {
-      const playerObject = scenarioData.map.objects.find((obj: MapObject) => obj.id === 'p:1');
-      if (playerObject) {
-        setPlayerPosition(playerObject.position);
-        setPlayerDirection(playerObject.direction || 'down');
-      } else {
-        setPlayerPosition({ x: 5, y: 5 });
-        setPlayerDirection('down');
-      }
-      isInitialPlayerStateSet.current = true;
-    }
+  const mapDimensions = useMemo(() => {
+    if (!scenarioData) return { width: 0, height: 0 };
+    const width = Math.max(0, ...scenarioData.map.layers.flatMap((l: Layer) => l.tileMap.map((row: number[]) => row.length))) * TILE_SIZE;
+    const height = Math.max(0, ...scenarioData.map.layers.map((l: Layer) => l.tileMap.length)) * TILE_SIZE;
+    return { width, height };
   }, [scenarioData]);
 
-  const entities = useGameEntities(scenarioData || EMPTY_SCENARIO, playerPosition, playerDirection, assetsState);
+  const mapDimensionsRef = useRef(mapDimensions);
 
-  const handleGameEvent = (event: Record<string, unknown>) => {
-    if (event.type === 'player-moved-tile') {
-      playWalkSound();
-      const position = event.position as Position | undefined;
-      if (position && typeof position.x === 'number' && typeof position.y === 'number') {
-        setPlayerPosition(position);
-      }
-    } else if (event.type === 'interpolated-position-changed') {
-      const position = event.position as Position | undefined;
-      if (position && typeof position.x === 'number' && typeof position.y === 'number' && gameContainerRef.current && scenarioData) {
+  const handlePlayWalkSound = useCallback(() => {
+    playWalkSound();
+  }, []);
+  const clampViewportOffset = useCallback((offset: number, mapSize: number, viewportSize: number) => {
+    return mapSize < viewportSize ? (viewportSize - mapSize) / 2 : Math.min(0, Math.max(viewportSize - mapSize, offset));
+  }, []);
+
+  useEffect(() => {
+    let animationFrameId: number | null = null;
+    let isActive = true;
+
+    const updateMovementFrame = () => {
+      const position = gameEngineRef.current?.state?.entities?.player?.position;
+      const { width: mapWidth, height: mapHeight } = mapDimensionsRef.current;
+
+      if (isActive && position && gameContainerRef.current) {
+        const lastPosition = lastPlayerPositionRef.current;
+        const hasPositionChanged =
+          !lastPosition || lastPosition.x !== position.x || lastPosition.y !== position.y;
+
+        if (!hasPositionChanged) {
+          animationFrameId = requestAnimationFrame(updateMovementFrame);
+          return;
+        }
+
+        lastPlayerPositionRef.current = { x: position.x, y: position.y };
         const offsetX = (VIEWPORT_WIDTH / 2) - (position.x * TILE_SIZE + TILE_SIZE / 2);
         const offsetY = (VIEWPORT_HEIGHT / 2) - (position.y * TILE_SIZE + TILE_SIZE / 2);
-        
-        const mapWidth = Math.max(0, ...scenarioData.map.layers.flatMap((layer: Layer) => layer.tileMap.map((row: number[]) => row.length))) * TILE_SIZE;
-        const mapHeight = Math.max(0, ...scenarioData.map.layers.map((layer: Layer) => layer.tileMap.length)) * TILE_SIZE;
 
-        let finalClampedX = offsetX;
-        if (mapWidth < VIEWPORT_WIDTH) {
-          finalClampedX = (VIEWPORT_WIDTH - mapWidth) / 2;
-        } else {
-          finalClampedX = Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
-        }
+        const finalClampedX = clampViewportOffset(offsetX, mapWidth, VIEWPORT_WIDTH);
+        const finalClampedY = clampViewportOffset(offsetY, mapHeight, VIEWPORT_HEIGHT);
 
-        let finalClampedY = offsetY;
-        if (mapHeight < VIEWPORT_HEIGHT) {
-          finalClampedY = (VIEWPORT_HEIGHT - mapHeight) / 2;
-        } else {
-          finalClampedY = Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
+        gameContainerRef.current.style.transform = `translate3d(${finalClampedX}px, ${finalClampedY}px, 0)`;
+        gameContainerRef.current.style.willChange = 'transform';
+
+        if (willChangeResetRef.current) {
+          window.clearTimeout(willChangeResetRef.current);
         }
-        
-        gameContainerRef.current.style.transform = `translate(${finalClampedX}px, ${finalClampedY}px)`;
+        willChangeResetRef.current = window.setTimeout(() => {
+          if (gameContainerRef.current) {
+            gameContainerRef.current.style.willChange = 'auto';
+          }
+        }, WILL_CHANGE_RESET_DELAY);
+
+        const { x: tileX, y: tileY } = toTilePosition(position);
+        const lastTile = lastPlayerTileRef.current;
+        const hasMovedTile = !lastTile || tileX !== lastTile.x || tileY !== lastTile.y;
+        if (hasMovedTile) {
+          lastPlayerTileRef.current = { x: tileX, y: tileY };
+          if (hasInitializedPlayerTileRef.current) {
+            handlePlayWalkSound();
+          }
+          setReactPlayerPosition({ x: tileX, y: tileY });
+        }
       }
-    }
-  };
+
+      if (isActive) {
+        animationFrameId = requestAnimationFrame(updateMovementFrame);
+      }
+    };
+
+    updateMovementFrame();
+
+    return () => {
+      isActive = false;
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [handlePlayWalkSound, clampViewportOffset, toTilePosition]);
+
+  useEffect(() => {
+    mapDimensionsRef.current = mapDimensions;
+  }, [mapDimensions]);
+
+  useEffect(() => {
+    return () => {
+      if (willChangeResetRef.current) {
+        window.clearTimeout(willChangeResetRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -181,24 +244,30 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
           playModalSound();
           setRecordsModalOpen(true);
         } else if (event.key === 'c') {
-          setCurrentObjectId(null);
-          setCurrentObjectName('');
+          // If already have interactions, pick the first one to avoid empty chat
+          if (interactions.size > 0 && scenarioData) {
+            const firstId = interactions.keys().next().value;
+            const mapObj = scenarioData.map.objects.find(o => o.id === firstId);
+            if (mapObj) {
+              setCurrentObjectId(firstId as string);
+              setCurrentObjectName(mapObj.name);
+            }
+          } else {
+            setCurrentObjectId(null);
+            setCurrentObjectName('');
+          }
           playModalSound();
           setChatModalOpen(true);
         }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [chatModalOpen, solveModalOpen, recordsModalOpen]);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [chatModalOpen, solveModalOpen, recordsModalOpen, interactions, scenarioData]);
 
-  usePlayerControls(gameEngineRef);
+  usePlayerControls(gameEngineRef, chatModalOpen || solveModalOpen || recordsModalOpen);
   const { onClick, onMouseMove, onMouseLeave } = useMouseControls(gameEngineRef, gameContainerRef);
 
-  const mapWidth = scenarioData ? Math.max(0, ...scenarioData.map.layers.flatMap((layer: Layer) => layer.tileMap.map((row: number[]) => row.length))) * TILE_SIZE : 0;
-  const mapHeight = scenarioData ? Math.max(0, ...scenarioData.map.layers.map((layer: Layer) => layer.tileMap.length)) * TILE_SIZE : 0;
   const interactionState = currentObjectId ? getInteractionState(currentObjectId) : undefined;
 
   const handleSendMessage = async (message: string) => {
@@ -216,55 +285,15 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
     }
   };
 
-  const handleRecordClick = (recordId: string) => {
-    playModalSound();
-    setHighlightedRecordId(recordId);
-    setRecordsModalOpen(true);
-  };
-
-  const handleRecordsModalClose = () => {
-    playModalSound();
-    setRecordsModalOpen(false);
-    setHighlightedRecordId(null);
-  };
-
-  const handleSolveSubmit = async (message: string, suspectIds: string[]) => {
-    if (!scenarioData) return;
-    try {
-      const response = await submitSolve(scenarioData.scenarioId, { message, suspectIds });
-      const attempt: SolveAttempt = { message, suspectIds, response, timestamp: Date.now() };
-      setSolveAttempts(prev => [...prev, attempt]);
-      if (response.success) {
-        playModalSound();
-        setSolveModalOpen(false);
-        onShowResult(response);
-      }
-    } catch (error) {
-      console.error('Failed to submit solve:', error);
-    }
-  };
-
-  const suspects = scenarioData?.map.objects.filter((obj: MapObject) => obj.id.startsWith('s:')) || [];
-
-  const currentObjectImageUrl = useMemo(() => {
-    if (!currentObjectId || !scenarioData) return undefined;
-    const mapObject = scenarioData.map.objects.find((o: MapObject) => o.id === currentObjectId);
-    if (!mapObject) return undefined;
-    const directionalAsset = assetsState.assets.get(currentObjectId);
-    if (!directionalAsset) return undefined;
-    return getAssetImage(directionalAsset, mapObject.direction as 'left' | 'right' | 'front' | 'back');
-  }, [currentObjectId, scenarioData, assetsState.assets]);
-
   if (mapError && mapError instanceof HTTPError) return <ErrorScreen statusCode={mapError.status} message={mapError.message} />;
-  if (isLoadingMap || !scenarioData || !playerDirection) return <div className="game-screen"><h2>Loading map data...</h2></div>;
+  if (isLoadingMap || !scenarioData) return <div className="game-screen"><h2>Loading map data...</h2></div>;
   if (assetsState.isLoading) return <div className="game-screen"><h2>Loading assets...</h2></div>;
-  if (assetsState.error) return <div className="game-screen"><h2>Error loading assets</h2><p>{assetsState.error}</p></div>;
 
   return (
     <div className="game-screen">
       <div className="game-info">
         <h2>{scenarioData.scenarioName}</h2>
-        <p>방향키 또는 WASD로 이동 · E 또는 Space로 상호작용 · 바닥 클릭 이동 · 오브젝트 클릭 상호작용</p>
+        <p>방향키 또는 WASD로 이동 · E 또는 Space로 상호작용 · 클릭 이동</p>
         <div className="game-shortcuts">
           <button
             className="game-shortcut-button"
@@ -297,14 +326,13 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         <div 
           ref={gameContainerRef}
           className="game-container" 
-          style={{ width: mapWidth, height: mapHeight }}
+          style={{ width: mapDimensions.width, height: mapDimensions.height, transform: 'translate3d(0px, 0px, 0)' }}
         >
           <GameEngine
             ref={gameEngineRef}
-            style={{ width: mapWidth, height: mapHeight }}
-            systems={[playerControlSystem, interactionSystem, interpolationSystem]}
+            style={{ width: mapDimensions.width, height: mapDimensions.height }}
+            systems={[playerControlSystem, interactionSystem]}
             entities={entities}
-            onEvent={handleGameEvent}
           />
         </div>
       </div>
@@ -316,24 +344,28 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         records={records}
         onClose={() => { playModalSound(); setChatModalOpen(false); }}
         onSendMessage={handleSendMessage}
-        onRecordClick={handleRecordClick}
-        playerPosition={playerPosition}
+        onRecordClick={(id) => { playModalSound(); setHighlightedRecordId(id); setRecordsModalOpen(true); }}
+        playerPosition={reactPlayerPosition}
         mapObjects={scenarioData.map.objects}
         interactions={interactions}
         currentObjectId={currentObjectId}
         onSwitchObject={handleSwitchObject}
-        currentObjectImageUrl={currentObjectImageUrl}
+        currentObjectImageUrl={currentObjectId ? getAssetImage(assetsState.assets.get(currentObjectId)!) : undefined}
       />
       <SolveModal
         isOpen={solveModalOpen}
-        suspects={suspects}
+        suspects={scenarioData.map.objects.filter((obj: MapObject) => obj.id.startsWith('s:'))}
         attempts={solveAttempts}
         onClose={() => { playModalSound(); setSolveModalOpen(false); }}
-        onSubmit={handleSolveSubmit}
+        onSubmit={async (m, s) => {
+          const res = await submitSolve(scenarioData.scenarioId, { message: m, suspectIds: s });
+          setSolveAttempts(prev => [...prev, { message: m, suspectIds: s, response: res, timestamp: Date.now() }]);
+          if (res.success) { playModalSound(); setSolveModalOpen(false); onShowResult(res); }
+        }}
       />
       <RecordsModal
         isOpen={recordsModalOpen}
-        onClose={handleRecordsModalClose}
+        onClose={() => { playModalSound(); setRecordsModalOpen(false); setHighlightedRecordId(null); }}
         scenarioData={scenarioData}
         highlightedRecordId={highlightedRecordId}
       />

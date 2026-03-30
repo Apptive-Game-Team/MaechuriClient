@@ -125,27 +125,33 @@ const ChatModal: React.FC<ChatModalProps> = ({
         )}
         <div className="chat-modal-right">
           <div className="chat-modal-messages">
-            {messages.map((msg, index) => (
-              <Message
-                key={msg.clientId ?? `${msg.sender}-${msg.timestamp}-${index}`}
-                message={msg}
-                records={records}
-                objectImageUrl={currentObjectImageUrl}
-                objectType={objectType}
-                pressure={currentPressure}
-                onRecordClick={onRecordClick}
-              />
-            ))}
+            {messages.length > 0 ? (
+              messages.map((msg, index) => (
+                <Message
+                  key={msg.clientId ?? `${msg.sender}-${msg.timestamp}-${index}`}
+                  message={msg}
+                  records={records}
+                  objectImageUrl={currentObjectImageUrl}
+                  objectType={objectType}
+                  pressure={currentPressure}
+                  onRecordClick={onRecordClick}
+                />
+              ))
+            ) : (
+              <div className="chat-modal-empty">
+                {currentObjectId ? '대화를 시작하려면 메시지를 입력하세요.' : '대화할 대상을 선택해주세요.'}
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
           <div className={`chat-modal-input-area ${interactionType === 'simple' ? 'disabled' : ''}`}>
             {interactionType === 'two-way' ? (
               <ChatInput ref={inputRef} records={records} onSendMessage={onSendMessage} isNearObject={isNearObject} />
-            ) : (
+            ) : interactionType === 'simple' ? (
               <div className="chat-modal-disabled-notice">
-                {interactionType === 'simple' ? 'This is a read-only interaction' : 'Initializing...'}
+                This is a read-only interaction
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
