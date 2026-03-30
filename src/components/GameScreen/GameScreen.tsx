@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { GameEngine } from 'react-game-engine';
 import type { Position, Direction, ScenarioData, Layer, MapObject } from '../../types/map';
 import type { SolveResponse, SolveAttempt } from '../../types/solve';
@@ -50,7 +50,7 @@ interface GameScreenProps {
 }
 
 const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => {
-  const gameEngineRef = useRef<GameEngine>(null);
+  const gameEngineRef = useRef<(GameEngine & EngineState) | null>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const willChangeResetRef = useRef<number | null>(null);
   const [chatModalOpen, setChatModalOpen] = useState(false);
@@ -143,13 +143,19 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   mapDimensionsRef.current = mapDimensions;
 
   const lastTileRef = useRef<Position | null>(null);
+  const handlePlayWalkSound = useCallback(() => {
+    playWalkSound();
+  }, []);
 
   useEffect(() => {
     let animationFrameId: number;
+    let isActive = true;
 
     const updateMovementFrame = () => {
-      const engine = gameEngineRef.current as EngineState | null;
-      const position = engine?.state?.entities?.player?.position;
+      if (!isActive) {
+        return;
+      }
+      const position = gameEngineRef.current?.state?.entities?.player?.position;
       const { width: mapWidth, height: mapHeight } = mapDimensionsRef.current;
 
       if (position && gameContainerRef.current) {
@@ -178,7 +184,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
           setReactPlayerPosition({ x: tileX, y: tileY });
         } else if (tileX !== lastTileRef.current.x || tileY !== lastTileRef.current.y) {
           lastTileRef.current = { x: tileX, y: tileY };
-          playWalkSound();
+          handlePlayWalkSound();
           setReactPlayerPosition({ x: tileX, y: tileY });
         }
       }
@@ -188,8 +194,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
 
     updateMovementFrame();
 
-    return () => cancelAnimationFrame(animationFrameId);
-  }, []);
+    return () => {
+      isActive = false;
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [handlePlayWalkSound]);
 
   useEffect(() => {
     return () => {
