@@ -139,7 +139,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       playWalkSound();
       // Sync React state only when tile changes (infrequent)
       if (event.position) setReactPlayerPosition(event.position as Position);
-    } else if (typeof event.type === 'string' && CAMERA_EVENT_TYPES.has(event.type)) {
+    } else if (CAMERA_EVENT_TYPES.has(event.type as string)) {
       // 60FPS Camera Sync - Directly manipulate DOM to avoid React re-render lag
       const position = event.position as Position | undefined;
       const { width: mapWidth, height: mapHeight } = mapDimensionsRef.current;
