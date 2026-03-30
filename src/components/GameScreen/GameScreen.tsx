@@ -28,8 +28,8 @@ const VIEWPORT_HEIGHT = 600;
 const WILL_CHANGE_RESET_DELAY = 150;
 
 type EngineState = {
-  state?: {
-    entities?: {
+  state: {
+    entities: {
       player?: {
         position?: Position;
       };
@@ -146,9 +146,12 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   const handlePlayWalkSound = useCallback(() => {
     playWalkSound();
   }, []);
+  const clampViewportOffset = useCallback((offset: number, mapSize: number, viewportSize: number) => {
+    return mapSize < viewportSize ? (viewportSize - mapSize) / 2 : Math.min(0, Math.max(viewportSize - mapSize, offset));
+  }, []);
 
   useEffect(() => {
-    let animationFrameId: number;
+    let animationFrameId: number | null = null;
     let isActive = true;
 
     const updateMovementFrame = () => {
@@ -162,8 +165,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         const offsetX = (VIEWPORT_WIDTH / 2) - (position.x * TILE_SIZE + TILE_SIZE / 2);
         const offsetY = (VIEWPORT_HEIGHT / 2) - (position.y * TILE_SIZE + TILE_SIZE / 2);
 
-        const finalClampedX = mapWidth < VIEWPORT_WIDTH ? (VIEWPORT_WIDTH - mapWidth) / 2 : Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
-        const finalClampedY = mapHeight < VIEWPORT_HEIGHT ? (VIEWPORT_HEIGHT - mapHeight) / 2 : Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
+        const finalClampedX = clampViewportOffset(offsetX, mapWidth, VIEWPORT_WIDTH);
+        const finalClampedY = clampViewportOffset(offsetY, mapHeight, VIEWPORT_HEIGHT);
 
         gameContainerRef.current.style.transform = `translate3d(${finalClampedX}px, ${finalClampedY}px, 0)`;
         gameContainerRef.current.style.willChange = 'transform';
@@ -196,9 +199,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
 
     return () => {
       isActive = false;
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
-  }, [handlePlayWalkSound]);
+  }, [handlePlayWalkSound, clampViewportOffset]);
 
   useEffect(() => {
     return () => {
