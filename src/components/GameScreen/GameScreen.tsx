@@ -68,6 +68,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   // The actual movement rendering happens inside GameEngine via DOM and engine loop.
   const [reactPlayerPosition, setReactPlayerPosition] = useState<Position>({ x: 5, y: 5 });
 
+  const toTilePosition = useCallback((position: Position) => {
+    return { x: Math.round(position.x), y: Math.round(position.y) };
+  }, []);
+
   const { records, addRecords } = useRecords();
   const { data: originalScenarioData, isLoading: isLoadingMap, error: mapError } = useMapData({ scenarioId });
   const [scenarioData, setScenarioData] = useState<ScenarioData | null>(null);
@@ -82,7 +86,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       const playerObj = newScenarioData.map.objects.find((o: any) => o.id === 'p:1');
       if (playerObj) {
         setReactPlayerPosition(playerObj.position);
-        lastPlayerTileRef.current = { x: Math.round(playerObj.position.x), y: Math.round(playerObj.position.y) };
+        lastPlayerTileRef.current = toTilePosition(playerObj.position);
         hasInitializedPlayerTileRef.current = true;
       }
 
@@ -104,7 +108,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       }
       setScenarioData(newScenarioData);
     }
-  }, [originalScenarioData]);
+  }, [originalScenarioData, toTilePosition]);
 
   const { interactions, startInteraction, sendMessage, getInteractionState } = useInteraction();
 
@@ -169,9 +173,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
           !lastPosition || lastPosition.x !== position.x || lastPosition.y !== position.y;
 
         if (!hasPositionChanged) {
-          if (isActive) {
-            animationFrameId = requestAnimationFrame(updateMovementFrame);
-          }
+          animationFrameId = requestAnimationFrame(updateMovementFrame);
           return;
         }
 
@@ -194,8 +196,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
           }
         }, WILL_CHANGE_RESET_DELAY);
 
-        const tileX = Math.round(position.x);
-        const tileY = Math.round(position.y);
+        const { x: tileX, y: tileY } = toTilePosition(position);
         const lastTile = lastPlayerTileRef.current;
         const hasMovedTile = !lastTile || tileX !== lastTile.x || tileY !== lastTile.y;
         if (hasMovedTile) {
@@ -220,7 +221,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [handlePlayWalkSound, clampViewportOffset]);
+  }, [handlePlayWalkSound, clampViewportOffset, toTilePosition]);
 
   useEffect(() => {
     mapDimensionsRef.current = mapDimensions;
