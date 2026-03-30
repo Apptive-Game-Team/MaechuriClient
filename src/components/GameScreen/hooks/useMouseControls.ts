@@ -5,11 +5,11 @@ import { checkCollision, getObjectInfo, checkInteraction, setHoveredInteractable
 import { TILE_SIZE } from '../types';
 
 /**
- * Parses a CSS translate() string and returns the X/Y offsets in pixels.
+ * Parses a CSS translate() or translate3d() string and returns the X/Y offsets in pixels.
  * Returns { x: 0, y: 0 } when no valid transform is found.
  */
 const parseTranslate = (transform: string): { x: number; y: number } => {
-  const match = /translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/.exec(transform);
+  const match = /translate(?:3d)?\((-?[\d.]+)px,\s*(-?[\d.]+)px/.exec(transform);
   if (!match) return { x: 0, y: 0 };
   return { x: parseFloat(match[1]), y: parseFloat(match[2]) };
 };

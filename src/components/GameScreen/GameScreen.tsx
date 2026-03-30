@@ -244,8 +244,18 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
           playModalSound();
           setRecordsModalOpen(true);
         } else if (event.key === 'c') {
-          setCurrentObjectId(null);
-          setCurrentObjectName('');
+          // If already have interactions, pick the first one to avoid empty chat
+          if (interactions.size > 0 && scenarioData) {
+            const firstId = interactions.keys().next().value;
+            const mapObj = scenarioData.map.objects.find(o => o.id === firstId);
+            if (mapObj) {
+              setCurrentObjectId(firstId);
+              setCurrentObjectName(mapObj.name);
+            }
+          } else {
+            setCurrentObjectId(null);
+            setCurrentObjectName('');
+          }
           playModalSound();
           setChatModalOpen(true);
         }
@@ -253,9 +263,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [chatModalOpen, solveModalOpen, recordsModalOpen]);
+  }, [chatModalOpen, solveModalOpen, recordsModalOpen, interactions, scenarioData]);
 
-  usePlayerControls(gameEngineRef);
+  usePlayerControls(gameEngineRef, chatModalOpen || solveModalOpen || recordsModalOpen);
   const { onClick, onMouseMove, onMouseLeave } = useMouseControls(gameEngineRef, gameContainerRef);
 
   const interactionState = currentObjectId ? getInteractionState(currentObjectId) : undefined;
@@ -284,6 +294,27 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       <div className="game-info">
         <h2>{scenarioData.scenarioName}</h2>
         <p>방향키 또는 WASD로 이동 · E 또는 Space로 상호작용 · 클릭 이동</p>
+        <div className="game-shortcuts">
+          <button
+            className="game-shortcut-button"
+            onClick={() => { setHighlightedRecordId(null); playModalSound(); setRecordsModalOpen(true); }}
+            title="수사 기록 열기 [R]"
+          >
+            📋 수사 기록 <kbd>R</kbd>
+          </button>
+          <button
+            className="game-shortcut-button"
+            onClick={() => {
+              setCurrentObjectId(null);
+              setCurrentObjectName('');
+              playModalSound();
+              setChatModalOpen(true);
+            }}
+            title="대화 목록 열기 [C]"
+          >
+            💬 대화 목록 <kbd>C</kbd>
+          </button>
+        </div>
       </div>
       <div
         className="game-viewport"

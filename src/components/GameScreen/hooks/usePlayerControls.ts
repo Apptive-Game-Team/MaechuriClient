@@ -1,11 +1,15 @@
 import { useEffect, useCallback, useRef } from 'react';
 import type { GameEngine } from 'react-game-engine';
 
-export const usePlayerControls = (gameEngineRef: React.RefObject<GameEngine | null>) => {
+export const usePlayerControls = (
+  gameEngineRef: React.RefObject<GameEngine | null>,
+  isModalOpen: boolean
+) => {
   const activeKeys = useRef(new Set<string>());
   const interactionKeyPressed = useRef(false);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (isModalOpen) return;
     const key = e.key.toLowerCase();
     activeKeys.current.add(key);
 
@@ -13,7 +17,7 @@ export const usePlayerControls = (gameEngineRef: React.RefObject<GameEngine | nu
       interactionKeyPressed.current = true;
       gameEngineRef.current?.dispatch({ type: 'interact' });
     }
-  }, [gameEngineRef]);
+  }, [gameEngineRef, isModalOpen]);
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
     const key = e.key.toLowerCase();
@@ -30,7 +34,10 @@ export const usePlayerControls = (gameEngineRef: React.RefObject<GameEngine | nu
     let animationFrameId: number;
 
     const gameLoop = () => {
-      if (!gameEngineRef.current) {
+      if (!gameEngineRef.current || isModalOpen) {
+        if (isModalOpen) {
+          activeKeys.current.clear();
+        }
         animationFrameId = requestAnimationFrame(gameLoop);
         return;
       }
@@ -63,5 +70,5 @@ export const usePlayerControls = (gameEngineRef: React.RefObject<GameEngine | nu
       window.removeEventListener('keyup', handleKeyUp);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [gameEngineRef, handleKeyDown, handleKeyUp]);
+  }, [gameEngineRef, handleKeyDown, handleKeyUp, isModalOpen]);
 };
