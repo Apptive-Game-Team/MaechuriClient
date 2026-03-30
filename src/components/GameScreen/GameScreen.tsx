@@ -54,6 +54,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const willChangeResetRef = useRef<number | null>(null);
   const lastPlayerTileRef = useRef<Position | null>(null);
+  const lastPlayerPositionRef = useRef<Position | null>(null);
   const hasInitializedPlayerTileRef = useRef(false);
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [solveModalOpen, setSolveModalOpen] = useState(false);
@@ -163,6 +164,18 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       const { width: mapWidth, height: mapHeight } = mapDimensionsRef.current;
 
       if (isActive && position && gameContainerRef.current) {
+        const lastPosition = lastPlayerPositionRef.current;
+        const hasPositionChanged =
+          !lastPosition || lastPosition.x !== position.x || lastPosition.y !== position.y;
+
+        if (!hasPositionChanged) {
+          if (isActive) {
+            animationFrameId = requestAnimationFrame(updateMovementFrame);
+          }
+          return;
+        }
+
+        lastPlayerPositionRef.current = { x: position.x, y: position.y };
         const offsetX = (VIEWPORT_WIDTH / 2) - (position.x * TILE_SIZE + TILE_SIZE / 2);
         const offsetY = (VIEWPORT_HEIGHT / 2) - (position.y * TILE_SIZE + TILE_SIZE / 2);
 
@@ -189,8 +202,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
           lastPlayerTileRef.current = { x: tileX, y: tileY };
           if (hasInitializedPlayerTileRef.current) {
             handlePlayWalkSound();
-          } else {
-            hasInitializedPlayerTileRef.current = true;
           }
           setReactPlayerPosition({ x: tileX, y: tileY });
         }
