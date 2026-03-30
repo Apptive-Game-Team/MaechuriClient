@@ -142,7 +142,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   const mapDimensionsRef = useRef(mapDimensions);
   mapDimensionsRef.current = mapDimensions;
 
-  const lastTileRef = useRef<Position | null>(null);
+  const lastPlayerTileRef = useRef<Position | null>(null);
   const handlePlayWalkSound = useCallback(() => {
     playWalkSound();
   }, []);
@@ -155,13 +155,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
     let isActive = true;
 
     const updateMovementFrame = () => {
-      if (!isActive) {
-        return;
-      }
       const position = gameEngineRef.current?.state?.entities?.player?.position;
       const { width: mapWidth, height: mapHeight } = mapDimensionsRef.current;
 
-      if (position && gameContainerRef.current) {
+      if (isActive && position && gameContainerRef.current) {
         const offsetX = (VIEWPORT_WIDTH / 2) - (position.x * TILE_SIZE + TILE_SIZE / 2);
         const offsetY = (VIEWPORT_HEIGHT / 2) - (position.y * TILE_SIZE + TILE_SIZE / 2);
 
@@ -182,17 +179,20 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
 
         const tileX = Math.round(position.x);
         const tileY = Math.round(position.y);
-        if (!lastTileRef.current) {
-          lastTileRef.current = { x: tileX, y: tileY };
-          setReactPlayerPosition({ x: tileX, y: tileY });
-        } else if (tileX !== lastTileRef.current.x || tileY !== lastTileRef.current.y) {
-          lastTileRef.current = { x: tileX, y: tileY };
-          handlePlayWalkSound();
+        const lastTile = lastPlayerTileRef.current;
+        const hasMovedTile = !lastTile || tileX !== lastTile.x || tileY !== lastTile.y;
+        if (hasMovedTile) {
+          lastPlayerTileRef.current = { x: tileX, y: tileY };
+          if (lastTile) {
+            handlePlayWalkSound();
+          }
           setReactPlayerPosition({ x: tileX, y: tileY });
         }
       }
 
-      animationFrameId = requestAnimationFrame(updateMovementFrame);
+      if (isActive) {
+        animationFrameId = requestAnimationFrame(updateMovementFrame);
+      }
     };
 
     updateMovementFrame();
