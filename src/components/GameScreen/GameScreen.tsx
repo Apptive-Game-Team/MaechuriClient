@@ -27,6 +27,16 @@ const VIEWPORT_WIDTH = 800;
 const VIEWPORT_HEIGHT = 600;
 const WILL_CHANGE_RESET_DELAY = 150;
 
+type EngineState = {
+  state?: {
+    entities?: {
+      player?: {
+        position?: Position;
+      };
+    };
+  };
+};
+
 const EMPTY_SCENARIO = {
   createdDate: '',
   scenarioId: 0,
@@ -138,7 +148,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
     let animationFrameId: number;
 
     const updateMovementFrame = () => {
-      const engine = gameEngineRef.current as unknown as { state?: { entities?: { player?: { position?: Position } } } } | null;
+      const engine = gameEngineRef.current as EngineState | null;
       const position = engine?.state?.entities?.player?.position;
       const { width: mapWidth, height: mapHeight } = mapDimensionsRef.current;
 
@@ -176,7 +186,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       animationFrameId = requestAnimationFrame(updateMovementFrame);
     };
 
-    animationFrameId = requestAnimationFrame(updateMovementFrame);
+    updateMovementFrame();
 
     return () => cancelAnimationFrame(animationFrameId);
   }, []);
