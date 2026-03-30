@@ -1,17 +1,7 @@
 import type { System } from 'react-game-engine';
 import { checkCollision } from '../utils/gameUtils';
 import { computePath } from '../utils/pathfinding';
-import type { PlayerEntity, Direction, Position } from '../types';
-
-interface PlayerMovedEvent {
-  type: 'player-moved';
-  position: Position;
-}
-
-interface PlayerMovedTileEvent {
-  type: 'player-moved-tile';
-  position: Position;
-}
+import type { PlayerEntity, Direction } from '../types';
 
 const INTERACT_ADJACENTS: { dx: number; dy: number; direction: Direction }[] = [
   { dx: -1, dy: 0, direction: 'right' },
@@ -19,22 +9,6 @@ const INTERACT_ADJACENTS: { dx: number; dy: number; direction: Direction }[] = [
   { dx: 0, dy: -1, direction: 'down'  },
   { dx: 0, dy:  1, direction: 'up'    },
 ];
-
-type DispatchFn = (e: any) => void;
-
-const dispatchMoved = (dispatch: DispatchFn, player: PlayerEntity) => {
-  // Drives the 60fps camera in GameScreen.tsx via DOM
-  dispatch({ type: 'player-moved', position: { ...player.position } });
-
-  const newTileX = Math.round(player.position.x);
-  const newTileY = Math.round(player.position.y);
-
-  if (!player.lastTilePosition || newTileX !== player.lastTilePosition.x || newTileY !== player.lastTilePosition.y) {
-    player.lastTilePosition = { x: newTileX, y: newTileY };
-    // Drives React state sync (less frequent)
-    dispatch({ type: 'player-moved-tile', position: player.lastTilePosition });
-  }
-};
 
 const playerControlSystem: System = (entities, { events, time, dispatch }) => {
   const player = entities.player as PlayerEntity;
@@ -76,8 +50,6 @@ const playerControlSystem: System = (entities, { events, time, dispatch }) => {
 
     if (!checkCollision(nextX, player.position.y)) player.position.x = nextX;
     if (!checkCollision(player.position.x, nextY)) player.position.y = nextY;
-
-    dispatchMoved(dispatch, player);
   } 
   
   // 2. Mouse Navigation (A*)
@@ -135,7 +107,6 @@ const playerControlSystem: System = (entities, { events, time, dispatch }) => {
       player.position.x += (dx / dist) * step;
       player.position.y += (dy / dist) * step;
     }
-    dispatchMoved(dispatch, player);
   }
 
   return entities;

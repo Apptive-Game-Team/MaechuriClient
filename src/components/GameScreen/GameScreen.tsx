@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { GameEngine } from 'react-game-engine';
 import type { Position, Direction, ScenarioData, Layer, MapObject } from '../../types/map';
 import type { SolveResponse, SolveAttempt } from '../../types/solve';
@@ -14,7 +14,6 @@ import { setCurrentMapData } from './utils/gameUtils';
 import { getAssetImage } from '../../utils/assetLoader';
 import { submitSolve } from '../../services/api';
 import playerControlSystem from './systems/playerControlSystem';
-import interpolationSystem from './systems/interpolationSystem';
 import interactionSystem from './systems/interactionSystem';
 import ChatModal from '../ChatModal/ChatModal';
 import SolveModal from '../SolveModal/SolveModal';
@@ -27,7 +26,6 @@ import './GameScreen.css';
 const VIEWPORT_WIDTH = 800;
 const VIEWPORT_HEIGHT = 600;
 const WILL_CHANGE_RESET_DELAY = 150;
-const CAMERA_EVENT_TYPES = new Set(['player-moved', 'interpolated-position-changed']);
 
 const EMPTY_SCENARIO = {
   createdDate: '',
@@ -134,22 +132,22 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   const mapDimensionsRef = useRef(mapDimensions);
   mapDimensionsRef.current = mapDimensions;
 
-  const handleGameEvent = useCallback((event: Record<string, unknown>) => {
-    if (event.type === 'player-moved-tile') {
-      playWalkSound();
-      // Sync React state only when tile changes (infrequent)
-      if (event.position) setReactPlayerPosition(event.position as Position);
-    } else if (CAMERA_EVENT_TYPES.has(event.type as string)) {
-      // 60FPS Camera Sync - Directly manipulate DOM to avoid React re-render lag
-      const position = event.position as Position | undefined;
+  const lastTileRef = useRef<Position | null>(null);
+
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const updateMovementFrame = () => {
+      const engine = gameEngineRef.current as unknown as { state?: { entities?: { player?: { position?: Position } } } } | null;
+      const position = engine?.state?.entities?.player?.position;
       const { width: mapWidth, height: mapHeight } = mapDimensionsRef.current;
-      
-      if (position && typeof position.x === 'number' && typeof position.y === 'number' && gameContainerRef.current) {
+
+      if (position && gameContainerRef.current) {
         const offsetX = (VIEWPORT_WIDTH / 2) - (position.x * TILE_SIZE + TILE_SIZE / 2);
         const offsetY = (VIEWPORT_HEIGHT / 2) - (position.y * TILE_SIZE + TILE_SIZE / 2);
 
-        let finalClampedX = mapWidth < VIEWPORT_WIDTH ? (VIEWPORT_WIDTH - mapWidth) / 2 : Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
-        let finalClampedY = mapHeight < VIEWPORT_HEIGHT ? (VIEWPORT_HEIGHT - mapHeight) / 2 : Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
+        const finalClampedX = mapWidth < VIEWPORT_WIDTH ? (VIEWPORT_WIDTH - mapWidth) / 2 : Math.min(0, Math.max(VIEWPORT_WIDTH - mapWidth, offsetX));
+        const finalClampedY = mapHeight < VIEWPORT_HEIGHT ? (VIEWPORT_HEIGHT - mapHeight) / 2 : Math.min(0, Math.max(VIEWPORT_HEIGHT - mapHeight, offsetY));
 
         gameContainerRef.current.style.transform = `translate3d(${finalClampedX}px, ${finalClampedY}px, 0)`;
         gameContainerRef.current.style.willChange = 'transform';
@@ -162,8 +160,25 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
             gameContainerRef.current.style.willChange = 'auto';
           }
         }, WILL_CHANGE_RESET_DELAY);
+
+        const tileX = Math.round(position.x);
+        const tileY = Math.round(position.y);
+        if (!lastTileRef.current) {
+          lastTileRef.current = { x: tileX, y: tileY };
+          setReactPlayerPosition({ x: tileX, y: tileY });
+        } else if (tileX !== lastTileRef.current.x || tileY !== lastTileRef.current.y) {
+          lastTileRef.current = { x: tileX, y: tileY };
+          playWalkSound();
+          setReactPlayerPosition({ x: tileX, y: tileY });
+        }
       }
-    }
+
+      animationFrameId = requestAnimationFrame(updateMovementFrame);
+    };
+
+    animationFrameId = requestAnimationFrame(updateMovementFrame);
+
+    return () => cancelAnimationFrame(animationFrameId);
   }, []);
 
   useEffect(() => {
@@ -239,9 +254,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
           <GameEngine
             ref={gameEngineRef}
             style={{ width: mapDimensions.width, height: mapDimensions.height }}
-            systems={[playerControlSystem, interpolationSystem, interactionSystem]}
+            systems={[playerControlSystem, interactionSystem]}
             entities={entities}
-            onEvent={handleGameEvent}
           />
         </div>
       </div>
