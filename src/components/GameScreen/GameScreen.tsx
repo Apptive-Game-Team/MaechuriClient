@@ -152,7 +152,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   }, []);
 
   useEffect(() => {
-    let animationFrameId: number | undefined;
+    let animationFrameId: number | null = null;
     let isActive = true;
 
     const updateMovementFrame = () => {
@@ -185,7 +185,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         if (hasMovedTile) {
           lastPlayerTileRef.current = { x: tileX, y: tileY };
           const previousPosition = reactPlayerPositionRef.current;
-          const shouldPlaySound = Boolean(lastTile) || tileX !== previousPosition.x || tileY !== previousPosition.y;
+          const shouldPlaySound = lastTile !== null && (tileX !== previousPosition.x || tileY !== previousPosition.y);
           if (shouldPlaySound) {
             handlePlayWalkSound();
           }
@@ -202,7 +202,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
 
     return () => {
       isActive = false;
-      if (animationFrameId !== undefined) {
+      if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);
       }
     };
