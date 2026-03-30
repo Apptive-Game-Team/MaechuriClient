@@ -54,6 +54,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const willChangeResetRef = useRef<number | null>(null);
   const lastPlayerTileRef = useRef<Position | null>(null);
+  const hasInitializedPlayerTileRef = useRef(false);
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [solveModalOpen, setSolveModalOpen] = useState(false);
   const [recordsModalOpen, setRecordsModalOpen] = useState(false);
@@ -81,6 +82,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       if (playerObj) {
         setReactPlayerPosition(playerObj.position);
         lastPlayerTileRef.current = { x: Math.round(playerObj.position.x), y: Math.round(playerObj.position.y) };
+        hasInitializedPlayerTileRef.current = true;
       }
 
       let borderLayer = newScenarioData.map.layers.find((l: Layer) => l.name === "Borders");
@@ -144,7 +146,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
   }, [scenarioData]);
 
   const mapDimensionsRef = useRef(mapDimensions);
-  mapDimensionsRef.current = mapDimensions;
 
   const handlePlayWalkSound = useCallback(() => {
     playWalkSound();
@@ -186,8 +187,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
         const hasMovedTile = !lastTile || tileX !== lastTile.x || tileY !== lastTile.y;
         if (hasMovedTile) {
           lastPlayerTileRef.current = { x: tileX, y: tileY };
-          if (lastTile !== null) {
+          if (hasInitializedPlayerTileRef.current) {
             handlePlayWalkSound();
+          } else {
+            hasInitializedPlayerTileRef.current = true;
           }
           setReactPlayerPosition({ x: tileX, y: tileY });
         }
@@ -207,6 +210,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       }
     };
   }, [handlePlayWalkSound, clampViewportOffset]);
+
+  useEffect(() => {
+    mapDimensionsRef.current = mapDimensions;
+  }, [mapDimensions]);
 
   useEffect(() => {
     return () => {
