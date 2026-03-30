@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Position, Direction, TileEntity } from '../types';
+import type { Direction } from '../types';
 import { PLAYER_ASSET_ID } from '../types';
 import type { AssetsState } from './useAssetLoader';
 import type { ScenarioData, MapObject } from '../../../types/map';
@@ -57,7 +57,7 @@ export const useGameEntities = (
     result.player = {
       position: playerObj ? { ...playerObj.position } : { x: 5, y: 5 },
       direction: (playerObj?.direction as Direction) || 'down',
-      speed: 0.15,
+      speed: 0.09,
       asset: assetsState.assets.get(PLAYER_ASSET_ID),
       renderer: Player,
       objectType: 'PLAYER',

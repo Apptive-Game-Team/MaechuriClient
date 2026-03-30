@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { GameEngine } from 'react-game-engine';
-import type { Position, Direction, ScenarioData, Layer, MapObject } from '../../types/map';
+import type { Position, ScenarioData, Layer, MapObject } from '../../types/map';
 import type { SolveResponse, SolveAttempt } from '../../types/solve';
 import { TILE_SIZE } from './types';
 import { usePlayerControls } from './hooks/usePlayerControls';
@@ -249,7 +249,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
             const firstId = interactions.keys().next().value;
             const mapObj = scenarioData.map.objects.find(o => o.id === firstId);
             if (mapObj) {
-              setCurrentObjectId(firstId);
+              setCurrentObjectId(firstId as string);
               setCurrentObjectName(mapObj.name);
             }
           } else {
