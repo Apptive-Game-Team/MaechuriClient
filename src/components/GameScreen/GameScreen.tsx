@@ -18,8 +18,6 @@ import interactionSystem from './systems/interactionSystem';
 import ChatModal from '../ChatModal/ChatModal';
 import SolveModal from '../SolveModal/SolveModal';
 import RecordsModal from '../RecordsModal/RecordsModal';
-import ErrorScreen from '../ErrorScreen/ErrorScreen';
-import { HTTPError } from '../../utils/httpError';
 import { playWalkSound, playModalSound, playMessageSentSound } from '../../utils/soundManager';
 import './GameScreen.css';
 
@@ -47,9 +45,10 @@ const EMPTY_SCENARIO = {
 interface GameScreenProps {
   scenarioId?: number;
   onShowResult: (result: SolveResponse) => void;
+  onEnterGameFailed: (message: string) => void;
 }
 
-const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => {
+const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult, onEnterGameFailed }) => {
   const gameEngineRef = useRef<(GameEngine & EngineState) | null>(null);
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const willChangeResetRef = useRef<number | null>(null);
@@ -109,6 +108,12 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
       setScenarioData(newScenarioData);
     }
   }, [originalScenarioData, toTilePosition]);
+
+  useEffect(() => {
+    if (!mapError) return;
+    const errorMessage = mapError.message || '맵 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+    onEnterGameFailed(errorMessage);
+  }, [mapError, onEnterGameFailed]);
 
   const { interactions, startInteraction, sendMessage, getInteractionState } = useInteraction();
 
@@ -285,7 +290,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult }) => 
     }
   };
 
-  if (mapError && mapError instanceof HTTPError) return <ErrorScreen statusCode={mapError.status} message={mapError.message} />;
+  if (mapError) return null;
   if (isLoadingMap || !scenarioData) return <div className="game-screen"><h2>Loading map data...</h2></div>;
   if (assetsState.isLoading) return <div className="game-screen"><h2>Loading assets...</h2></div>;
 

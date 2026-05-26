@@ -11,6 +11,7 @@ function App() {
   const [currentScreen, setCurrentScreen] = useState<'main' | 'scenario-select' | 'game' | 'result'>('main')
   const [resultData, setResultData] = useState<SolveResponse | null>(null)
   const [selectedScenarioId, setSelectedScenarioId] = useState<number | undefined>(undefined)
+  const [mainErrorMessage, setMainErrorMessage] = useState<string | null>(null)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof window === 'undefined') {
       return 'dark'
@@ -29,15 +30,18 @@ function App() {
   }, [theme])
 
   const handleStartGame = () => {
+    setMainErrorMessage(null)
     setSelectedScenarioId(undefined)
     setCurrentScreen('game')
   }
 
   const handleOpenScenarioSelect = () => {
+    setMainErrorMessage(null)
     setCurrentScreen('scenario-select')
   }
 
   const handleSelectScenario = (scenarioId: number) => {
+    setMainErrorMessage(null)
     setSelectedScenarioId(scenarioId)
     setCurrentScreen('game')
   }
@@ -48,9 +52,16 @@ function App() {
   }
 
   const handleGoHome = () => {
+    setMainErrorMessage(null)
     setResultData(null)
     setSelectedScenarioId(undefined)
     setCurrentScreen('main')
+  }
+
+  const handleGameEnterFailed = (message: string) => {
+    setSelectedScenarioId(undefined)
+    setCurrentScreen('main')
+    setMainErrorMessage(message)
   }
 
   return (
@@ -68,6 +79,8 @@ function App() {
         <MainScreen
           onStartGame={handleStartGame}
           onOpenScenarioSelect={handleOpenScenarioSelect}
+          errorMessage={mainErrorMessage}
+          onClearErrorMessage={() => setMainErrorMessage(null)}
         />
       )}
       {currentScreen === 'scenario-select' && (
@@ -80,6 +93,7 @@ function App() {
         <GameScreen
           scenarioId={selectedScenarioId}
           onShowResult={handleShowResult}
+          onEnterGameFailed={handleGameEnterFailed}
         />
       )}
       {currentScreen === 'result' && resultData && (
