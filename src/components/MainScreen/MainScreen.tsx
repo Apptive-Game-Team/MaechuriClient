@@ -26,7 +26,7 @@ const MainScreen: React.FC<MainScreenProps> = ({ onStartGame, onOpenScenarioSele
       <h2>매일 매일 추리</h2>
       <div className="main-content">
         {errorMessage && (
-          <p className="main-error-message">
+          <p className="main-error-message" role="alert" aria-live="polite">
             게임 시작 중 문제가 발생했습니다: {errorMessage}
           </p>
         )}
