@@ -1,75 +1,75 @@
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  inset: 0;
   z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: rgba(12, 14, 15, 0.88);
 }
 
 .modal {
-  background-color: var(--bg);
-  border-radius: 12px;
-  width: 90%;
   display: flex;
+  width: min(94vw, 100%);
+  max-height: min(88vh, 54rem);
   flex-direction: column;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(200, 169, 110, 0.1);
-  max-height: 85vh;
   border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--text-inverse);
 }
 
 .modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   flex-shrink: 0;
-  background-color: var(--bg-alt);
-  border-radius: 12px 12px 0 0;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
 }
 
-.modal-header h3 {
+.modal-header h2 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text);
+  font-family: 'Nanum Myeongjo', 'AppleMyungjo', serif;
+  font-size: 1.15rem;
 }
 
 .modal-close-button {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--text-muted);
-  cursor: pointer;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
   padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 1.5rem;
+  cursor: pointer;
 }
 
 .modal-close-button:hover {
-  background-color: var(--surface);
-  color: var(--text);
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
 .modal-content {
+  min-height: 0;
   flex: 1;
   overflow-y: auto;
 }
 
 .modal-footer {
-  border-top: 1px solid var(--border);
-  padding: 12px 20px;
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
   flex-shrink: 0;
+  gap: 0.5rem;
+  padding: 0.8rem 1.25rem;
+  border-top: 1px solid var(--border);
 }

@@ -13,7 +13,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  background-color: var(--bg-alt);
+  background-color: var(--surface-alt);
 }
 
 .chat-sidebar-item {
@@ -24,18 +24,18 @@
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
-  color: var(--text-muted);
+  color: #625d53;
   transition: background-color 0.15s;
   word-break: break-word;
 }
 
 .chat-sidebar-item:hover {
   background-color: var(--surface);
-  color: var(--text);
+  color: var(--text-inverse);
 }
 
 .chat-sidebar-item.selected {
-  background-color: var(--surface-alt);
+  background-color: var(--bg);
   color: var(--accent);
   font-weight: 600;
 }
@@ -53,7 +53,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--bg);
+  background-color: var(--surface);
 }
 
 .chat-modal-messages {
@@ -99,7 +99,7 @@
 .chat-message-avatar {
   width: 56px;
   height: 56px;
-  border-radius: 6px;
+  border-radius: 0;
   flex-shrink: 0;
   background-repeat: no-repeat;
   background-color: var(--surface);
@@ -120,14 +120,14 @@
 
 .chat-message-name {
   font-size: 12px;
-  color: var(--text-muted);
+  color: #625d53;
   margin-bottom: 4px;
   padding: 0 12px;
 }
 
 .chat-message-bubble {
   padding: 12px 16px;
-  border-radius: 18px;
+  border-radius: 0;
   word-wrap: break-word;
   line-height: 1.4;
 }
@@ -135,13 +135,13 @@
 .chat-message.player .chat-message-bubble {
   background-color: var(--accent-strong);
   color: #fff;
-  border-bottom-right-radius: 4px;
+  border-left: 4px solid var(--gold);
 }
 
 .chat-message.npc .chat-message-bubble {
-  background-color: var(--surface);
-  color: var(--text);
-  border-bottom-left-radius: 4px;
+  background-color: var(--surface-alt);
+  color: var(--text-inverse);
+  border-left: 4px solid var(--accent);
 }
 
 .chat-modal-input-area {
@@ -151,7 +151,7 @@
   flex-direction: column;
   gap: 8px;
   position: relative;
-  background-color: var(--bg-alt);
+  background-color: var(--surface-alt);
   border-top: 1px solid var(--border);
 }
 
@@ -188,20 +188,21 @@
   flex: 1;
   padding: 10px 16px;
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 0;
   font-size: 14px;
-  outline: none;
   min-height: 40px;
   max-height: 120px;
   overflow-y: auto;
   line-height: 1.4;
   word-wrap: break-word;
   background-color: var(--surface);
-  color: var(--text);
+  color: var(--text-inverse);
 }
 
-.chat-modal-input-editable:focus {
+.chat-modal-input-editable:focus-visible {
   border-color: var(--accent);
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .chat-modal-input-editable:empty:before {
@@ -240,10 +241,10 @@
   bottom: 100%;
   left: 0;
   right: 80px;
-  background: var(--bg);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
+  border-radius: 0;
+  box-shadow: none;
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
@@ -251,13 +252,18 @@
 }
 
 .autocomplete-item {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--border-soft);
+  background: transparent;
   padding: 10px 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
   transition: background-color 0.15s;
-  color: var(--text);
+  color: var(--text-inverse);
+  text-align: left;
 }
 
 .autocomplete-item:hover,
@@ -279,22 +285,23 @@
 
 .autocomplete-name {
   font-size: 14px;
-  color: var(--text);
+  color: var(--text-inverse);
 }
 
 .chat-modal-input {
   flex: 1;
   padding: 10px 16px;
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 0;
   font-size: 14px;
-  outline: none;
   background-color: var(--surface);
-  color: var(--text);
+  color: var(--text-inverse);
 }
 
-.chat-modal-input:focus {
+.chat-modal-input:focus-visible {
   border-color: var(--accent);
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .chat-modal-input:disabled {
@@ -308,7 +315,7 @@
   background-color: var(--accent-strong);
   color: white;
   border: none;
-  border-radius: 20px;
+  border-radius: 0;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;

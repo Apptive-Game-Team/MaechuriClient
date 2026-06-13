@@ -31,6 +31,10 @@ export const ChatInput = forwardRef<HTMLDivElement, ChatInputProps>(({ records, 
         ref={inputRef}
         className="chat-modal-input-editable"
         contentEditable
+        role="textbox"
+        aria-label="대화 메시지"
+        aria-multiline="true"
+        tabIndex={0}
         onInput={handleInputChange}
         onKeyDown={handleKeyDown}
         onCompositionStart={() => setIsComposing(true)}
@@ -38,14 +42,17 @@ export const ChatInput = forwardRef<HTMLDivElement, ChatInputProps>(({ records, 
           setIsComposing(false);
           handleInputChange();
         }}
-        data-placeholder="Type your message... (Use : to reference)"
+        data-placeholder="메시지를 입력하세요… (: 입력 시 기록 참조)"
       />
       {showAutocomplete && suggestions.length > 0 && (
-        <div ref={autocompleteRef} className="autocomplete-dropdown">
+        <div ref={autocompleteRef} className="autocomplete-dropdown" role="listbox" aria-label="참조할 기록">
           {suggestions.map((record, index) => (
-            <div
+            <button
+              type="button"
               key={`${record.type}-${record.id}`}
               className={`autocomplete-item ${index === selectedSuggestionIndex ? 'selected' : ''}`}
+              role="option"
+              aria-selected={index === selectedSuggestionIndex}
               onMouseDown={(e) => {
                 e.preventDefault();
                 insertReference(record);
@@ -53,7 +60,7 @@ export const ChatInput = forwardRef<HTMLDivElement, ChatInputProps>(({ records, 
             >
               <span className="autocomplete-type">{record.type}</span>
               <span className="autocomplete-name">{record.name}</span>
-            </div>
+            </button>
           ))}
         </div>
       )}
@@ -62,7 +69,7 @@ export const ChatInput = forwardRef<HTMLDivElement, ChatInputProps>(({ records, 
         onClick={handleSendMessage}
         disabled={isSendButtonDisabled || !isNearObject}
       >
-        Send
+        전송
       </button>
     </div>
   );

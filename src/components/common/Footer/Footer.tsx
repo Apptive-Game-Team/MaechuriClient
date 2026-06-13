@@ -4,8 +4,8 @@ const Footer = () => {
   return (
     <footer className="footer">
       <p>
-        문의 및 버그 제보:{' '}
-        <a href="mailto:support@maechuri.com">support@maechuri.com</a>
+        도움말 &amp; 지원{' '}
+        <a href="mailto:support@maechuri.com" translate="no">support@maechuri.com</a>
       </p>
     </footer>
   );

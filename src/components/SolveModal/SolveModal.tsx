@@ -47,7 +47,7 @@ const SolveModal: React.FC<SolveModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Solve the Case"
+      title="사건 해결"
       maxWidth="800px"
     >
       {/* The entire content goes here */}
@@ -56,7 +56,7 @@ const SolveModal: React.FC<SolveModalProps> = ({
         <div className="solve-conversation">
           {attempts.length === 0 ? (
             <div className="solve-conversation-empty">
-              No attempts yet. Submit your solution below.
+              아직 제출한 추리가 없습니다. 용의자와 추리 내용을 작성해 주세요.
             </div>
           ) : (
             attempts.map((attempt, index) => (
@@ -65,7 +65,7 @@ const SolveModal: React.FC<SolveModalProps> = ({
                 <div className="solve-message user">
                   <div className="solve-message-bubble">
                     <div className="solve-suspects">
-                      <strong>Suspects:</strong> {
+                      <strong>용의자:</strong> {
                         attempt.suspectIds.map(id => {
                           const suspect = suspects.find(s => s.id === id);
                           return suspect?.name || id;
@@ -85,12 +85,12 @@ const SolveModal: React.FC<SolveModalProps> = ({
                     <div className="solve-feedback-message">{attempt.response.message}</div>
                     {attempt.response.feedback && (
                       <div className="solve-detailed-feedback">
-                        <strong>Feedback:</strong> {attempt.response.feedback}
+                        <strong>평가:</strong> {attempt.response.feedback}
                       </div>
                     )}
                     {attempt.response.hints && attempt.response.hints.length > 0 && (
                       <div className="solve-hints">
-                        <strong>Hints:</strong>
+                        <strong>단서:</strong>
                         <ul>
                           {attempt.response.hints.map((hint, hintIndex) => (
                             <li key={hintIndex}>{hint}</li>
@@ -110,12 +110,13 @@ const SolveModal: React.FC<SolveModalProps> = ({
         <div className="solve-input-section">
           {/* Suspect Selection */}
           <div className="solve-suspects-section">
-            <label className="solve-label">Select Suspects:</label>
-            <div className="solve-suspects-list">
+            <span className="solve-label" id="suspect-label">용의자 선택</span>
+            <div className="solve-suspects-list" role="group" aria-labelledby="suspect-label">
               {suspects.map(suspect => (
                 <label key={suspect.id} className="solve-suspect-item">
                   <input
                     type="checkbox"
+                    name="suspects"
                     checked={selectedSuspects.includes(suspect.id)}
                     onChange={() => handleSuspectToggle(suspect.id)}
                   />
@@ -127,10 +128,13 @@ const SolveModal: React.FC<SolveModalProps> = ({
 
           {/* Reasoning Input */}
           <div className="solve-reasoning-section">
-            <label className="solve-label">Your Reasoning:</label>
+            <label className="solve-label" htmlFor="solve-reasoning">추리 내용</label>
             <textarea
+              id="solve-reasoning"
+              name="reasoning"
               className="solve-reasoning-input"
-              placeholder="Enter your reasoning here..."
+              placeholder="사건의 범인과 근거를 작성하세요…"
+              autoComplete="off"
               value={reasoning}
               onChange={(e) => setReasoning(e.target.value)}
               rows={4}
@@ -143,7 +147,7 @@ const SolveModal: React.FC<SolveModalProps> = ({
             onClick={handleSubmit}
             disabled={!reasoning.trim() || selectedSuspects.length === 0}
           >
-            Submit Solution
+            추리 제출
           </button>
         </div>
       </div>

@@ -47,7 +47,7 @@ export function PressureIndicator({ pressure, texts }: PressureIndicatorProps) {
 
   const resolvedTexts = useMemo(() => resolveTexts(texts), [texts]);
   const baseText = getPressureBaseText(pressure, resolvedTexts);
-  const dots = '.'.repeat(dotCount);
+  const dots = '·'.repeat(dotCount);
 
   return (
     <div className="pressure-indicator">

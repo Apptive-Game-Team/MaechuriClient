@@ -100,7 +100,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={objectName || 'Chat'}
+      title={objectName || '대화 기록'}
       maxWidth="740px"
     >
       <div className="chat-modal-layout">
@@ -139,7 +139,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
               ))
             ) : (
               <div className="chat-modal-empty">
-                {currentObjectId ? '대화를 시작하려면 메시지를 입력하세요.' : '대화할 대상을 선택해주세요.'}
+                {currentObjectId ? '메시지를 입력해 대화를 시작하세요.' : '대화할 대상을 선택해 주세요.'}
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -149,7 +149,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
               <ChatInput ref={inputRef} records={records} onSendMessage={onSendMessage} isNearObject={isNearObject} />
             ) : interactionType === 'simple' ? (
               <div className="chat-modal-disabled-notice">
-                This is a read-only interaction
+                읽기 전용 대화입니다.
               </div>
             ) : null}
           </div>

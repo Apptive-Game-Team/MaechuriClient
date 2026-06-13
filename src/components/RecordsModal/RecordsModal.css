@@ -11,8 +11,8 @@
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  background-color: var(--bg);
-  border-bottom: 1px solid rgba(203, 166, 247, 0.15);
+  background-color: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
 }
 
 .records-zoom-btn {
@@ -21,10 +21,10 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  background-color: var(--bg-alt);
-  border: 1px solid rgba(203, 166, 247, 0.2);
-  border-radius: 4px;
-  color: var(--text);
+  background-color: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  color: var(--text-inverse);
   font-size: 16px;
   cursor: pointer;
   line-height: 1;
@@ -44,10 +44,10 @@
   min-width: 48px;
   height: 28px;
   padding: 0 6px;
-  background-color: var(--bg-alt);
-  border: 1px solid rgba(203, 166, 247, 0.2);
-  border-radius: 4px;
-  color: var(--text-muted);
+  background-color: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  color: var(--text-inverse);
   font-size: 12px;
   cursor: pointer;
   transition: background-color 0.15s;
@@ -67,10 +67,10 @@
   position: relative;
   width: 2000px;
   height: 1500px;
-  background-color: var(--bg-alt);
+  background-color: var(--surface);
   background-image: 
-    linear-gradient(rgba(203, 166, 247, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(203, 166, 247, 0.05) 1px, transparent 1px);
+    linear-gradient(var(--border-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 

@@ -26,6 +26,7 @@ function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
+    document.documentElement.style.colorScheme = theme
     localStorage.setItem('maechuri-theme', theme)
   }, [theme])
 
@@ -66,39 +67,44 @@ function App() {
 
   return (
     <RecordsProvider>
-      <div className="theme-toggle">
+      <a className="skip-link" href="#main-content">본문으로 건너뛰기</a>
+      <div className="theme-toggle" aria-label="화면 테마">
+        <span>테마</span>
         <button
           type="button"
           onClick={() => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'))}
           aria-pressed={theme === 'light'}
+          aria-label={`${theme === 'dark' ? '라이트' : '다크'} 테마로 전환`}
         >
-          {theme === 'dark' ? '☀️ 라이트 모드' : '🌙 다크 모드'}
+          {theme === 'dark' ? '라이트' : '다크'}
         </button>
       </div>
-      {currentScreen === 'main' && (
-        <MainScreen
-          onStartGame={handleStartGame}
-          onOpenScenarioSelect={handleOpenScenarioSelect}
-          errorMessage={mainErrorMessage}
-          onClearErrorMessage={() => setMainErrorMessage(null)}
-        />
-      )}
-      {currentScreen === 'scenario-select' && (
-        <ScenarioSelectScreen
-          onSelectScenario={handleSelectScenario}
-          onBack={() => setCurrentScreen('main')}
-        />
-      )}
-      {currentScreen === 'game' && (
-        <GameScreen
-          scenarioId={selectedScenarioId}
-          onShowResult={handleShowResult}
-          onEnterGameFailed={handleGameEnterFailed}
-        />
-      )}
-      {currentScreen === 'result' && resultData && (
-        <ResultScreen result={resultData} onGoHome={handleGoHome} />
-      )}
+      <main id="main-content">
+        {currentScreen === 'main' && (
+          <MainScreen
+            onStartGame={handleStartGame}
+            onOpenScenarioSelect={handleOpenScenarioSelect}
+            errorMessage={mainErrorMessage}
+            onClearErrorMessage={() => setMainErrorMessage(null)}
+          />
+        )}
+        {currentScreen === 'scenario-select' && (
+          <ScenarioSelectScreen
+            onSelectScenario={handleSelectScenario}
+            onBack={() => setCurrentScreen('main')}
+          />
+        )}
+        {currentScreen === 'game' && (
+          <GameScreen
+            scenarioId={selectedScenarioId}
+            onShowResult={handleShowResult}
+            onEnterGameFailed={handleGameEnterFailed}
+          />
+        )}
+        {currentScreen === 'result' && resultData && (
+          <ResultScreen result={resultData} onGoHome={handleGoHome} />
+        )}
+      </main>
     </RecordsProvider>
   )
 }

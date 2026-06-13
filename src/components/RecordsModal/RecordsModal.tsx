@@ -273,22 +273,22 @@ const RecordsModal: React.FC<RecordsModalProps> = ({ isOpen, onClose, scenarioDa
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Records"
+      title="수사 기록"
       maxWidth="1000px"
     >
       <div className="records-toolbar">
-        <button className="records-zoom-btn" onClick={handleZoomOut} disabled={zoomLevel <= MIN_ZOOM} title="축소 (Ctrl+Scroll)">－</button>
-        <button className="records-zoom-level" onClick={handleZoomReset} title="배율 초기화">{Math.round(zoomLevel * 100)}%</button>
-        <button className="records-zoom-btn" onClick={handleZoomIn} disabled={zoomLevel >= MAX_ZOOM} title="확대 (Ctrl+Scroll)">＋</button>
+        <button className="records-zoom-btn" onClick={handleZoomOut} disabled={zoomLevel <= MIN_ZOOM} aria-label="기록 보드 축소">－</button>
+        <button className="records-zoom-level" onClick={handleZoomReset} aria-label={`현재 배율 ${Math.round(zoomLevel * 100)}%, 배율 초기화`}>{Math.round(zoomLevel * 100)}%</button>
+        <button className="records-zoom-btn" onClick={handleZoomIn} disabled={zoomLevel >= MAX_ZOOM} aria-label="기록 보드 확대">＋</button>
       </div>
       <div className="records-modal-content" ref={contentRef}>
         {isLoadingRecords ? (
           <div className="records-loading">
-            <p>Loading records...</p>
+            <p aria-live="polite">수사 기록을 불러오는 중…</p>
           </div>
         ) : enrichedRecords.length === 0 ? (
           <div className="records-empty">
-            <p>No records found. Interact with objects to collect records.</p>
+            <p>아직 수집한 기록이 없습니다. 현장의 인물이나 사물을 조사해 보세요.</p>
           </div>
         ) : (
           <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { RecordType } from '../../../types/record';
 import type { Record } from '../../../types/record';
 import { RecordTooltip } from '../../RecordsModal/components/RecordTooltip';
 import './RevealedRecords.css';
@@ -9,15 +8,6 @@ interface RevealedRecordsProps {
   records: Record[];
   onRecordClick: (recordId: string) => void;
 }
-
-const getRecordEmoji = (type: Record['type']): string => {
-  switch (type) {
-    case RecordType.CLUE: return '🔍';
-    case RecordType.NPC: return '👤';
-    case RecordType.FACT: return '📝';
-    default: return '📄';
-  }
-};
 
 export const RevealedRecords: React.FC<RevealedRecordsProps> = ({ recordIds, records, onRecordClick }) => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -31,19 +21,20 @@ export const RevealedRecords: React.FC<RevealedRecordsProps> = ({ recordIds, rec
   return (
     <div className="revealed-records">
       {revealedRecords.map(record => (
-        <div
+        <button
+          type="button"
           key={record.id}
           className={`revealed-record-icon record-card-${record.type.toLowerCase()}`}
           onMouseEnter={() => setHoveredId(record.id)}
           onMouseLeave={() => setHoveredId(null)}
           onClick={() => onRecordClick(record.id)}
         >
-          <span className="revealed-record-emoji">{getRecordEmoji(record.type)}</span>
+          <span className="revealed-record-type">{record.type}</span>
           <span className="revealed-record-name">{record.name}</span>
           {hoveredId === record.id && (
             <RecordTooltip record={record} direction="above" />
           )}
-        </div>
+        </button>
       ))}
     </div>
   );

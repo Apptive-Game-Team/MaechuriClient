@@ -7,25 +7,25 @@ interface ErrorScreenProps {
 }
 
 const ErrorScreen: React.FC<ErrorScreenProps> = ({ statusCode, message }) => {
-  let displayMessage = "An unexpected error occurred.";
+  let displayMessage = '예상하지 못한 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.';
 
   if (statusCode) {
     switch (statusCode) {
       case 401:
       case 403:
-        displayMessage = "You don't have permission to access this. Please ensure you are logged in or have the correct access rights.";
+        displayMessage = '접근 권한이 없습니다. 로그인 상태와 권한을 확인해 주세요.';
         break;
       case 404:
-        displayMessage = "The page or resource you are looking for could not be found. It might have been removed or never existed.";
+        displayMessage = '요청한 사건 기록을 찾을 수 없습니다. 주소를 확인해 주세요.';
         break;
       case 500:
-        displayMessage = "Something went wrong on our server. We're working to fix it!";
+        displayMessage = '서버에서 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.';
         break;
       case 503:
-        displayMessage = "Our services are temporarily unavailable. Please try again in a moment.";
+        displayMessage = '현재 서비스를 이용할 수 없습니다. 잠시 후 다시 시도해 주세요.';
         break;
       default:
-        displayMessage = `An error occurred (Status Code: ${statusCode}). Please try again later.`;
+        displayMessage = `오류 코드 ${statusCode}. 잠시 후 다시 시도해 주세요.`;
     }
   }
 
@@ -41,10 +41,11 @@ const ErrorScreen: React.FC<ErrorScreenProps> = ({ statusCode, message }) => {
   return (
     <div className="error-screen">
       <div className="error-content">
-        <h1>Oops!</h1>
+        <span className="screen-kicker">CASE FILE / ERROR</span>
+        <h1>기록을 열 수 없습니다</h1>
         <p className="error-message">{displayMessage}</p>
         <button className="home-button" onClick={handleGoHome}>
-          Go to Home
+          메인 화면으로
         </button>
       </div>
     </div>

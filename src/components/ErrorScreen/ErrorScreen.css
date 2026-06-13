@@ -1,47 +1,30 @@
 .error-screen {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid;
   min-height: 100vh;
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: Arial, sans-serif;
-  text-align: center;
-  padding: 20px;
+  place-items: center;
+  padding: clamp(5rem, 8vw, 8rem) 1.25rem;
+  background: var(--surface);
+  color: var(--text-inverse);
 }
 
 .error-content {
-  background-color: var(--bg-alt);
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 40px;
-  max-width: 500px;
-  width: 100%;
+  width: min(100%, 42rem);
+  padding-top: 2rem;
+  border-top: 8px solid var(--danger);
+}
+
+.error-content .screen-kicker {
+  justify-content: flex-start;
 }
 
 .error-content h1 {
-  font-size: 3em;
-  color: var(--danger);
-  margin-bottom: 20px;
+  margin: 2rem 0 1rem;
+  font-family: 'Nanum Myeongjo', 'AppleMyungjo', serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
 }
 
 .error-message {
-  font-size: 1.2em;
-  margin-bottom: 30px;
-  line-height: 1.6;
-}
-
-.home-button {
-  background-color: var(--accent-strong);
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 20px;
-  font-size: 1em;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.home-button:hover {
-  background-color: var(--accent-strong-hover);
+  margin: 0 0 2rem;
+  color: #5e5a52;
+  line-height: 1.75;
 }
