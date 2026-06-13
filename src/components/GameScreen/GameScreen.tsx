@@ -290,9 +290,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult, onEnt
     }
   };
 
-  if (mapError) return <div className="game-screen"><h2 role="alert" aria-live="polite">문제가 발생했습니다. 메인 화면으로 이동합니다...</h2></div>;
-  if (isLoadingMap || !scenarioData) return <div className="game-screen"><h2>Loading map data...</h2></div>;
-  if (assetsState.isLoading) return <div className="game-screen"><h2>Loading assets...</h2></div>;
+  if (mapError) return <div className="game-screen"><h2 role="alert" aria-live="polite">문제가 발생했습니다. 메인 화면으로 이동합니다…</h2></div>;
+  if (isLoadingMap || !scenarioData) return <div className="game-screen"><h2 aria-live="polite">사건 지도를 불러오는 중…</h2></div>;
+  if (assetsState.isLoading) return <div className="game-screen"><h2 aria-live="polite">현장 자료를 불러오는 중…</h2></div>;
 
   return (
     <div className="game-screen">
@@ -305,7 +305,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult, onEnt
             onClick={() => { setHighlightedRecordId(null); playModalSound(); setRecordsModalOpen(true); }}
             title="수사 기록 열기 [R]"
           >
-            📋 수사 기록 <kbd>R</kbd>
+            수사 기록 <kbd>R</kbd>
           </button>
           <button
             className="game-shortcut-button"
@@ -317,7 +317,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ scenarioId, onShowResult, onEnt
             }}
             title="대화 목록 열기 [C]"
           >
-            💬 대화 목록 <kbd>C</kbd>
+            대화 목록 <kbd>C</kbd>
           </button>
         </div>
       </div>

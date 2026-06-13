@@ -85,6 +85,8 @@ export const Message: React.FC<MessageProps> = ({ message, records, objectImageU
             <div
               className={`chat-message-avatar chat-message-avatar-${objectType?.toLowerCase()}`}
               style={{ backgroundImage: `url(${objectImageUrl})` }}
+              role="img"
+              aria-label={message.name ? `${message.name} 초상` : '대화 상대'}
             />
           )}
           <div className="chat-message-npc-content">

@@ -38,7 +38,7 @@ export const RecordCard: React.FC<RecordCardProps> = ({ record, isHighlighted })
       <div className="record-card-simple">
         {record.type === RecordType.FACT ? (
           <div className="record-card-memo-icon">
-            📝
+            <span>FACT</span>
           </div>
         ) : record.imageUrl ? (
           <div 

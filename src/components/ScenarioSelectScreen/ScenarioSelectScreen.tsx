@@ -36,7 +36,8 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
         const data = await getScenarios(viewYear, viewMonth);
         setScenarios(data.scenarios);
       } catch (err) {
-        setError(err instanceof Error ? err.message : '시나리오 목록을 불러오지 못했습니다.');
+        console.error('Failed to load scenarios:', err);
+        setError('시나리오 목록을 불러오지 못했습니다.');
       } finally {
         setIsLoading(false);
       }
@@ -76,6 +77,12 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
     return `${viewYear}-${mm}-${dd}`;
   }, [viewYear, viewMonth]);
 
+  const monthLabel = React.useMemo(
+    () => new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long' })
+      .format(new Date(viewYear, viewMonth - 1, 1)),
+    [viewYear, viewMonth],
+  );
+
   const calendarDays = React.useMemo(() => {
     const firstDay = new Date(viewYear, viewMonth - 1, 1).getDay(); // 0=Sun
     const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
@@ -97,18 +104,21 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
 
   return (
     <div className="scenario-select-screen">
-      <h1>매추리</h1>
-      <h2>시나리오 선택</h2>
+      <header className="screen-heading">
+        <span className="screen-kicker">CASE ARCHIVE / 02</span>
+        <h1>지난 사건 기록</h1>
+        <p>날짜를 선택해 사건 조사를 시작하거나 이어서 진행하세요.</p>
+      </header>
 
-      {isLoading && <p className="scenario-select-status">불러오는 중...</p>}
-      {error && <p className="scenario-select-status scenario-select-error">{error}</p>}
+      {isLoading && <p className="scenario-select-status" aria-live="polite">사건 기록을 불러오는 중…</p>}
+      {error && <p className="scenario-select-status scenario-select-error" role="alert">{error} 잠시 후 다시 시도해 주세요.</p>}
 
       {!isLoading && !error && (
         <>
           <div className="calendar">
             <div className="calendar-header">
               <button className="month-nav-button" onClick={handlePrevMonth} aria-label="이전 달">‹</button>
-              <span>{viewYear}년 {viewMonth}월</span>
+              <h2>{monthLabel}</h2>
               <button className="month-nav-button" onClick={handleNextMonth} aria-label="다음 달">›</button>
             </div>
             <div className="calendar-grid">
@@ -139,11 +149,11 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
                       .join(' ')}
                     disabled={!isPlayable}
                     onClick={() => isPlayable && entry && onSelectScenario(entry.scenarioId)}
-                    title={entry ? `${dateStr} — ${STATE_LABEL[entry.state]}` : undefined}
+                    aria-label={`${monthLabel} ${day}일, ${entry ? STATE_LABEL[entry.state] : '공개된 사건 없음'}`}
                   >
                     <span className="calendar-day-number">{day}</span>
                     {entry && (
-                      <span className="calendar-state-dot" />
+                      <span className="calendar-state-dot" aria-hidden="true" />
                     )}
                   </button>
                 );
@@ -160,7 +170,7 @@ const ScenarioSelectScreen: React.FC<ScenarioSelectScreenProps> = ({
       )}
 
       <button className="back-button" onClick={onBack}>
-        돌아가기
+        메인 화면으로
       </button>
     </div>
   );
